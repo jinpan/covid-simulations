@@ -1,0 +1,17 @@
+language: rust
+rust:
+  - stable
+  - beta
+  - nightly
+before_script:
+  - cd engine
+script:
+  - cargo build --verbose
+  - cargo test --verbose
+
+jobs:
+  allow_failures:
+    - rust: nightly
+
+os: linux
+dist: bionic
