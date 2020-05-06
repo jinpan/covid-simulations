@@ -1,5 +1,7 @@
 # covid-simulations
 
+[![Build Status](https://travis-ci.com/jinpan/covid-simulations.svg?branch=master)](https://travis-ci.com/jinpan/covid-simulations)
+
 This repository contains source code for simulating the spread of COVID-19 across a virtual society.
 
 This simulation offers the user the ability to repeatedly sample outcomes in response to changes in policy, without real life consequences, allowing the user to estimate the tradeoffs of different policies to make better informed decisions.
