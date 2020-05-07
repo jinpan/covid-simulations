@@ -1,7 +1,10 @@
+extern crate wasm_bindgen;
+
 use itertools::Itertools;
-use rand::Rng;
+use rand::{Rng, RngCore};
 use std::f32::consts::PI;
 use std::time::Duration;
+use wasm_bindgen::prelude::*;
 
 const INFECTION_RADIUS: u16 = 6;
 const INFECTIOUS_PERIOD_TICKS: usize = 20;
@@ -77,14 +80,13 @@ impl Person {
     }
 }
 
-struct World<'a, R>
-where
-    R: rand::Rng + ?Sized,
-{
+#[wasm_bindgen]
+pub struct World {
     size: (u16, u16),
     people: Vec<Person>,
+    tick: usize,
 
-    rng: &'a mut R,
+    rng: Box<dyn RngCore>,
 }
 
 fn normalize_angle(t: f32) -> f32 {
@@ -96,12 +98,10 @@ fn normalize_angle(t: f32) -> f32 {
     }
 }
 
-impl<'a, R> World<'a, R>
-where
-    R: rand::Rng + ?Sized,
-{
-    fn new(
-        rng: &'a mut R,
+#[wasm_bindgen]
+impl World {
+    pub(crate) fn new(
+        mut rng: Box<dyn RngCore>,
         size: (u16, u16),
         num_people: usize,
         num_initially_infected: usize,
@@ -129,10 +129,13 @@ where
             })
             .collect();
 
-        World { size, people, rng }
+        World { size, people, tick: 0, rng }
     }
 
-    fn step(&mut self, tick: usize) {
+    pub fn step(&mut self) {
+        self.tick += 1;
+        let tick = self.tick;
+
         // Step 1: advance all the people
         let size = &self.size;
         self.people.iter_mut().for_each(|p| {
@@ -171,6 +174,36 @@ where
                 }
             }
         }
+    }
+
+    pub fn num_infectious(&self) -> usize {
+        self.people
+            .iter()
+            .filter(|p| match p.disease_state {
+                DiseaseState::Infectious(_) => true,
+                _ => false,
+            })
+            .count()
+    }
+
+    pub fn num_susceptible(&self) -> usize {
+        self.people
+            .iter()
+            .filter(|p| match p.disease_state {
+                DiseaseState::Susceptible => true,
+                _ => false,
+            })
+            .count()
+    }
+
+    pub fn num_recovered(&self) -> usize {
+        self.people
+            .iter()
+            .filter(|p| match p.disease_state {
+                DiseaseState::Recovered => true,
+                _ => false,
+            })
+            .count()
     }
 }
 
@@ -390,11 +423,11 @@ mod tests {
     #[test]
     fn initialize_world() {
         // TODO: fix the seed and check for the counts of people by DiseaseState.
-        let mut rng = rand::thread_rng();
+        let mut rng = Box::new(rand::thread_rng());
 
-        let mut world = World::new(&mut rng, (400, 300), 200, 1);
-        for tick in 1..1000 {
-            world.step(tick);
+        let mut world = World::new(rng, (400, 300), 200, 1);
+        for _ in 1..1000 {
+            world.step();
         }
     }
 }

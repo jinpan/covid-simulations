@@ -4,8 +4,19 @@
     <meta charset="utf-8">
     <title>Hello wasm-pack!</title>
   </head>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+  </style>
+
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
     <script src="./bootstrap.js"></script>
+
+    <canvas
+       id="main-canvas"
+       width="400" height="300"
+       style="width: 400px; height: 300px; border:1px solid #000000;">
+    </canvas>
   </body>
 </html>
