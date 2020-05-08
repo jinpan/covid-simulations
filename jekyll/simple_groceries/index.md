@@ -4,6 +4,8 @@ title: Simple Grocery Simulator
 permalink: /simple_groceries/
 ---
 
+<script src="./bootstrap.js"></script>
+
 TODO
 
 <canvas
