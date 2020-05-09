@@ -248,8 +248,14 @@ mod tests {
     use rand::SeedableRng;
     use rand_chacha::ChaCha8Rng;
 
+    fn check_disease_states(people: &[Person], expected: &[DiseaseState]) {
+        for (idx, (person, state)) in people.iter().zip_eq(expected.iter()).enumerate() {
+            assert_eq!(person.disease_state, *state, "diff at index {}", idx);
+        }
+    }
+
     #[test]
-    fn test_step_world() {
+    fn test_infection_radius_world() {
         let rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
         let config = WorldConfig {
             disease_parameters: DiseaseParameters {
@@ -262,13 +268,6 @@ mod tests {
         };
 
         let mut world = World::new(rng, config);
-
-        let check_disease_states = |people: &[Person], expected: &[DiseaseState]| {
-            for (person, state) in people.iter().zip_eq(expected.iter()) {
-                assert_eq!(person.disease_state, *state);
-            }
-        };
-
         let mut expected_disease_states = vec![
             DiseaseState::Infectious(0),
             DiseaseState::Infectious(0),
@@ -316,6 +315,86 @@ mod tests {
 
         world.step();
         expected_disease_states[4] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+    }
+
+    #[test]
+    fn test_viral_particle_spread_world() {
+        let rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
+        let config = WorldConfig {
+            disease_parameters: DiseaseParameters {
+                infectious_period_ticks: 5,
+                spread_parameters: DiseaseSpreadParameters::BackgroundViralParticle(
+                    BackgroundViralParticleParams {
+                        exhale_radius: 5.0,
+                        exhale_amount: 1.0,
+                        decay_rate: 0.5,
+                        inhale_radius: 3.0,
+                        infection_risk_per_particle: 0.5,
+                    },
+                ),
+            },
+            size: (10, 10),
+            num_people: 5,
+            num_initially_infected: 2,
+        };
+
+        let mut world = World::new(rng, config);
+        let mut expected_disease_states = vec![
+            DiseaseState::Infectious(0),
+            DiseaseState::Infectious(0),
+            DiseaseState::Susceptible,
+            DiseaseState::Susceptible,
+            DiseaseState::Susceptible,
+        ];
+
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[2] = DiseaseState::Infectious(2);
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[4] = DiseaseState::Infectious(5);
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[0] = DiseaseState::Recovered;
+        expected_disease_states[1] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[3] = DiseaseState::Infectious(7);
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[2] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[4] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[3] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
     }
 
