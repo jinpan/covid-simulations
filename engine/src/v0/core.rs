@@ -3,7 +3,6 @@
 use crate::v0::config::*;
 use crate::v0::geometry::{Position, PositionAndDirection};
 use rand::{Rng, RngCore};
-use std::collections::HashMap;
 use std::f32::consts::PI;
 
 #[derive(PartialEq, Debug)]
@@ -53,7 +52,7 @@ pub(crate) struct World {
     // TODO: don't create this map for worlds that don't require it.
     // TODO: consider combining patches together: instead of having a single f32 count per key,
     // use coarser keys and a dense matrix value.
-    background_viral_particles: HashMap<(u16, u16), f32>,
+    background_viral_particles: Vec<Vec<f32>>,
 
     rng: Box<dyn RngCore>,
 }
@@ -85,11 +84,14 @@ impl World {
             })
             .collect();
 
+        let background_viral_particles =
+            vec![vec![0.0; config.size.0 as usize]; config.size.1 as usize];
+
         World {
             config,
             tick: 0,
             people,
-            background_viral_particles: HashMap::new(),
+            background_viral_particles,
             rng,
         }
     }
@@ -141,10 +143,10 @@ impl World {
     // Helper function for getting cells within a radius of the position
     fn get_cells(pos: &Position, radius: f32, world_size: (u16, u16)) -> Vec<(u16, u16)> {
         let min_x = f32::max(0.0, pos.x - radius) as u16;
-        let max_x = f32::min(world_size.0 as f32, pos.x + radius) as u16;
+        let max_x = f32::min(world_size.0 as f32 - 1.0, pos.x + radius) as u16;
 
         let min_y = f32::max(0.0, pos.y - radius) as u16;
-        let max_y = f32::min(world_size.1 as f32, pos.y + radius) as u16;
+        let max_y = f32::min(world_size.1 as f32 - 1.0, pos.y + radius) as u16;
 
         let mut cells = vec![];
         for x in min_x..=max_x {
@@ -166,21 +168,16 @@ impl World {
         rng: &mut dyn RngCore,
         params: &BackgroundViralParticleParams,
         people: &mut Vec<Person>,
-        background_viral_particles: &mut HashMap<(u16, u16), f32>,
+        background_viral_particles: &mut Vec<Vec<f32>>,
         world_size: (u16, u16),
     ) {
         // Step 1: Decay the existing particles
         let viral_particle_survival_rate = 1.0 - params.decay_rate;
-        let mut keys_to_delete = vec![];
-        for (key, val) in background_viral_particles.iter_mut() {
-            *val *= viral_particle_survival_rate;
-            if *val * params.infection_risk_per_particle < 0.00001 {
-                keys_to_delete.push(*key);
+        for row in background_viral_particles.iter_mut() {
+            for val in row.iter_mut() {
+                *val *= viral_particle_survival_rate;
             }
         }
-        keys_to_delete.iter().for_each(|k| {
-            background_viral_particles.remove(k);
-        });
 
         // Step 2: All people inhale, and may become infected according to how much they have
         // inhaled.
@@ -196,7 +193,7 @@ impl World {
                 world_size,
             )
             .iter()
-            .map(|cell| background_viral_particles.get(&cell).unwrap_or(&0.0))
+            .map(|(x, y)| background_viral_particles[*y as usize][*x as usize])
             .sum::<f32>();
             let infection_risk = particles_inhaled * params.infection_risk_per_particle;
 
@@ -219,9 +216,8 @@ impl World {
                 world_size,
             )
             .iter()
-            .for_each(|cell| {
-                let amount = background_viral_particles.entry(*cell).or_insert(0.0);
-                *amount += params.exhale_amount;
+            .for_each(|(x, y)| {
+                background_viral_particles[*y as usize][*x as usize] += params.exhale_amount;
             });
         }
     }
@@ -338,18 +334,18 @@ mod tests {
         assert_eq!(cells, vec![(0, 0), (0, 1), (1, 0)]);
 
         // (0, 10)
-        let mut cells = World::get_cells(&Position { x: 0.0, y: 10.0 }, 1.0, (10, 10));
+        let mut cells = World::get_cells(&Position { x: 0.0, y: 9.0 }, 1.0, (10, 10));
         cells.sort();
-        assert_eq!(cells, vec![(0, 9), (0, 10), (1, 10)]);
+        assert_eq!(cells, vec![(0, 8), (0, 9), (1, 9)]);
 
         // (10, 0)
-        let mut cells = World::get_cells(&Position { x: 10.0, y: 0.0 }, 1.0, (10, 10));
+        let mut cells = World::get_cells(&Position { x: 9.0, y: 0.0 }, 1.0, (10, 10));
         cells.sort();
-        assert_eq!(cells, vec![(9, 0), (10, 0), (10, 1)]);
+        assert_eq!(cells, vec![(8, 0), (9, 0), (9, 1)]);
 
         // (10, 10)
-        let mut cells = World::get_cells(&Position { x: 10.0, y: 10.0 }, 1.0, (10, 10));
+        let mut cells = World::get_cells(&Position { x: 9.0, y: 9.0 }, 1.0, (10, 10));
         cells.sort();
-        assert_eq!(cells, vec![(9, 10), (10, 9), (10, 10)]);
+        assert_eq!(cells, vec![(8, 9), (9, 8), (9, 9)]);
     }
 }

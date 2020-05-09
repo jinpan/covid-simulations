@@ -12,7 +12,7 @@ fn run_infection_radius_spread() {
             infectious_period_ticks: 10 * 60,
             spread_parameters: DiseaseSpreadParameters::InfectionRadius(5.0),
         },
-        size: (600, 6400),
+        size: (600, 400),
         num_people: 200,
         num_initially_infected: 1,
     };
@@ -38,7 +38,7 @@ fn run_viral_particle_spread() {
                 },
             ),
         },
-        size: (600, 6400),
+        size: (600, 400),
         num_people: 200,
         num_initially_infected: 1,
     };
