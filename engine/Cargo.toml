@@ -10,7 +10,15 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-crate-type = ["cdylib"]
+# Reference https://doc.rust-lang.org/reference/linkage.html.
+crate-type = ["cdylib", "lib"]
+
+[[bench]]
+name = "v0_benchmark"
+harness = false
+
+[dev-dependencies]
+criterion = "0.3"
 
 [dependencies]
 approx = "0.3"
