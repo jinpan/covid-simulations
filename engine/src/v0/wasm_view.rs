@@ -1,14 +1,15 @@
 // Provides wasm bindings for the v0 engine.
 use wasm_bindgen::prelude::*;
 
-use crate::v0::core::{DiseaseState, World, WorldConfig};
+use crate::v0::config::WorldConfig;
+use crate::v0::core::{DiseaseState, World};
 
 #[derive(Serialize)]
 pub struct Person {
     pub id: String,
-    pub position_x: f32,
-    pub position_y: f32,
-    pub color: u32,
+    pub px: f32,
+    pub py: f32,
+    pub c: u32,
 }
 
 #[derive(Serialize)]
@@ -22,7 +23,7 @@ pub struct WorldView {
 }
 
 impl WorldView {
-    pub(crate) fn new(config: WorldConfig) -> Self {
+    pub fn new(config: WorldConfig) -> Self {
         let rng = Box::new(rand::thread_rng());
 
         let world = World::new(rng, config);
@@ -51,9 +52,9 @@ impl WorldView {
                 };
                 Person {
                     id: format!("{}", idx),
-                    position_x: p.position_and_direction.position.x,
-                    position_y: p.position_and_direction.position.y,
-                    color,
+                    px: p.position_and_direction.position.x,
+                    py: p.position_and_direction.position.y,
+                    c: color,
                 }
             })
             .collect::<Vec<_>>();

@@ -1,24 +1,10 @@
 // Contains the core implementation of the v0 engine.
 
+use crate::v0::config::*;
 use crate::v0::geometry::{Position, PositionAndDirection};
 use rand::{Rng, RngCore};
-use rand_chacha::ChaCha8Rng;
-use rand_core::SeedableRng;
+use std::collections::HashMap;
 use std::f32::consts::PI;
-
-#[derive(Deserialize, Debug)]
-pub(crate) struct DiseaseParameters {
-    infection_radius: u16,
-    infectious_period_ticks: usize,
-}
-
-#[derive(Deserialize, Debug)]
-pub(crate) struct WorldConfig {
-    disease_parameters: DiseaseParameters,
-    size: (u16, u16),
-    num_people: usize,
-    num_initially_infected: usize,
-}
 
 #[derive(PartialEq, Debug)]
 pub(crate) enum DiseaseState {
@@ -53,15 +39,21 @@ impl Person {
 
     // Advance the position of the person by 1, and bounce off of the boundaries
     // of the world.
-    fn update_position(&mut self, world_size: &(u16, u16)) {
+    fn update_position(&mut self, world_size: (u16, u16)) {
         self.position_and_direction.advance(world_size);
     }
 }
 
 pub(crate) struct World {
     config: WorldConfig,
-    pub(crate) people: Vec<Person>,
     tick: usize,
+
+    pub(crate) people: Vec<Person>,
+
+    // TODO: don't create this map for worlds that don't require it.
+    // TODO: consider combining patches together: instead of having a single f32 count per key,
+    // use coarser keys and a dense matrix value.
+    background_viral_particles: HashMap<(u16, u16), f32>,
 
     rng: Box<dyn RngCore>,
 }
@@ -95,8 +87,9 @@ impl World {
 
         World {
             config,
-            people,
             tick: 0,
+            people,
+            background_viral_particles: HashMap::new(),
             rng,
         }
     }
@@ -106,7 +99,7 @@ impl World {
         let tick = self.tick;
 
         // Step 1: advance all the people
-        let size = &self.config.size;
+        let size = self.config.size;
         self.people.iter_mut().for_each(|p| {
             p.update_position(size);
         });
@@ -122,13 +115,17 @@ impl World {
         });
 
         // Step 3: identify collisions and update disease state.
+        self.spread_disease(tick);
+    }
+
+    fn spread_disease_infection_radius(tick: usize, radius: f32, people: &mut Vec<Person>) {
         // TODO: instead of a N^2 loop, use some index structure (BTreeMap?)
-        for i in 0..(self.people.len() - 1) {
-            let (left, right) = self.people.split_at_mut(i + 1);
+        for i in 0..(people.len() - 1) {
+            let (left, right) = people.split_at_mut(i + 1);
             let p0 = left.last_mut().unwrap();
 
             for p1 in right.iter_mut() {
-                if p0.distance(p1) >= disease_parameters.infection_radius as f32 {
+                if p0.distance(p1) >= radius {
                     continue;
                 }
 
@@ -141,19 +138,127 @@ impl World {
             }
         }
     }
+    // Helper function for getting cells within a radius of the position
+    fn get_cells(pos: &Position, radius: f32, world_size: (u16, u16)) -> Vec<(u16, u16)> {
+        let min_x = f32::max(0.0, pos.x - radius) as u16;
+        let max_x = f32::min(world_size.0 as f32, pos.x + radius) as u16;
+
+        let min_y = f32::max(0.0, pos.y - radius) as u16;
+        let max_y = f32::min(world_size.1 as f32, pos.y + radius) as u16;
+
+        let mut cells = vec![];
+        for x in min_x..=max_x {
+            for y in min_y..=max_y {
+                if pos.distance(&Position {
+                    x: x as f32,
+                    y: y as f32,
+                }) <= radius
+                {
+                    cells.push((x, y));
+                }
+            }
+        }
+        cells
+    }
+
+    fn spread_disease_background_viral_particle(
+        tick: usize,
+        rng: &mut dyn RngCore,
+        params: &BackgroundViralParticleParams,
+        people: &mut Vec<Person>,
+        background_viral_particles: &mut HashMap<(u16, u16), f32>,
+        world_size: (u16, u16),
+    ) {
+        // Step 1: Decay the existing particles
+        let viral_particle_survival_rate = 1.0 - params.decay_rate;
+        let mut keys_to_delete = vec![];
+        for (key, val) in background_viral_particles.iter_mut() {
+            *val *= viral_particle_survival_rate;
+            if *val * params.infection_risk_per_particle < 0.00001 {
+                keys_to_delete.push(*key);
+            }
+        }
+        keys_to_delete.iter().for_each(|k| {
+            background_viral_particles.remove(k);
+        });
+
+        // Step 2: All people inhale, and may become infected according to how much they have
+        // inhaled.
+        for p in people.iter_mut() {
+            if let DiseaseState::Susceptible = p.disease_state {
+            } else {
+                continue;
+            }
+
+            let particles_inhaled = World::get_cells(
+                &p.position_and_direction.position,
+                params.inhale_radius,
+                world_size,
+            )
+            .iter()
+            .map(|cell| background_viral_particles.get(&cell).unwrap_or(&0.0))
+            .sum::<f32>();
+            let infection_risk = particles_inhaled * params.infection_risk_per_particle;
+
+            if rng.gen::<f32>() > infection_risk {
+                continue;
+            }
+            p.disease_state = DiseaseState::Infectious(tick);
+        }
+
+        // Step 3: All people exhale, and infected people spread viral particles.
+        for p in people.iter_mut() {
+            if let DiseaseState::Infectious(_) = p.disease_state {
+            } else {
+                continue;
+            }
+
+            World::get_cells(
+                &p.position_and_direction.position,
+                params.inhale_radius,
+                world_size,
+            )
+            .iter()
+            .for_each(|cell| {
+                let amount = background_viral_particles.entry(*cell).or_insert(0.0);
+                *amount += params.exhale_amount;
+            });
+        }
+    }
+
+    fn spread_disease(&mut self, tick: usize) {
+        match &self.config.disease_parameters.spread_parameters {
+            DiseaseSpreadParameters::InfectionRadius(r) => {
+                World::spread_disease_infection_radius(tick, *r, &mut self.people)
+            }
+            DiseaseSpreadParameters::BackgroundViralParticle(params) => {
+                World::spread_disease_background_viral_particle(
+                    tick,
+                    &mut self.rng,
+                    params,
+                    &mut self.people,
+                    &mut self.background_viral_particles,
+                    self.config.size,
+                )
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use itertools::Itertools;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
 
     #[test]
     fn test_step_world() {
         let rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
         let config = WorldConfig {
             disease_parameters: DiseaseParameters {
-                infection_radius: 5,
                 infectious_period_ticks: 5,
+                spread_parameters: DiseaseSpreadParameters::InfectionRadius(5.0),
             },
             size: (10, 10),
             num_people: 5,
@@ -162,96 +267,89 @@ mod tests {
 
         let mut world = World::new(rng, config);
 
-        // Check that two people are infected.
-        let num_infected = world
-            .people
-            .iter()
-            .filter(|p| match p.disease_state {
-                DiseaseState::Susceptible => false,
-                DiseaseState::Infectious(n) => {
-                    assert_eq!(n, 0);
-                    true
-                }
-                DiseaseState::Recovered => panic!("people cannot start out as recovered"),
-            })
-            .count();
-        assert_eq!(num_infected, 2);
+        let check_disease_states = |people: &[Person], expected: &[DiseaseState]| {
+            for (person, state) in people.iter().zip_eq(expected.iter()) {
+                assert_eq!(person.disease_state, *state);
+            }
+        };
+
+        let mut expected_disease_states = vec![
+            DiseaseState::Infectious(0),
+            DiseaseState::Infectious(0),
+            DiseaseState::Susceptible,
+            DiseaseState::Susceptible,
+            DiseaseState::Susceptible,
+        ];
+
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[1].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[2].disease_state, DiseaseState::Infectious(1));
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Susceptible);
+        expected_disease_states[2] = DiseaseState::Infectious(1);
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[1].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[2].disease_state, DiseaseState::Infectious(1));
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Susceptible);
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[1].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[2].disease_state, DiseaseState::Infectious(1));
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Susceptible);
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[1].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[2].disease_state, DiseaseState::Infectious(1));
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Susceptible);
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[1].disease_state, DiseaseState::Infectious(0));
-        assert_eq!(world.people[2].disease_state, DiseaseState::Infectious(1));
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Infectious(5));
+        expected_disease_states[4] = DiseaseState::Infectious(5);
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[1].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[2].disease_state, DiseaseState::Infectious(1));
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Infectious(5));
+        expected_disease_states[0] = DiseaseState::Recovered;
+        expected_disease_states[1] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[1].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[2].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Infectious(5));
+        expected_disease_states[2] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[1].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[2].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Infectious(5));
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[1].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[2].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Infectious(5));
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[1].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[2].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Infectious(5));
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        assert_eq!(world.people[0].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[1].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[2].disease_state, DiseaseState::Recovered);
-        assert_eq!(world.people[3].disease_state, DiseaseState::Susceptible);
-        assert_eq!(world.people[4].disease_state, DiseaseState::Recovered);
+        expected_disease_states[4] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+    }
+
+    #[test]
+    fn test_world_get_cells() {
+        let cells = World::get_cells(&Position { x: 5.0, y: 5.0 }, 0.5, (10, 10));
+        assert_eq!(cells, vec![(5, 5)]);
+
+        let mut cells = World::get_cells(&Position { x: 5.0, y: 5.0 }, 1.0, (10, 10));
+        cells.sort();
+        assert_eq!(cells, vec![(4, 5), (5, 4), (5, 5), (5, 6), (6, 5)]);
+
+        // (0, 0)
+        let mut cells = World::get_cells(&Position { x: 0.0, y: 0.0 }, 1.0, (10, 10));
+        cells.sort();
+        assert_eq!(cells, vec![(0, 0), (0, 1), (1, 0)]);
+
+        // (0, 10)
+        let mut cells = World::get_cells(&Position { x: 0.0, y: 10.0 }, 1.0, (10, 10));
+        cells.sort();
+        assert_eq!(cells, vec![(0, 9), (0, 10), (1, 10)]);
+
+        // (10, 0)
+        let mut cells = World::get_cells(&Position { x: 10.0, y: 0.0 }, 1.0, (10, 10));
+        cells.sort();
+        assert_eq!(cells, vec![(9, 0), (10, 0), (10, 1)]);
+
+        // (10, 10)
+        let mut cells = World::get_cells(&Position { x: 10.0, y: 10.0 }, 1.0, (10, 10));
+        cells.sort();
+        assert_eq!(cells, vec![(9, 10), (10, 9), (10, 10)]);
     }
 }

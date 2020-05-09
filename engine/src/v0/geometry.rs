@@ -17,7 +17,7 @@ impl Position {
 }
 
 impl PositionAndDirection {
-    pub(crate) fn advance(&mut self, world_size: &(u16, u16)) {
+    pub(crate) fn advance(&mut self, world_size: (u16, u16)) {
         self.position.x += self.direction_rad.cos();
         self.position.y -= self.direction_rad.sin();
 
@@ -61,10 +61,10 @@ mod tests {
     #[test]
     fn test_normalize_angle() {
         approx::assert_ulps_eq!(normalize_angle(0.0), 0.0);
-        approx::assert_ulps_eq!(normalize_angle(3.14), 3.14);
+        approx::assert_ulps_eq!(normalize_angle(PI), PI);
         approx::assert_ulps_eq!(normalize_angle(6.28), 6.28);
-        approx::assert_ulps_eq!(normalize_angle(-3.14), 3.1431854);
-        approx::assert_ulps_eq!(normalize_angle(10.0), 3.7168145);
+        approx::assert_ulps_eq!(normalize_angle(-PI), PI);
+        approx::assert_ulps_eq!(normalize_angle(10.0), 3.716_814);
     }
 
     #[test]
@@ -72,7 +72,7 @@ mod tests {
         let p1 = Position { x: 1.0, y: 1.0 };
         let p2 = Position { x: 2.0, y: 2.0 };
         let p3 = Position { x: 2.0, y: 3.0 };
-        approx::assert_ulps_eq!(p1.distance(&p2), 1.4142135);
+        approx::assert_ulps_eq!(p1.distance(&p2), std::f32::consts::SQRT_2);
         approx::assert_ulps_eq!(p2.distance(&p3), 1.0);
     }
 
@@ -88,7 +88,7 @@ mod tests {
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance(&(20, 20));
+            p.advance((20, 20));
         };
 
         reset_position_direction(&mut pd, 0.0 * PI / 4.0);
@@ -98,8 +98,8 @@ mod tests {
 
         reset_position_direction(&mut pd, 1.0 * PI / 4.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 10.707107);
-        approx::assert_ulps_eq!(pd.position.y, 9.292893);
+        approx::assert_ulps_eq!(pd.position.x, 10.707_107);
+        approx::assert_ulps_eq!(pd.position.y, 9.292_893);
 
         reset_position_direction(&mut pd, 2.0 * PI / 4.0);
         advance(&mut pd);
@@ -108,8 +108,8 @@ mod tests {
 
         reset_position_direction(&mut pd, 3.0 * PI / 4.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 9.292893);
-        approx::assert_ulps_eq!(pd.position.y, 9.292893);
+        approx::assert_ulps_eq!(pd.position.x, 9.292_893);
+        approx::assert_ulps_eq!(pd.position.y, 9.292_893);
 
         reset_position_direction(&mut pd, 4.0 * PI / 4.0);
         advance(&mut pd);
@@ -118,8 +118,8 @@ mod tests {
 
         reset_position_direction(&mut pd, 5.0 * PI / 4.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 9.292893);
-        approx::assert_ulps_eq!(pd.position.y, 10.707107);
+        approx::assert_ulps_eq!(pd.position.x, 9.292_893);
+        approx::assert_ulps_eq!(pd.position.y, 10.707_107);
 
         reset_position_direction(&mut pd, 6.0 * PI / 4.0);
         advance(&mut pd);
@@ -128,8 +128,8 @@ mod tests {
 
         reset_position_direction(&mut pd, 7.0 * PI / 4.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 10.707107);
-        approx::assert_ulps_eq!(pd.position.x, 10.707107);
+        approx::assert_ulps_eq!(pd.position.x, 10.707_107);
+        approx::assert_ulps_eq!(pd.position.x, 10.707_107);
     }
 
     #[test]
@@ -144,19 +144,19 @@ mod tests {
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance(&(20, 20));
+            p.advance((20, 20));
         };
 
         reset_position_direction(&mut pd, 2.0 * PI / 3.0);
         advance(&mut pd);
         approx::assert_ulps_eq!(pd.position.x, 0.4);
-        approx::assert_ulps_eq!(pd.position.y, 9.133975);
+        approx::assert_ulps_eq!(pd.position.y, 9.133_975);
         approx::assert_ulps_eq!(pd.direction_rad, PI / 3.0);
 
         reset_position_direction(&mut pd, 5.0 * PI / 4.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 0.6071066);
-        approx::assert_ulps_eq!(pd.position.y, 10.707107);
+        approx::assert_ulps_eq!(pd.position.x, 0.607_106_6);
+        approx::assert_ulps_eq!(pd.position.y, 10.707_107);
         approx::assert_ulps_eq!(pd.direction_rad, 7.0 * PI / 4.0);
     }
 
@@ -172,18 +172,18 @@ mod tests {
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance(&(20, 20));
+            p.advance((20, 20));
         };
 
         reset_position_direction(&mut pd, PI / 4.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 19.392893);
-        approx::assert_ulps_eq!(pd.position.y, 9.292893);
+        approx::assert_ulps_eq!(pd.position.x, 19.392_893);
+        approx::assert_ulps_eq!(pd.position.y, 9.292_893);
         approx::assert_ulps_eq!(pd.direction_rad, 3.0 * PI / 4.0);
 
         reset_position_direction(&mut pd, 11.0 * PI / 6.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 19.233974);
+        approx::assert_ulps_eq!(pd.position.x, 19.233_974);
         approx::assert_ulps_eq!(pd.position.y, 10.5);
         approx::assert_ulps_eq!(pd.direction_rad, 7.0 * PI / 6.0);
     }
@@ -200,19 +200,19 @@ mod tests {
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance(&(20, 20));
+            p.advance((20, 20));
         };
 
         reset_position_direction(&mut pd, 5.0 * PI / 6.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 9.133974);
-        approx::assert_ulps_eq!(pd.position.y, 0.39999983);
+        approx::assert_ulps_eq!(pd.position.x, 9.133_974);
+        approx::assert_ulps_eq!(pd.position.y, 0.399_999_8);
         approx::assert_ulps_eq!(pd.direction_rad, 7.0 * PI / 6.0);
 
         reset_position_direction(&mut pd, PI / 3.0);
         advance(&mut pd);
         approx::assert_ulps_eq!(pd.position.x, 10.5);
-        approx::assert_ulps_eq!(pd.position.y, 0.7660254);
+        approx::assert_ulps_eq!(pd.position.y, 0.766_025_4);
         approx::assert_ulps_eq!(pd.direction_rad, 5.0 * PI / 3.0);
     }
 
@@ -228,19 +228,19 @@ mod tests {
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance(&(20, 20));
+            p.advance((20, 20));
         };
 
         reset_position_direction(&mut pd, 7.0 * PI / 6.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 9.133975);
+        approx::assert_ulps_eq!(pd.position.x, 9.133_975);
         approx::assert_ulps_eq!(pd.position.y, 19.6);
         approx::assert_ulps_eq!(pd.direction_rad, 5.0 * PI / 6.0);
 
         reset_position_direction(&mut pd, 7.0 * PI / 4.0);
         advance(&mut pd);
-        approx::assert_ulps_eq!(pd.position.x, 10.707107);
-        approx::assert_ulps_eq!(pd.position.y, 19.392895);
+        approx::assert_ulps_eq!(pd.position.x, 10.707_107);
+        approx::assert_ulps_eq!(pd.position.y, 19.392_895);
         approx::assert_ulps_eq!(pd.direction_rad, PI / 4.0);
     }
 }
