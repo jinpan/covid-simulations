@@ -44,7 +44,7 @@ impl Person {
 }
 
 pub(crate) struct World {
-    config: WorldConfig,
+    pub(crate) config: WorldConfig,
     tick: usize,
 
     pub(crate) people: Vec<Person>,
@@ -52,7 +52,7 @@ pub(crate) struct World {
     // TODO: don't create this map for worlds that don't require it.
     // TODO: consider combining patches together: instead of having a single f32 count per key,
     // use coarser keys and a dense matrix value.
-    background_viral_particles: Vec<Vec<f32>>,
+    pub(crate) background_viral_particles: Vec<Vec<f32>>,
 
     rng: Box<dyn RngCore>,
 }
@@ -142,11 +142,11 @@ impl World {
     }
     // Helper function for getting cells within a radius of the position
     fn get_cells(pos: &Position, radius: f32, world_size: (u16, u16)) -> Vec<(u16, u16)> {
-        let min_x = f32::max(0.0, pos.x - radius) as u16;
-        let max_x = f32::min(world_size.0 as f32 - 1.0, pos.x + radius) as u16;
+        let min_x = f32::max(0.0, pos.x - radius).round() as u16;
+        let max_x = f32::min(world_size.0 as f32 - 1.0, pos.x + radius).round() as u16;
 
-        let min_y = f32::max(0.0, pos.y - radius) as u16;
-        let max_y = f32::min(world_size.1 as f32 - 1.0, pos.y + radius) as u16;
+        let min_y = f32::max(0.0, pos.y - radius).round() as u16;
+        let max_y = f32::min(world_size.1 as f32 - 1.0, pos.y + radius).round() as u16;
 
         let mut cells = vec![];
         for x in min_x..=max_x {
@@ -212,7 +212,7 @@ impl World {
 
             World::get_cells(
                 &p.position_and_direction.position,
-                params.inhale_radius,
+                params.exhale_radius,
                 world_size,
             )
             .iter()
@@ -326,7 +326,7 @@ mod tests {
                 infectious_period_ticks: 5,
                 spread_parameters: DiseaseSpreadParameters::BackgroundViralParticle(
                     BackgroundViralParticleParams {
-                        exhale_radius: 5.0,
+                        exhale_radius: 3.0,
                         exhale_amount: 1.0,
                         decay_rate: 0.5,
                         inhale_radius: 3.0,

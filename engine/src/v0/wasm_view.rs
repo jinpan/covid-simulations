@@ -1,20 +1,21 @@
 // Provides wasm bindings for the v0 engine.
 use wasm_bindgen::prelude::*;
 
-use crate::v0::config::WorldConfig;
+use crate::v0::config::{DiseaseSpreadParameters, WorldConfig};
 use crate::v0::core::{DiseaseState, World};
 
 #[derive(Serialize)]
 pub struct Person {
-    pub id: String,
+    pub id: usize,
     pub px: f32,
     pub py: f32,
-    pub c: u32,
+    pub ds: String,
 }
 
 #[derive(Serialize)]
 pub struct State {
     pub people: Vec<Person>,
+    pub background_viral_particles: Vec<Vec<f32>>,
 }
 
 #[wasm_bindgen]
@@ -45,20 +46,33 @@ impl WorldView {
             .iter()
             .enumerate()
             .map(|(idx, p)| {
-                let color = match p.disease_state {
-                    DiseaseState::Susceptible => 0xff0000,
-                    DiseaseState::Infectious(_) => 0x00ff00,
-                    DiseaseState::Recovered => 0x0000ff,
+                let disease_state = match p.disease_state {
+                    DiseaseState::Susceptible => "susceptible",
+                    DiseaseState::Infectious(_) => "infectious",
+                    DiseaseState::Recovered => "recovered",
                 };
                 Person {
-                    id: format!("{}", idx),
+                    id: idx,
                     px: p.position_and_direction.position.x,
                     py: p.position_and_direction.position.y,
-                    c: color,
+                    ds: disease_state.to_string(),
                 }
             })
             .collect::<Vec<_>>();
-        let state = State { people };
+
+        let background_viral_particles =
+            match self.world.config.disease_parameters.spread_parameters {
+                DiseaseSpreadParameters::InfectionRadius(_) => vec![],
+                DiseaseSpreadParameters::BackgroundViralParticle(_) => {
+                    // TODO: downsample this.
+                    self.world.background_viral_particles.clone()
+                }
+            };
+
+        let state = State {
+            people,
+            background_viral_particles,
+        };
 
         JsValue::from_serde(&state).unwrap()
     }
