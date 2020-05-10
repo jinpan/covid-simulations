@@ -50,8 +50,6 @@ pub(crate) struct World {
     pub(crate) people: Vec<Person>,
 
     // TODO: don't create this map for worlds that don't require it.
-    // TODO: consider combining patches together: instead of having a single f32 count per key,
-    // use coarser keys and a dense matrix value.
     pub(crate) background_viral_particles: Vec<Vec<f32>>,
 
     rng: Box<dyn RngCore>,

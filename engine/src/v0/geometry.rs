@@ -1,8 +1,55 @@
+// Geometry-related utilities
+
+// TODO: consider using a third party library for this module
+// https://docs.rs/euclid/0.20.11/euclid/
+// https://docs.rs/ncollide2d/0.23.0/ncollide2d/
+// https://docs.rs/bracket-geometry/0.8.1/bracket_geometry/
+// Concerns are wasm compatibility / correctness / performance.
+
 use std::f32::consts::PI;
 
 pub(crate) struct Position {
     pub(crate) x: f32,
     pub(crate) y: f32,
+}
+
+#[derive(Debug, PartialEq, Ord, PartialOrd, Eq, Copy, Clone)]
+pub(crate) struct BoundingBox {
+    // Tuples are (row, col)
+    pub(crate) top_left: (usize, usize),
+    // The bounding box does not include the bottom_right
+    // Can be thought of as [top_left, bottom_right)
+    pub(crate) bottom_right: (usize, usize),
+}
+
+impl BoundingBox {
+    pub(crate) fn rows(&self) -> std::ops::Range<usize> {
+        self.top_left.0..self.bottom_right.0
+    }
+
+    pub(crate) fn cols(&self) -> std::ops::Range<usize> {
+        self.top_left.1..self.bottom_right.1
+    }
+
+    pub(crate) fn size(&self) -> usize {
+        let rows = self.bottom_right.0 - self.top_left.0;
+        let cols = self.bottom_right.1 - self.top_left.1;
+
+        rows * cols
+    }
+
+    pub(crate) fn scale(&self, factor: u8) -> Self {
+        BoundingBox {
+            top_left: (
+                self.top_left.0 * (factor as usize),
+                self.top_left.1 * (factor as usize),
+            ),
+            bottom_right: (
+                self.bottom_right.0 * (factor as usize),
+                self.bottom_right.1 * (factor as usize),
+            ),
+        }
+    }
 }
 
 pub(crate) struct PositionAndDirection {
@@ -57,6 +104,19 @@ pub(crate) fn normalize_angle(t: f32) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_bounding_box() {
+        let bb = BoundingBox {
+            top_left: (1, 2),
+            bottom_right: (6, 10),
+        };
+
+        assert_eq!(bb.rows(), 1..6);
+        assert_eq!(bb.cols(), 2..10);
+
+        assert_eq!(bb.size(), 40);
+    }
 
     #[test]
     fn test_normalize_angle() {
