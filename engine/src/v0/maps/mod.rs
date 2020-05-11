@@ -4,12 +4,12 @@ use crate::v0::geometry::BoundingBox;
 use anyhow::{anyhow, Result};
 use std::collections::HashSet;
 
-struct Household {
-    bounds: BoundingBox,
+pub(crate) struct Household {
+    pub(crate) bounds: BoundingBox,
 
-    num_people: u8,
+    pub(crate) num_people: u8,
 
-    supply_levels: f32,
+    pub(crate) supply_levels: f32,
 }
 
 struct Store {
@@ -24,15 +24,17 @@ pub struct Map {
     // Upper left is (0, 0)
     bounds: BoundingBox,
 
-    households: Vec<Household>,
+    pub(crate) households: Vec<Household>,
 
     roads: Vec<Road>,
 
     stores: Vec<Store>,
+
+    pub(crate) elements: Vec<Vec<MapElement>>,
 }
 
 #[derive(Debug, PartialEq)]
-enum MapElement {
+pub(crate) enum MapElement {
     Background,
     Household,
     Road,
@@ -175,9 +177,9 @@ impl Map {
             .into_iter()
             .map(|bb| Household {
                 bounds: bb.scale(scale_factor),
-                // TODO: stop hardcoding this as 2/0.
-                num_people: 2,
-                supply_levels: 0.0,
+                // TODO: stop hardcoding this as 1/300.
+                num_people: 1,
+                supply_levels: 300.0,
             })
             .collect();
 
@@ -205,6 +207,7 @@ impl Map {
             households,
             roads,
             stores,
+            elements: parsed_ascii_map,
         })
     }
 }

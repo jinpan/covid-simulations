@@ -4,10 +4,10 @@ use crate::v0::config::*;
 use crate::v0::disease_spread::{
     BackgroundViralParticleDiseaseSpreader, DiseaseSpreader, InfectionRadiusDiseaseSpreader,
 };
-use crate::v0::geometry::{Position, PositionAndDirection};
+use crate::v0::geometry::Position;
 use crate::v0::maps;
+use crate::v0::person_behavior::{BrownianMotionBehavior, PersonBehavior, ShopperBehavior};
 use rand::{Rng, RngCore};
-use std::f32::consts::PI;
 
 #[derive(PartialEq, Debug)]
 pub(crate) enum DiseaseState {
@@ -20,33 +20,11 @@ pub(crate) enum DiseaseState {
 
 pub(crate) struct Person {
     pub(crate) disease_state: DiseaseState,
-    pub(crate) position_and_direction: PositionAndDirection,
-}
+    pub(crate) position: Position,
 
-impl Person {
-    fn try_infect(&mut self, tick: usize) {
-        match self.disease_state {
-            DiseaseState::Susceptible => self.disease_state = DiseaseState::Infectious(tick),
-            DiseaseState::Infectious(_) => {}
-            DiseaseState::Recovered => {
-                // For now, assume a simple SIR model where recovered cannot transition back to
-                // Susceptible.
-            }
-        }
-    }
-
-    fn distance(&self, other: &Person) -> f32 {
-        let p1 = &self.position_and_direction.position;
-        let p2 = &other.position_and_direction.position;
-
-        p1.distance(p2)
-    }
-
-    // Advance the position of the person by 1, and bounce off of the boundaries
-    // of the world.
-    fn update_position(&mut self, world_size: (u16, u16)) {
-        self.position_and_direction.advance(world_size);
-    }
+    // Index into the map's household for the person if the map exists.
+    // Otherwise, 0.
+    pub(crate) household_idx: usize,
 }
 
 pub(crate) struct World {
@@ -58,6 +36,7 @@ pub(crate) struct World {
 
     // TODO: refactor for static dispatch
     pub(crate) disease_spreader: Box<dyn DiseaseSpreader>,
+    pub(crate) person_behavior: Box<dyn PersonBehavior>,
 
     rng: Box<dyn RngCore>,
 }
@@ -66,10 +45,12 @@ impl World {
     pub(crate) fn new(
         mut rng: Box<dyn RngCore>,
         config: WorldConfig,
-        map: Option<maps::Map>,
+        maybe_map: Option<maps::Map>,
     ) -> Self {
         assert!(config.num_people >= config.num_initially_infected);
 
+        let mut current_household_idx = 0;
+        let mut people_in_current_household = 0;
         let people = (0..config.num_people)
             .map(|i| {
                 let disease_state = if i < config.num_initially_infected {
@@ -78,17 +59,35 @@ impl World {
                     DiseaseState::Susceptible
                 };
 
-                let x = rng.gen_range(0.0, config.size.0 as f32);
-                let y = rng.gen_range(0.0, config.size.1 as f32);
+                let x: f32;
+                let y: f32;
 
-                let direction_rad = rng.gen_range(0.0, 2.0 * PI);
+                if let Some(map) = &maybe_map {
+                    let household = &map.households[current_household_idx];
+                    if people_in_current_household == household.num_people {
+                        current_household_idx += 1;
+                        people_in_current_household = 0;
+                    }
+                    people_in_current_household += 1;
+
+                    let household = &map.households[current_household_idx];
+                    x = rng.gen_range(
+                        household.bounds.top_left.1 as f32,
+                        household.bounds.bottom_right.1 as f32,
+                    );
+                    y = rng.gen_range(
+                        household.bounds.top_left.0 as f32,
+                        household.bounds.bottom_right.0 as f32,
+                    );
+                } else {
+                    x = rng.gen_range(0.0, config.size.0 as f32);
+                    y = rng.gen_range(0.0, config.size.1 as f32);
+                }
 
                 Person {
                     disease_state,
-                    position_and_direction: PositionAndDirection {
-                        position: Position { x, y },
-                        direction_rad,
-                    },
+                    position: Position { x, y },
+                    household_idx: current_household_idx,
                 }
             })
             .collect();
@@ -104,12 +103,26 @@ impl World {
                 ),
             };
 
+        let person_behavior: Box<dyn PersonBehavior> = match config.behavior_parameters {
+            BehaviorParameters::BrownianMotion => Box::new(BrownianMotionBehavior::new(
+                config.size,
+                config.num_people,
+                &mut rng,
+            )),
+            BehaviorParameters::Shopper => Box::new(ShopperBehavior::new(
+                config.size,
+                config.num_people,
+                &mut rng,
+            )),
+        };
+
         World {
             config,
-            map,
+            map: maybe_map,
             tick: 0,
             people,
             disease_spreader,
+            person_behavior,
             rng,
         }
     }
@@ -120,9 +133,8 @@ impl World {
 
         // Step 1: advance all the people
         let size = self.config.size;
-        self.people.iter_mut().for_each(|p| {
-            p.update_position(size);
-        });
+        self.person_behavior
+            .update_positions(&mut self.people, &mut self.map);
 
         // Step 2: advance infectious states to recovered
         let disease_parameters = &self.config.disease_parameters;
@@ -179,7 +191,8 @@ mod tests {
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[2] = DiseaseState::Infectious(1);
+        expected_disease_states[3] = DiseaseState::Infectious(1);
+        expected_disease_states[4] = DiseaseState::Infectious(1);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
@@ -189,10 +202,10 @@ mod tests {
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[2] = DiseaseState::Infectious(4);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[4] = DiseaseState::Infectious(5);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
@@ -201,20 +214,18 @@ mod tests {
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[2] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
+        expected_disease_states[3] = DiseaseState::Recovered;
         expected_disease_states[4] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[2] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
     }
 
@@ -255,17 +266,18 @@ mod tests {
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[2] = DiseaseState::Infectious(2);
+        expected_disease_states[3] = DiseaseState::Infectious(2);
+        expected_disease_states[4] = DiseaseState::Infectious(2);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[2] = DiseaseState::Infectious(4);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[4] = DiseaseState::Infectious(5);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
@@ -274,20 +286,10 @@ mod tests {
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[3] = DiseaseState::Infectious(7);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[2] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
+        expected_disease_states[3] = DiseaseState::Recovered;
         expected_disease_states[4] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
 
@@ -295,7 +297,7 @@ mod tests {
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[3] = DiseaseState::Recovered;
+        expected_disease_states[2] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
     }
 }

@@ -52,47 +52,70 @@ impl BoundingBox {
     }
 }
 
-pub(crate) struct PositionAndDirection {
-    pub(crate) position: Position,
-    pub(crate) direction_rad: f32,
-}
-
 impl Position {
     pub(crate) fn distance(&self, other: &Position) -> f32 {
         ((self.x - other.x) * (self.x - other.x) + (self.y - other.y) * (self.y - other.y)).sqrt()
     }
-}
 
-impl PositionAndDirection {
-    pub(crate) fn advance(&mut self, world_size: (u16, u16)) {
-        self.position.x += self.direction_rad.cos();
-        self.position.y -= self.direction_rad.sin();
+    pub(crate) fn advance2(&mut self, direction_rad: &mut f32, bounding_box: &BoundingBox) {
+        self.x += direction_rad.cos();
+        self.y -= direction_rad.sin();
 
-        if self.position.x < 0.0 {
-            self.position.x = -self.position.x;
-            self.direction_rad = normalize_angle(PI - self.direction_rad);
+        let top_boundary = bounding_box.top_left.0 as f32;
+        let left_boundary = bounding_box.top_left.1 as f32;
+        let bottom_boundary = bounding_box.bottom_right.0 as f32;
+        let right_boundary = bounding_box.bottom_right.1 as f32;
+
+        if self.x < left_boundary {
+            self.x = 2.0 * left_boundary - self.x;
+            *direction_rad = normalize_angle(PI - *direction_rad);
+        }
+
+        if self.x > right_boundary {
+            self.x = 2.0 * right_boundary - self.x;
+            *direction_rad = normalize_angle(PI - *direction_rad);
+        }
+
+        if self.y < top_boundary {
+            self.y = 2.0 * top_boundary - self.y;
+            *direction_rad = normalize_angle(-*direction_rad);
+        }
+
+        if self.y > bottom_boundary {
+            self.y = 2.0 * bottom_boundary - self.y;
+            *direction_rad = normalize_angle(-*direction_rad);
+        }
+    }
+
+    pub(crate) fn advance(&mut self, direction_rad: &mut f32, world_size: (u16, u16)) {
+        self.x += direction_rad.cos();
+        self.y -= direction_rad.sin();
+
+        if self.x < 0.0 {
+            self.x = -self.x;
+            *direction_rad = normalize_angle(PI - *direction_rad);
         }
 
         let right_boundary = world_size.0 as f32;
-        if self.position.x > right_boundary {
-            self.position.x = 2.0 * right_boundary - self.position.x;
-            self.direction_rad = normalize_angle(PI - self.direction_rad);
+        if self.x > right_boundary {
+            self.x = 2.0 * right_boundary - self.x;
+            *direction_rad = normalize_angle(PI - *direction_rad);
         }
 
-        if self.position.y < 0.0 {
-            self.position.y = -self.position.y;
-            self.direction_rad = normalize_angle(-self.direction_rad);
+        if self.y < 0.0 {
+            self.y = -self.y;
+            *direction_rad = normalize_angle(-*direction_rad);
         }
 
         let bottom_boundary = world_size.1 as f32;
-        if self.position.y > bottom_boundary {
-            self.position.y = 2.0 * bottom_boundary - self.position.y;
-            self.direction_rad = normalize_angle(-self.direction_rad);
+        if self.y > bottom_boundary {
+            self.y = 2.0 * bottom_boundary - self.y;
+            *direction_rad = normalize_angle(-*direction_rad);
         }
     }
 }
 
-pub(crate) fn normalize_angle(t: f32) -> f32 {
+fn normalize_angle(t: f32) -> f32 {
     let rem = t % (2.0 * PI);
     if rem < 0. {
         2.0 * PI + rem
@@ -134,6 +157,17 @@ mod tests {
         let p3 = Position { x: 2.0, y: 3.0 };
         approx::assert_ulps_eq!(p1.distance(&p2), std::f32::consts::SQRT_2);
         approx::assert_ulps_eq!(p2.distance(&p3), 1.0);
+    }
+
+    struct PositionAndDirection {
+        pub(crate) position: Position,
+        pub(crate) direction_rad: f32,
+    }
+
+    impl PositionAndDirection {
+        fn advance(&mut self, world_size: (u16, u16)) {
+            self.position.advance(&mut self.direction_rad, world_size);
+        }
     }
 
     #[test]

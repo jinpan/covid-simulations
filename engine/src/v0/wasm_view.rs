@@ -54,8 +54,8 @@ impl WorldView {
                 };
                 Person {
                     id: idx,
-                    px: p.position_and_direction.position.x,
-                    py: p.position_and_direction.position.y,
+                    px: p.position.x,
+                    py: p.position.y,
                     ds: disease_state.to_string(),
                 }
             })

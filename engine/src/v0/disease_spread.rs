@@ -30,10 +30,10 @@ impl DiseaseSpreader for InfectionRadiusDiseaseSpreader {
         for i in 0..(people.len() - 1) {
             let (left, right) = people.split_at_mut(i + 1);
             let p0 = left.last_mut().unwrap();
-            let p0_position = &p0.position_and_direction.position;
+            let p0_position = &p0.position;
 
             for p1 in right.iter_mut() {
-                let p1_position = &p1.position_and_direction.position;
+                let p1_position = &p1.position;
 
                 if p0_position.distance(p1_position) >= self.radius {
                     continue;
@@ -121,14 +121,10 @@ impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
                 continue;
             }
 
-            let particles_inhaled = Self::get_cells(
-                &p.position_and_direction.position,
-                params.inhale_radius,
-                world_size,
-            )
-            .iter()
-            .map(|(x, y)| background_viral_particles[*y as usize][*x as usize])
-            .sum::<f32>();
+            let particles_inhaled = Self::get_cells(&p.position, params.inhale_radius, world_size)
+                .iter()
+                .map(|(x, y)| background_viral_particles[*y as usize][*x as usize])
+                .sum::<f32>();
             let infection_risk = particles_inhaled * params.infection_risk_per_particle;
 
             if rng.gen::<f32>() > infection_risk {
@@ -144,15 +140,11 @@ impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
                 continue;
             }
 
-            Self::get_cells(
-                &p.position_and_direction.position,
-                params.exhale_radius,
-                world_size,
-            )
-            .iter()
-            .for_each(|(x, y)| {
-                background_viral_particles[*y as usize][*x as usize] += params.exhale_amount;
-            });
+            Self::get_cells(&p.position, params.exhale_radius, world_size)
+                .iter()
+                .for_each(|(x, y)| {
+                    background_viral_particles[*y as usize][*x as usize] += params.exhale_amount;
+                });
         }
     }
 

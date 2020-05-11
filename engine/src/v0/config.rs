@@ -49,6 +49,9 @@ pub struct DiseaseParameters {
 pub enum BehaviorParameters {
     #[serde(rename = "brownian_motion")]
     BrownianMotion,
+
+    #[serde(rename = "shopper")]
+    Shopper,
 }
 
 #[derive(Deserialize, Debug)]
