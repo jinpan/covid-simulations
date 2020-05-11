@@ -1,6 +1,6 @@
 // Contains configuration files for the v0 engine.
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Copy, Clone)]
 pub struct BackgroundViralParticleParams {
     // How far an infected person spreads background particles
     // TODO: this should vary as a function of PPE.
@@ -46,8 +46,15 @@ pub struct DiseaseParameters {
 }
 
 #[derive(Deserialize, Debug)]
+pub enum BehaviorParameters {
+    #[serde(rename = "brownian_motion")]
+    BrownianMotion,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct WorldConfig {
     pub disease_parameters: DiseaseParameters,
+    pub behavior_parameters: BehaviorParameters,
     pub size: (u16, u16),
     pub num_people: usize,
     pub num_initially_infected: usize,

@@ -15,13 +15,16 @@ import * as THREE from 'three';
           "decay_rate": 0.05,
           "inhale_radius": 5,
           "infection_risk_per_particle": 0.00004,
-        }
+        },
       },
     },
+
+    "behavior_parameters": "brownian_motion",
+
     "size": [600, 400],
     "num_people": 200,
     "num_initially_infected": 1,
-  });
+  }, "");
 
   let color_map = {
     "susceptible": 0xa8e6cf,

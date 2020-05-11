@@ -3,6 +3,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::v0::config::{DiseaseSpreadParameters, WorldConfig};
 use crate::v0::core::{DiseaseState, World};
+use crate::v0::maps;
 
 #[derive(Serialize)]
 pub struct Person {
@@ -24,10 +25,10 @@ pub struct WorldView {
 }
 
 impl WorldView {
-    pub fn new(config: WorldConfig) -> Self {
+    pub fn new(config: WorldConfig, map: Option<maps::Map>) -> Self {
         let rng = Box::new(rand::thread_rng());
 
-        let world = World::new(rng, config);
+        let world = World::new(rng, config, map);
 
         WorldView { world }
     }
@@ -65,7 +66,7 @@ impl WorldView {
                 DiseaseSpreadParameters::InfectionRadius(_) => vec![],
                 DiseaseSpreadParameters::BackgroundViralParticle(_) => {
                     // TODO: downsample this.
-                    self.world.background_viral_particles.clone()
+                    self.world.disease_spreader.get_background_viral_levels(1)
                 }
             };
 

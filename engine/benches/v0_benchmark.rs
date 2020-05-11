@@ -2,7 +2,8 @@ extern crate engine;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use engine::v0::config::{
-    BackgroundViralParticleParams, DiseaseParameters, DiseaseSpreadParameters, WorldConfig,
+    BackgroundViralParticleParams, BehaviorParameters, DiseaseParameters, DiseaseSpreadParameters,
+    WorldConfig,
 };
 use engine::v0::wasm_view::WorldView;
 
@@ -12,12 +13,13 @@ fn run_infection_radius_spread() {
             infectious_period_ticks: 10 * 60,
             spread_parameters: DiseaseSpreadParameters::InfectionRadius(5.0),
         },
+        behavior_parameters: BehaviorParameters::BrownianMotion,
         size: (600, 400),
         num_people: 200,
         num_initially_infected: 1,
     };
 
-    let mut world = WorldView::new(world_config);
+    let mut world = WorldView::new(world_config, None);
 
     for _ in 0..1800 {
         world.step();
@@ -38,12 +40,13 @@ fn run_viral_particle_spread() {
                 },
             ),
         },
+        behavior_parameters: BehaviorParameters::BrownianMotion,
         size: (600, 400),
         num_people: 200,
         num_initially_infected: 1,
     };
 
-    let mut world = WorldView::new(world_config);
+    let mut world = WorldView::new(world_config, None);
 
     for _ in 0..1800 {
         world.step();
