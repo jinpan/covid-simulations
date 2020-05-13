@@ -9,7 +9,7 @@ use rand_core::RngCore;
 pub(crate) trait DiseaseSpreader {
     fn spread(&mut self, tick: usize, rng: &mut dyn RngCore, people: &mut [Person]);
 
-    fn get_background_viral_levels(&self, _scale_factor: u8) -> Vec<Vec<f32>> {
+    fn get_background_viral_levels(&self) -> &Vec<Vec<f32>> {
         unimplemented!()
     }
 }
@@ -109,7 +109,11 @@ impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
         let viral_particle_survival_rate = 1.0 - params.decay_rate;
         for row in background_viral_particles.iter_mut() {
             for val in row.iter_mut() {
-                *val *= viral_particle_survival_rate;
+                if *val > f32::MIN_POSITIVE {
+                    // Without this branch, performance slows down significantly in the browser.
+                    // Unclear why.
+                    *val *= viral_particle_survival_rate;
+                }
             }
         }
 
@@ -123,6 +127,10 @@ impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
 
             let particles_inhaled =
                 background_viral_particles[p.position.y as usize][p.position.x as usize] as f32;
+            if particles_inhaled <= f32::MIN_POSITIVE {
+                continue;
+            }
+
             let infection_risk = particles_inhaled * params.infection_risk_per_particle;
 
             if rng.gen::<f32>() > infection_risk {
@@ -146,11 +154,8 @@ impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
         }
     }
 
-    fn get_background_viral_levels(&self, scale_factor: u8) -> Vec<Vec<f32>> {
-        if scale_factor != 1 {
-            unimplemented!("TODO: support downsampling");
-        }
-        self.background_viral_particles.clone()
+    fn get_background_viral_levels(&self) -> &Vec<Vec<f32>> {
+        &self.background_viral_particles
     }
 }
 

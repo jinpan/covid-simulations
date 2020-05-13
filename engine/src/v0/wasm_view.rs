@@ -42,13 +42,21 @@ pub struct State {
 #[wasm_bindgen]
 pub struct WorldView {
     world: World,
+
+    background_viral_particles: Vec<f32>,
 }
 
 impl WorldView {
     pub fn new(config: WorldConfig, map: Option<maps::Map>, rng: Box<dyn RngCore>) -> Self {
         let world = World::new(rng, config, map);
 
-        WorldView { world }
+        let background_viral_particles =
+            Vec::with_capacity(world.config.size.0 as usize * world.config.size.1 as usize);
+
+        WorldView {
+            world,
+            background_viral_particles,
+        }
     }
 }
 
@@ -83,35 +91,39 @@ impl WorldView {
         JsValue::from_serde(&state).unwrap()
     }
 
-    pub fn get_background_viral_particles(&self) -> JsValue {
+    pub fn get_background_viral_particles(&self) -> Vec<f32> {
         let background_viral_particles =
             match self.world.config.disease_parameters.spread_parameters {
                 DiseaseSpreadParameters::InfectionRadius(_) => vec![],
                 DiseaseSpreadParameters::BackgroundViralParticle(_) => {
                     // TODO: downsample this.
-                    self.world.disease_spreader.get_background_viral_levels(1)
+                    self.world
+                        .disease_spreader
+                        .get_background_viral_levels()
+                        .clone()
                 }
             };
 
-        JsValue::from_serde(&background_viral_particles).unwrap()
-    }
-
-    pub fn get_background_viral_particles2(&self) -> Vec<f32> {
-        let background_viral_particles =
-            match self.world.config.disease_parameters.spread_parameters {
-                DiseaseSpreadParameters::InfectionRadius(_) => vec![],
-                DiseaseSpreadParameters::BackgroundViralParticle(_) => {
-                    // TODO: downsample this.
-                    self.world.disease_spreader.get_background_viral_levels(1)
-                }
-            };
-
-        let mut flat_particles = Vec::new();
+        let mut flat_particles = vec![];
         for row in background_viral_particles {
             flat_particles.extend(row);
         }
 
         flat_particles
+    }
+
+    pub fn get_background_viral_particles2(&mut self) -> *const f32 {
+        self.background_viral_particles.clear();
+        match self.world.config.disease_parameters.spread_parameters {
+            DiseaseSpreadParameters::InfectionRadius(_) => {}
+            DiseaseSpreadParameters::BackgroundViralParticle(_) => {
+                for row in self.world.disease_spreader.get_background_viral_levels() {
+                    self.background_viral_particles.extend(row);
+                }
+            }
+        };
+
+        &self.background_viral_particles[0]
     }
 
     pub fn get_bounding_boxes(&self) -> JsValue {

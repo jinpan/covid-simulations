@@ -270,14 +270,13 @@ mod tests {
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
         world.step();
+        expected_disease_states[3] = DiseaseState::Infectious(2);
+        expected_disease_states[4] = DiseaseState::Infectious(2);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[4] = DiseaseState::Infectious(3);
         check_disease_states(&world.people, &expected_disease_states);
-
         world.step();
-        expected_disease_states[3] = DiseaseState::Infectious(4);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
@@ -291,15 +290,15 @@ mod tests {
 
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[3] = DiseaseState::Recovered;
         expected_disease_states[4] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[3] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+        world.step();
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
