@@ -13,6 +13,14 @@
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
     <script src="./bootstrap.js"></script>
 
+    <button id="main-canvas-start">Start</button>
+    <button id="main-canvas-reset">Reset</button>
+    <span>Speed:
+      <button class="main-canvas-speed" data-speed="1" style="font-weight: bold" disabled>1x</button>
+      <button class="main-canvas-speed" data-speed="2">2x</button>
+      <button class="main-canvas-speed" data-speed="4">4x</button>
+      <button class="main-canvas-speed" data-speed="8">8x</button>
+    </span>
     <canvas
        id="main-canvas"
        width="600" height="400"

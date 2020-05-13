@@ -31,5 +31,6 @@ pub fn create_world(config: &JsValue, map_name: &str) -> WorldView {
         _ => panic!("Unknown map <{}>", map_name),
     };
 
-    WorldView::new(world_config, map)
+    let rng = Box::new(rand::thread_rng());
+    WorldView::new(world_config, map, rng)
 }

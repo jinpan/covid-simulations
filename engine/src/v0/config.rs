@@ -17,13 +17,6 @@ pub struct BackgroundViralParticleParams {
     // deactivated.
     pub decay_rate: f32,
 
-    // How far a person inhales particles from.
-    // TODO: this should vary as a function of PPE.
-    pub inhale_radius: f32,
-
-    // TODO: add a parameter for inhale density function: the amount of particles inhaled should
-    // not be uniform across the circle.
-
     // Probability per inhaled viral particle per tick that a susceptible person becomes
     // infected.
     pub infection_risk_per_particle: f32,

@@ -1,4 +1,4 @@
-pub(crate) mod simple_groceries;
+pub mod simple_groceries;
 
 use crate::v0::geometry::BoundingBox;
 use anyhow::{anyhow, Result};
@@ -8,32 +8,29 @@ pub(crate) struct Household {
     pub(crate) bounds: BoundingBox,
 
     pub(crate) num_people: u8,
-
-    pub(crate) supply_levels: f32,
 }
 
-struct Store {
-    bounds: BoundingBox,
+pub(crate) struct Store {
+    pub(crate) bounds: BoundingBox,
 }
 
-struct Road {
-    bounds: BoundingBox,
+pub(crate) struct Road {
+    pub(crate) bounds: BoundingBox,
 }
 
 pub struct Map {
     // Upper left is (0, 0)
-    bounds: BoundingBox,
-
     pub(crate) households: Vec<Household>,
 
-    roads: Vec<Road>,
+    pub(crate) roads: Vec<Road>,
 
-    stores: Vec<Store>,
+    pub(crate) stores: Vec<Store>,
 
-    pub(crate) elements: Vec<Vec<MapElement>>,
+    scale_factor: u8,
+    elements: Vec<Vec<MapElement>>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub(crate) enum MapElement {
     Background,
     Household,
@@ -57,6 +54,7 @@ impl Map {
                     })
                     .collect::<Result<Vec<_>>>()
             })
+            .rev()
             .collect::<Result<Vec<Vec<_>>>>()?;
 
         // Validate that the parsed map is non-empty and rectangular.
@@ -169,7 +167,7 @@ impl Map {
         boxes
     }
 
-    pub(crate) fn load_from_ascii_str(scale_factor: u8, s: &str) -> Result<Self> {
+    pub fn load_from_ascii_str(scale_factor: u8, s: &str) -> Result<Self> {
         let parsed_ascii_map = Self::load_lines(s)?;
 
         let household_boxes = Self::get_bounding_boxes(&parsed_ascii_map, MapElement::Household);
@@ -177,9 +175,8 @@ impl Map {
             .into_iter()
             .map(|bb| Household {
                 bounds: bb.scale(scale_factor),
-                // TODO: stop hardcoding this as 1/300.
-                num_people: 1,
-                supply_levels: 300.0,
+                // TODO: load this from some parameter file.
+                num_people: 2,
             })
             .collect();
 
@@ -200,15 +197,16 @@ impl Map {
             .collect();
 
         Ok(Map {
-            bounds: BoundingBox {
-                top_left: (0, 0),
-                bottom_right: (0, 0),
-            },
             households,
             roads,
             stores,
+            scale_factor,
             elements: parsed_ascii_map,
         })
+    }
+
+    pub(crate) fn get_element(&self, row: usize, col: usize) -> MapElement {
+        self.elements[row / self.scale_factor as usize][col / self.scale_factor as usize]
     }
 }
 
@@ -228,47 +226,15 @@ mod tests {
             .map(|household| household.bounds)
             .sorted()
             .collect::<Vec<_>>();
-        assert_eq!(household_bounds.len(), 55);
+        assert_eq!(household_bounds.len(), 54);
         let household_sizes = household_bounds
             .iter()
             .map(|bb| bb.size())
             .collect::<counter::Counter<_>>();
-        assert_eq!(household_sizes.len(), 3);
-        assert_eq!(household_sizes[&6], 8);
-        assert_eq!(household_sizes[&9], 44);
-        assert_eq!(household_sizes[&12], 3);
+        assert_eq!(household_sizes.len(), 1);
+        assert_eq!(household_sizes[&9], 54);
 
-        let road_bounds = sg_map
-            .roads
-            .iter()
-            .map(|road| road.bounds)
-            .sorted()
-            .collect::<Vec<_>>();
-        assert_eq!(
-            road_bounds,
-            vec![
-                BoundingBox {
-                    top_left: (0, 4),
-                    bottom_right: (40, 5),
-                },
-                BoundingBox {
-                    top_left: (0, 55),
-                    bottom_right: (40, 56),
-                },
-                BoundingBox {
-                    top_left: (4, 0),
-                    bottom_right: (5, 60),
-                },
-                BoundingBox {
-                    top_left: (30, 29),
-                    bottom_right: (36, 31),
-                },
-                BoundingBox {
-                    top_left: (35, 0),
-                    bottom_right: (36, 60),
-                },
-            ]
-        );
+        assert_eq!(sg_map.roads.len(), 37);
 
         let store_bounds = sg_map
             .stores
@@ -279,8 +245,8 @@ mod tests {
         assert_eq!(
             store_bounds,
             vec![BoundingBox {
-                top_left: (10, 15),
-                bottom_right: (30, 45),
+                top_left: (10, 10),
+                bottom_right: (30, 50),
             }]
         );
 

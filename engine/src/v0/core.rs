@@ -19,17 +19,19 @@ pub(crate) enum DiseaseState {
 }
 
 pub(crate) struct Person {
+    pub(crate) id: usize,
     pub(crate) disease_state: DiseaseState,
     pub(crate) position: Position,
 
     // Index into the map's household for the person if the map exists.
     // Otherwise, 0.
     pub(crate) household_idx: usize,
+    pub(crate) head_of_household: bool,
 }
 
 pub(crate) struct World {
     pub(crate) config: WorldConfig,
-    map: Option<maps::Map>,
+    pub(crate) map: Option<maps::Map>,
     tick: usize,
 
     pub(crate) people: Vec<Person>,
@@ -85,9 +87,11 @@ impl World {
                 }
 
                 Person {
+                    id: i,
                     disease_state,
                     position: Position { x, y },
                     household_idx: current_household_idx,
+                    head_of_household: people_in_current_household == 1,
                 }
             })
             .collect();
@@ -112,6 +116,9 @@ impl World {
             BehaviorParameters::Shopper => Box::new(ShopperBehavior::new(
                 config.size,
                 config.num_people,
+                maybe_map
+                    .as_ref()
+                    .expect("must have map for shopper behavior"),
                 &mut rng,
             )),
         };
@@ -132,9 +139,8 @@ impl World {
         let tick = self.tick;
 
         // Step 1: advance all the people
-        let size = self.config.size;
         self.person_behavior
-            .update_positions(&mut self.people, &mut self.map);
+            .update_positions(&mut self.people, &mut self.map, &mut self.rng);
 
         // Step 2: advance infectious states to recovered
         let disease_parameters = &self.config.disease_parameters;
@@ -237,11 +243,10 @@ mod tests {
                 infectious_period_ticks: 5,
                 spread_parameters: DiseaseSpreadParameters::BackgroundViralParticle(
                     BackgroundViralParticleParams {
-                        exhale_radius: 3.0,
+                        exhale_radius: 4.0,
                         exhale_amount: 1.0,
                         decay_rate: 0.5,
-                        inhale_radius: 3.0,
-                        infection_risk_per_particle: 0.5,
+                        infection_risk_per_particle: 0.8,
                     },
                 ),
             },
@@ -264,20 +269,19 @@ mod tests {
 
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[3] = DiseaseState::Infectious(2);
-        expected_disease_states[4] = DiseaseState::Infectious(2);
-        check_disease_states(&world.people, &expected_disease_states);
-
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[2] = DiseaseState::Infectious(4);
+        expected_disease_states[4] = DiseaseState::Infectious(3);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[3] = DiseaseState::Infectious(4);
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[2] = DiseaseState::Infectious(5);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
@@ -287,13 +291,15 @@ mod tests {
 
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
+        world.step();
+        check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[3] = DiseaseState::Recovered;
         expected_disease_states[4] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[3] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();

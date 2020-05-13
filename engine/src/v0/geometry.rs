@@ -8,6 +8,7 @@
 
 use std::f32::consts::PI;
 
+#[derive(Debug)]
 pub(crate) struct Position {
     pub(crate) x: f32,
     pub(crate) y: f32,
@@ -29,13 +30,6 @@ impl BoundingBox {
 
     pub(crate) fn cols(&self) -> std::ops::Range<usize> {
         self.top_left.1..self.bottom_right.1
-    }
-
-    pub(crate) fn size(&self) -> usize {
-        let rows = self.bottom_right.0 - self.top_left.0;
-        let cols = self.bottom_right.1 - self.top_left.1;
-
-        rows * cols
     }
 
     pub(crate) fn scale(&self, factor: u8) -> Self {
@@ -74,6 +68,8 @@ impl Position {
         if self.x > right_boundary {
             self.x = 2.0 * right_boundary - self.x;
             *direction_rad = normalize_angle(PI - *direction_rad);
+        } else if self.x == right_boundary {
+            self.x -= 0.01;
         }
 
         if self.y < top_boundary {
@@ -84,34 +80,19 @@ impl Position {
         if self.y > bottom_boundary {
             self.y = 2.0 * bottom_boundary - self.y;
             *direction_rad = normalize_angle(-*direction_rad);
+        } else if self.y == bottom_boundary {
+            self.y -= 0.01;
         }
     }
 
     pub(crate) fn advance(&mut self, direction_rad: &mut f32, world_size: (u16, u16)) {
-        self.x += direction_rad.cos();
-        self.y -= direction_rad.sin();
-
-        if self.x < 0.0 {
-            self.x = -self.x;
-            *direction_rad = normalize_angle(PI - *direction_rad);
-        }
-
-        let right_boundary = world_size.0 as f32;
-        if self.x > right_boundary {
-            self.x = 2.0 * right_boundary - self.x;
-            *direction_rad = normalize_angle(PI - *direction_rad);
-        }
-
-        if self.y < 0.0 {
-            self.y = -self.y;
-            *direction_rad = normalize_angle(-*direction_rad);
-        }
-
-        let bottom_boundary = world_size.1 as f32;
-        if self.y > bottom_boundary {
-            self.y = 2.0 * bottom_boundary - self.y;
-            *direction_rad = normalize_angle(-*direction_rad);
-        }
+        self.advance2(
+            direction_rad,
+            &BoundingBox {
+                top_left: (0, 0),
+                bottom_right: (world_size.1 as usize, world_size.0 as usize),
+            },
+        )
     }
 }
 
@@ -127,6 +108,15 @@ fn normalize_angle(t: f32) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    impl BoundingBox {
+        pub(crate) fn size(&self) -> usize {
+            let rows = self.bottom_right.0 - self.top_left.0;
+            let cols = self.bottom_right.1 - self.top_left.1;
+
+            rows * cols
+        }
+    }
 
     #[test]
     fn test_bounding_box() {
