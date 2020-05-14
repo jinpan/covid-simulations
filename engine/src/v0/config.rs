@@ -33,6 +33,7 @@ pub enum DiseaseSpreadParameters {
 
 #[derive(Deserialize, Debug)]
 pub struct DiseaseParameters {
+    pub exposed_period_ticks: usize,
     pub infectious_period_ticks: usize,
 
     pub spread_parameters: DiseaseSpreadParameters,

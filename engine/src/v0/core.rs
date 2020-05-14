@@ -11,9 +11,8 @@ use rand::{Rng, RngCore};
 
 #[derive(PartialEq, Debug)]
 pub(crate) enum DiseaseState {
-    // TODO: update this to a SEIR model
     Susceptible,
-    // Exposed(usize), // Tick of when the person was exposed
+    Exposed(usize),    // Tick of when the person was exposed
     Infectious(usize), // Tick of when the person was infected
     Recovered,
 }
@@ -32,7 +31,7 @@ pub(crate) struct Person {
 pub(crate) struct World {
     pub(crate) config: WorldConfig,
     pub(crate) map: Option<maps::Map>,
-    tick: usize,
+    pub(crate) tick: usize,
 
     pub(crate) people: Vec<Person>,
 
@@ -142,19 +141,27 @@ impl World {
         self.person_behavior
             .update_positions(&mut self.people, &mut self.map, &mut self.rng);
 
-        // Step 2: advance infectious states to recovered
+        // Step 2: Update disease state according to the spread model.
+        self.disease_spreader
+            .spread(tick, &mut self.rng, &mut self.people);
+
+        // Step 3: Update time-based disease states:
+        //   * Advance exposed states to infectious
+        //   * Advance infectious states to recovered
         let disease_parameters = &self.config.disease_parameters;
-        self.people.iter_mut().for_each(|p| {
-            if let DiseaseState::Infectious(start_tick) = p.disease_state {
-                if tick - start_tick > disease_parameters.infectious_period_ticks {
+        self.people.iter_mut().for_each(|p| match p.disease_state {
+            DiseaseState::Exposed(start_tick) => {
+                if tick - start_tick >= disease_parameters.exposed_period_ticks {
+                    p.disease_state = DiseaseState::Infectious(tick);
+                }
+            }
+            DiseaseState::Infectious(start_tick) => {
+                if tick - start_tick >= disease_parameters.infectious_period_ticks {
                     p.disease_state = DiseaseState::Recovered;
                 }
             }
+            DiseaseState::Susceptible | DiseaseState::Recovered => {}
         });
-
-        // Step 3: identify collisions and update disease state.
-        self.disease_spreader
-            .spread(tick, &mut self.rng, &mut self.people);
     }
 }
 
@@ -176,6 +183,7 @@ mod tests {
         let rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
         let config = WorldConfig {
             disease_parameters: DiseaseParameters {
+                exposed_period_ticks: 0,
                 infectious_period_ticks: 5,
                 spread_parameters: DiseaseSpreadParameters::InfectionRadius(5.0),
             },
@@ -212,9 +220,6 @@ mod tests {
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
         expected_disease_states[0] = DiseaseState::Recovered;
         expected_disease_states[1] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
@@ -226,10 +231,8 @@ mod tests {
 
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
-
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
-
         world.step();
         expected_disease_states[2] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
@@ -240,6 +243,7 @@ mod tests {
         let rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
         let config = WorldConfig {
             disease_parameters: DiseaseParameters {
+                exposed_period_ticks: 1,
                 infectious_period_ticks: 5,
                 spread_parameters: DiseaseSpreadParameters::BackgroundViralParticle(
                     BackgroundViralParticleParams {
@@ -270,22 +274,26 @@ mod tests {
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
         world.step();
-        expected_disease_states[3] = DiseaseState::Infectious(2);
-        expected_disease_states[4] = DiseaseState::Infectious(2);
+        expected_disease_states[3] = DiseaseState::Exposed(2);
+        expected_disease_states[4] = DiseaseState::Exposed(2);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-        world.step();
+        expected_disease_states[3] = DiseaseState::Infectious(3);
+        expected_disease_states[4] = DiseaseState::Infectious(3);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[2] = DiseaseState::Infectious(5);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
         expected_disease_states[0] = DiseaseState::Recovered;
         expected_disease_states[1] = DiseaseState::Recovered;
+        expected_disease_states[2] = DiseaseState::Exposed(5);
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[2] = DiseaseState::Infectious(6);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();

@@ -36,6 +36,7 @@ pub struct Person {
 
 #[derive(Serialize)]
 pub struct State {
+    pub tick: usize,
     pub people: Vec<Person>,
 }
 
@@ -74,6 +75,7 @@ impl WorldView {
             .map(|p| {
                 let disease_state = match p.disease_state {
                     DiseaseState::Susceptible => "susceptible",
+                    DiseaseState::Exposed(_) => "exposed",
                     DiseaseState::Infectious(_) => "infectious",
                     DiseaseState::Recovered => "recovered",
                 };
@@ -86,7 +88,10 @@ impl WorldView {
             })
             .collect::<Vec<_>>();
 
-        let state = State { people };
+        let state = State {
+            tick: self.world.tick,
+            people,
+        };
 
         JsValue::from_serde(&state).unwrap()
     }

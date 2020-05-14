@@ -40,14 +40,18 @@ impl DiseaseSpreader for InfectionRadiusDiseaseSpreader {
                 }
 
                 match (&p0.disease_state, &p1.disease_state) {
-                    (DiseaseState::Susceptible, DiseaseState::Susceptible) => (),
-                    (DiseaseState::Recovered, _) | (_, DiseaseState::Recovered) => (),
+                    // If one person is susceptible and the other is infectious, expose the
+                    // susceptible person.
                     (DiseaseState::Susceptible, DiseaseState::Infectious(_)) => {
-                        p0.disease_state = DiseaseState::Infectious(tick);
+                        p0.disease_state = DiseaseState::Exposed(tick);
                     }
                     (DiseaseState::Infectious(_), DiseaseState::Susceptible) => {
-                        p1.disease_state = DiseaseState::Infectious(tick);
+                        p1.disease_state = DiseaseState::Exposed(tick);
                     }
+                    // Otherwise, no-op.
+                    (DiseaseState::Susceptible, DiseaseState::Susceptible) => (),
+                    (DiseaseState::Recovered, _) | (_, DiseaseState::Recovered) => (),
+                    (DiseaseState::Exposed(_), _) | (_, DiseaseState::Exposed(_)) => (),
                     (DiseaseState::Infectious(_), DiseaseState::Infectious(_)) => (),
                 };
             }
@@ -136,7 +140,7 @@ impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
             if rng.gen::<f32>() > infection_risk {
                 continue;
             }
-            p.disease_state = DiseaseState::Infectious(tick);
+            p.disease_state = DiseaseState::Exposed(tick);
         }
 
         // Step 3: All people exhale, and infected people spread viral particles.
