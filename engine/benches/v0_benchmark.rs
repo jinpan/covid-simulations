@@ -95,6 +95,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         .start("/tmp/my-prof.profile")
         .unwrap();
 
+    group.bench_function("radius_spread", |b| b.iter(run_infection_radius_spread));
     group.bench_function("viral_particle_spread", |b| {
         b.iter(run_viral_particle_spread)
     });

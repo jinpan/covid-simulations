@@ -87,12 +87,11 @@ enum ShopperState {
 }
 
 struct HouseholdState {
-    // head_of_household_idx: usize,
+    head_of_household_idx: usize,
     supply_levels: f32,
     single_shopper: bool,
 }
 
-// Shoppers are in
 pub(crate) struct ShopperBehavior {
     world_size: (u16, u16),
     per_person_states: Vec<ShopperState>,
@@ -102,21 +101,29 @@ pub(crate) struct ShopperBehavior {
 impl ShopperBehavior {
     pub(crate) fn new(
         world_size: (u16, u16),
-        num_people: usize,
+        people: &Vec<Person>,
         map: &maps::Map,
         rng: &mut dyn RngCore,
     ) -> Self {
-        let per_household_states = (0..map.households.len())
+        let mut per_household_states = (0..map.households.len())
             .map(|_| HouseholdState {
+                head_of_household_idx: 0, // To be filled in.
                 // TODO: load this from some config.
                 supply_levels: rng.gen_range(150.0, 450.0),
                 single_shopper: rng.gen_bool(0.5),
             })
-            .collect();
+            .collect::<Vec<_>>();
 
-        let per_person_states = (0..num_people)
-            .map(|_| ShopperState::AtHome {
-                direction_rad: rng.gen_range(0.0, 2.0 * PI),
+        let per_person_states = people
+            .iter()
+            .map(|p| {
+                if p.head_of_household {
+                    let household_state = &mut per_household_states[p.household_idx];
+                    household_state.head_of_household_idx = p.id;
+                }
+                ShopperState::AtHome {
+                    direction_rad: rng.gen_range(0.0, 2.0 * PI),
+                }
             })
             .collect();
 
@@ -260,39 +267,38 @@ impl ShopperBehavior {
         // Add intermediate nodes from the starting position to the starting intersection.
         // Search again.
 
-        let starting_point = (starting.y as u16, starting.x as u16);
-        let (mut entire_path, _) = astar(
-            &starting_point,
-            |pos| {
-                let mut successors = vec![];
-                for (d_row, d_col) in vec![(-1, 0), (0, -1), (0, 1), (1, 0)] {
-                    if d_row == -1 && pos.0 == 0 {
-                        continue;
-                    }
-                    if d_row == 1 && pos.0 + 1 == world_size.1 {
-                        continue;
-                    }
-                    if d_col == -1 && pos.1 == 0 {
-                        continue;
-                    }
-                    if d_col == 1 && pos.1 + 1 == world_size.0 {
-                        continue;
-                    }
+        let mut starting_path = vec![Position {
+            x: starting.x,
+            y: starting.y,
+        }];
+        let starting_path_goal = Position {
+            x: (starting_intersection.0).1 as f32,
+            y: (starting_intersection.0).0 as f32,
+        };
 
-                    let candidate = ((pos.0 as i32 + d_row) as u16, (pos.1 as i32 + d_col) as u16);
-                    successors.push((candidate, 1));
-                }
-                successors
-            },
-            |pos| {
-                let d_row = (pos.0 as f32) - ((starting_intersection.0).0 as f32);
-                let d_col = (pos.1 as f32) - ((starting_intersection.0).1 as f32);
+        let mut dx = starting_path_goal.x - starting.x;
+        let mut dy = starting_path_goal.y - starting.y;
+        let norm = (dx * dx + dy * dy).sqrt();
 
-                (d_row * d_row + d_col * d_col).sqrt() as u16
-            },
-            |pos| *pos == starting_intersection.0,
-        )
-        .ok_or(anyhow!("failed to find path to starting point"))?;
+        dx /= norm;
+        dy /= norm;
+
+        loop {
+            let head = &starting_path[starting_path.len() - 1];
+            if head.distance(&starting_path_goal) < 1.0 {
+                break;
+            }
+            let pos = Position {
+                x: head.x + dx,
+                y: head.y + dy,
+            };
+            starting_path.push(pos);
+        }
+
+        let mut entire_path = starting_path
+            .into_iter()
+            .map(|pos| (pos.y as u16, pos.x as u16))
+            .collect::<Vec<_>>();
 
         entire_path.extend(road_path.into_iter());
         entire_path.push(ending_intersection.0);
@@ -330,8 +336,14 @@ impl PersonBehavior for ShopperBehavior {
         //   Case ReturningHome:
         //     If they are at home, then advance the state to Athome.
         //     Otherwise, continue on path towards home.
-        for (idx, person) in people.iter_mut().enumerate() {
-            let state = &mut self.per_person_states[idx];
+        for idx in 0..people.len() {
+            let (left_people, right_people) = people.split_at_mut(idx);
+            let person = &mut right_people[0];
+
+            let (left_people_states, right_people_states) =
+                self.per_person_states.split_at_mut(idx);
+            // let state = &mut self.per_person_states[idx];
+            let state = &mut right_people_states[0];
             match state {
                 ShopperState::AtHome { direction_rad } => {
                     let household = &map.households[person.household_idx];
@@ -433,19 +445,49 @@ impl PersonBehavior for ShopperBehavior {
                         person.position.x = path[path.len() - 1].1 as f32;
                         person.position.y = path[path.len() - 1].0 as f32;
 
-                        // If there is a second person tagging along, they don't contribute
-                        if person.head_of_household {
-                            let household_state =
-                                &mut self.per_household_states[person.household_idx];
-                            household_state.supply_levels += 3.5 * *cart_supply_levels;
-                        }
+                        let household_state = &mut self.per_household_states[person.household_idx];
+                        household_state.supply_levels += 3.0 * *cart_supply_levels;
 
                         *state = ShopperState::AtHome {
                             direction_rad: rng.gen_range(0.0, 2.0 * PI),
                         };
                     }
                 }
-                ShopperState::FollowHeadOfHousehold => unimplemented!("TODO"),
+                ShopperState::FollowHeadOfHousehold => {
+                    // If the head of household is at home and we are in the household, then
+                    // transition to AtHome.
+                    let household_state = &self.per_household_states[person.household_idx];
+                    // This is sound because the head of household always has a lower index than
+                    // anyone else in their household.
+                    let head_of_household_state =
+                        &left_people_states[household_state.head_of_household_idx];
+                    if let ShopperState::AtHome { direction_rad: _ } = *head_of_household_state {
+                        if map.get_element(person.position.y as usize, person.position.x as usize)
+                            == maps::MapElement::Household
+                        {
+                            *state = ShopperState::AtHome {
+                                direction_rad: rng.gen_range(0.0, 2.0 * PI),
+                            };
+                            continue;
+                        }
+                    }
+
+                    // Otherwise, follow the head of household.
+                    // This is sound because the head of household always has a lower index than
+                    // anyone else in their household.
+                    let head_pos = &left_people[household_state.head_of_household_idx].position;
+
+                    if person.position.distance(head_pos) < 5.0 {
+                        continue;
+                    }
+
+                    let dx = person.position.x - head_pos.x;
+                    let dy = person.position.y - head_pos.y;
+                    let norm = (dx * dx + dy * dy).sqrt();
+
+                    person.position.x = head_pos.x + 5.0 * dx / norm;
+                    person.position.y = head_pos.y + 5.0 * dy / norm;
+                }
             }
         }
     }
@@ -517,19 +559,33 @@ mod tests {
             &mut rng,
         )?;
 
-        assert_eq!(path.len(), 399);
+        assert_eq!(path.len(), 397);
         assert_eq!(path[0], (125, 65));
         for window in path[1..].windows(2) {
             let pos1 = window[0];
             let pos2 = window[1];
             let d_row = pos2.0 as i32 - pos1.0 as i32;
             let d_col = pos2.1 as i32 - pos1.1 as i32;
-            match (d_row, d_col) {
-                (-1, 0) | (0, -1) | (0, 1) | (1, 0) => (),
-                _ => panic!("invalid change in position: {} {}", d_row, d_col),
+
+            let el1 = sg_map.get_element(pos1.0 as usize, pos1.1 as usize);
+            let el2 = sg_map.get_element(pos2.0 as usize, pos2.1 as usize);
+
+            match (el1, el2) {
+                (maps::MapElement::Household, maps::MapElement::Household) => {
+                    match (d_row, d_col) {
+                        (-1, -1) | (-1, 1) | (1, -1) | (1, 1) => (),
+                        (-1, 0) | (0, -1) | (0, 1) | (1, 0) => (),
+                        _ => panic!("invalid change in position: {} {}", d_row, d_col),
+                    }
+                }
+                _ => match (d_row, d_col) {
+                    (-1, 0) | (0, -1) | (0, 1) | (1, 0) => (),
+                    _ => panic!("invalid change in position: {} {}", d_row, d_col),
+                },
             }
         }
-        for pos in path[22..path.len() - 1].iter() {
+
+        for pos in path[6..path.len() - 1].iter() {
             assert_eq!(
                 sg_map.get_element(pos.0 as usize, pos.1 as usize),
                 maps::MapElement::Road

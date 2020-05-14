@@ -115,7 +115,7 @@ impl World {
             )),
             BehaviorParameters::Shopper => Box::new(ShopperBehavior::new(
                 config.size,
-                config.num_people,
+                &people,
                 maybe_map
                     .as_ref()
                     .expect("must have map for shopper behavior"),
