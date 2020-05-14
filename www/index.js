@@ -112,6 +112,7 @@ let uplot_opts = {
 
       "behavior_parameters": {
         "shopper": {
+          "fraction_dual_shopper_households": 0.5,
           "shopping_period_ticks": 15 * 60,
           "supplies_bought_per_trip": 35 * 60,
         },
@@ -175,7 +176,7 @@ let uplot_opts = {
       let plane_box = new THREE.BoxHelper(plane, 0x000000);
       scene.add(plane_box);
 
-      let msg = (household.single_shopper) ? "1x" : "2x";
+      let msg = (household.dual_shopper) ? "2x" : "1x";
       let text_geo = new THREE.TextGeometry(msg, {
         "font": THREE_default_font,
         "size": 15,

@@ -30,7 +30,7 @@ impl BoundingBox {
 #[derive(Serialize)]
 pub struct Household {
     pub bounds: BoundingBox,
-    pub single_shopper: bool,
+    pub dual_shopper: bool,
 }
 
 #[derive(Serialize)]
@@ -144,15 +144,14 @@ impl WorldView {
         if let Some(map) = &self.world.map {
             // TODO: decouple this from the map: the js client currently assumes that if there is
             // a map, then we can safely call this method.
-            let single_shopper_households =
-                self.world.person_behavior.get_single_shopper_households();
+            let dual_shopper_households = self.world.person_behavior.get_dual_shopper_households();
             boxes.extend(
                 map.households
                     .iter()
-                    .zip_eq(single_shopper_households.iter())
-                    .map(|(h, single_shopper)| Household {
+                    .zip_eq(dual_shopper_households.iter())
+                    .map(|(h, dual_shopper)| Household {
                         bounds: BoundingBox::from_geo(&h.bounds),
-                        single_shopper: *single_shopper,
+                        dual_shopper: *dual_shopper,
                     }),
             );
         }

@@ -5,6 +5,7 @@ use crate::v0::maps;
 use crate::v0::maps::MapElement;
 use anyhow::{anyhow, Result};
 use pathfinding::prelude::astar;
+use rand::seq::SliceRandom;
 use rand::{Rng, RngCore};
 use std::f32::consts::PI;
 use std::iter::Iterator;
@@ -17,7 +18,7 @@ pub(crate) trait PersonBehavior {
         rng: &mut dyn RngCore,
     );
 
-    fn get_single_shopper_households(&self) -> Vec<bool> {
+    fn get_dual_shopper_households(&self) -> Vec<bool> {
         unimplemented!()
     }
 }
@@ -93,7 +94,7 @@ enum ShopperState {
 struct HouseholdState {
     head_of_household_idx: usize,
     supply_levels: f32,
-    single_shopper: bool,
+    dual_shopper: bool,
 }
 
 pub(crate) struct ShopperBehavior {
@@ -111,12 +112,20 @@ impl ShopperBehavior {
         map: &maps::Map,
         rng: &mut dyn RngCore,
     ) -> Self {
+        let mut dual_shopper_households = vec![false; map.households.len()];
+        let num_dual_shopper_households =
+            ((map.households.len() as f32) * params.fraction_dual_shopper_households) as usize;
+        for i in 0..num_dual_shopper_households {
+            dual_shopper_households[i] = true;
+        }
+        dual_shopper_households.shuffle(rng);
+
         let mut per_household_states = (0..map.households.len())
-            .map(|_| HouseholdState {
+            .map(|idx| HouseholdState {
                 head_of_household_idx: 0, // To be filled in.
                 // TODO: load this from some config.
                 supply_levels: rng.gen_range(150.0, 450.0),
-                single_shopper: rng.gen_bool(0.5),
+                dual_shopper: dual_shopper_households[idx],
             })
             .collect::<Vec<_>>();
 
@@ -372,16 +381,15 @@ impl PersonBehavior for ShopperBehavior {
                         )
                         .expect("failed to find path");
                         *state = ShopperState::GoingToStore { path_idx: 0, path };
-                    } else {
-                        if household_state.single_shopper {
-                            // This household only has a single shopper (head of household).
-                            // We are not the head, so do not shop.
-                            person.position.advance2(direction_rad, &household.bounds);
-                            continue;
-                        }
-
-                        *state = ShopperState::FollowHeadOfHousehold
+                        continue;
+                    } else if household_state.dual_shopper {
+                        *state = ShopperState::FollowHeadOfHousehold;
+                        continue;
                     }
+
+                    // This household only has a single shopper (head of household).
+                    // We are not the head, so do not shop.
+                    person.position.advance2(direction_rad, &household.bounds);
                 }
                 ShopperState::GoingToStore { path_idx, path } => {
                     if *path_idx < path.len() {
@@ -491,10 +499,10 @@ impl PersonBehavior for ShopperBehavior {
         }
     }
 
-    fn get_single_shopper_households(&self) -> Vec<bool> {
+    fn get_dual_shopper_households(&self) -> Vec<bool> {
         self.per_household_states
             .iter()
-            .map(|hs| hs.single_shopper)
+            .map(|hs| hs.dual_shopper)
             .collect()
     }
 }

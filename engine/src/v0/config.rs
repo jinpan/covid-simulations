@@ -41,6 +41,7 @@ pub struct DiseaseParameters {
 
 #[derive(Deserialize, Debug, Copy, Clone)]
 pub struct ShopperParams {
+    pub fraction_dual_shopper_households: f32,
     pub shopping_period_ticks: usize,
     pub supplies_bought_per_trip: f32,
 }

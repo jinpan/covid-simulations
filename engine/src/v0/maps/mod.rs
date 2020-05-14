@@ -164,6 +164,7 @@ impl Map {
             boxes.push(bb);
         }
 
+        boxes.sort();
         boxes
     }
 
