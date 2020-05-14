@@ -112,8 +112,9 @@ impl World {
                 config.num_people,
                 &mut rng,
             )),
-            BehaviorParameters::Shopper => Box::new(ShopperBehavior::new(
+            BehaviorParameters::Shopper(params) => Box::new(ShopperBehavior::new(
                 config.size,
+                params,
                 &people,
                 maybe_map
                     .as_ref()

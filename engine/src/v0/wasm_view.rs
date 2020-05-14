@@ -5,6 +5,7 @@ use crate::v0::config::{DiseaseSpreadParameters, WorldConfig};
 use crate::v0::core::{DiseaseState, World};
 use crate::v0::geometry;
 use crate::v0::maps;
+use itertools::Itertools;
 use rand::RngCore;
 
 #[derive(Serialize)]
@@ -24,6 +25,12 @@ impl BoundingBox {
             bot: geo_box.bottom_right.0 as f32,
         }
     }
+}
+
+#[derive(Serialize)]
+pub struct Household {
+    pub bounds: BoundingBox,
+    pub single_shopper: bool,
 }
 
 #[derive(Serialize)]
@@ -131,16 +138,23 @@ impl WorldView {
         &self.background_viral_particles[0]
     }
 
-    pub fn get_bounding_boxes(&self) -> JsValue {
+    pub fn get_households(&self) -> JsValue {
         let mut boxes = vec![];
 
         if let Some(map) = &self.world.map {
+            // TODO: decouple this from the map: the js client currently assumes that if there is
+            // a map, then we can safely call this method.
+            let single_shopper_households =
+                self.world.person_behavior.get_single_shopper_households();
             boxes.extend(
                 map.households
                     .iter()
-                    .map(|h| BoundingBox::from_geo(&h.bounds)),
+                    .zip_eq(single_shopper_households.iter())
+                    .map(|(h, single_shopper)| Household {
+                        bounds: BoundingBox::from_geo(&h.bounds),
+                        single_shopper: *single_shopper,
+                    }),
             );
-            boxes.extend(map.stores.iter().map(|s| BoundingBox::from_geo(&s.bounds)));
         }
 
         JsValue::from_serde(&boxes).unwrap()
@@ -151,6 +165,16 @@ impl WorldView {
 
         if let Some(map) = &self.world.map {
             boxes.extend(map.roads.iter().map(|r| BoundingBox::from_geo(&r.bounds)));
+        }
+
+        JsValue::from_serde(&boxes).unwrap()
+    }
+
+    pub fn get_stores(&self) -> JsValue {
+        let mut boxes = vec![];
+
+        if let Some(map) = &self.world.map {
+            boxes.extend(map.stores.iter().map(|s| BoundingBox::from_geo(&s.bounds)));
         }
 
         JsValue::from_serde(&boxes).unwrap()

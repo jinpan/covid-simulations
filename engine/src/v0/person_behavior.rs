@@ -1,3 +1,4 @@
+use crate::v0::config::ShopperParams;
 use crate::v0::core::Person;
 use crate::v0::geometry::{BoundingBox, Position};
 use crate::v0::maps;
@@ -15,6 +16,10 @@ pub(crate) trait PersonBehavior {
         map: &mut Option<maps::Map>,
         rng: &mut dyn RngCore,
     );
+
+    fn get_single_shopper_households(&self) -> Vec<bool> {
+        unimplemented!()
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -76,10 +81,9 @@ enum ShopperState {
     },
     Shopping {
         direction_rad: f32,
-        cart_supply_levels: f32,
+        shopping_duration_ticks: usize,
     },
     ReturningHome {
-        cart_supply_levels: f32,
         path_idx: usize,
         path: Vec<(u16, u16)>,
     },
@@ -94,6 +98,7 @@ struct HouseholdState {
 
 pub(crate) struct ShopperBehavior {
     world_size: (u16, u16),
+    params: ShopperParams,
     per_person_states: Vec<ShopperState>,
     per_household_states: Vec<HouseholdState>,
 }
@@ -101,6 +106,7 @@ pub(crate) struct ShopperBehavior {
 impl ShopperBehavior {
     pub(crate) fn new(
         world_size: (u16, u16),
+        params: ShopperParams,
         people: &Vec<Person>,
         map: &maps::Map,
         rng: &mut dyn RngCore,
@@ -129,6 +135,7 @@ impl ShopperBehavior {
 
         ShopperBehavior {
             world_size,
+            params,
             per_person_states,
             per_household_states,
         }
@@ -393,17 +400,17 @@ impl PersonBehavior for ShopperBehavior {
                         person.position.y = path[path.len() - 1].0 as f32;
                         *state = ShopperState::Shopping {
                             direction_rad: rng.gen_range(0.0, 2.0 * PI),
-                            cart_supply_levels: 0.0,
+                            shopping_duration_ticks: 0,
                         };
                     }
                 }
                 ShopperState::Shopping {
                     direction_rad,
-                    cart_supply_levels,
+                    shopping_duration_ticks,
                 } => {
                     // TODO: stop hardcoding this limit
-                    if *cart_supply_levels < 10.0 * 60.0 {
-                        *cart_supply_levels += 1.0;
+                    if *shopping_duration_ticks < self.params.shopping_period_ticks {
+                        *shopping_duration_ticks += 1;
                         person
                             .position
                             .advance2(direction_rad, &map.stores[0].bounds);
@@ -418,18 +425,10 @@ impl PersonBehavior for ShopperBehavior {
                             rng,
                         )
                         .expect("failed to find path");
-                        *state = ShopperState::ReturningHome {
-                            cart_supply_levels: *cart_supply_levels,
-                            path_idx: 0,
-                            path,
-                        };
+                        *state = ShopperState::ReturningHome { path_idx: 0, path };
                     }
                 }
-                ShopperState::ReturningHome {
-                    cart_supply_levels,
-                    path_idx,
-                    path,
-                } => {
+                ShopperState::ReturningHome { path_idx, path } => {
                     if *path_idx < path.len() {
                         person.position.x = path[*path_idx].1 as f32;
                         person.position.y = path[*path_idx].0 as f32;
@@ -446,7 +445,7 @@ impl PersonBehavior for ShopperBehavior {
                         person.position.y = path[path.len() - 1].0 as f32;
 
                         let household_state = &mut self.per_household_states[person.household_idx];
-                        household_state.supply_levels += 3.0 * *cart_supply_levels;
+                        household_state.supply_levels += self.params.supplies_bought_per_trip;
 
                         *state = ShopperState::AtHome {
                             direction_rad: rng.gen_range(0.0, 2.0 * PI),
@@ -490,6 +489,13 @@ impl PersonBehavior for ShopperBehavior {
                 }
             }
         }
+    }
+
+    fn get_single_shopper_households(&self) -> Vec<bool> {
+        self.per_household_states
+            .iter()
+            .map(|hs| hs.single_shopper)
+            .collect()
     }
 }
 

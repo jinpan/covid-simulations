@@ -39,13 +39,19 @@ pub struct DiseaseParameters {
     pub spread_parameters: DiseaseSpreadParameters,
 }
 
+#[derive(Deserialize, Debug, Copy, Clone)]
+pub struct ShopperParams {
+    pub shopping_period_ticks: usize,
+    pub supplies_bought_per_trip: f32,
+}
+
 #[derive(Deserialize, Debug)]
 pub enum BehaviorParameters {
     #[serde(rename = "brownian_motion")]
     BrownianMotion,
 
     #[serde(rename = "shopper")]
-    Shopper,
+    Shopper(ShopperParams),
 }
 
 #[derive(Deserialize, Debug)]

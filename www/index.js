@@ -1,7 +1,10 @@
 import * as wasm from "wasm-engine";
 import * as THREE from 'three';
 import * as uplot from 'uplot';
-import css from 'uplot/dist/uPlot.min.css'
+import 'uplot/dist/uPlot.min.css';
+import THREE_default_font_json from 'three/examples/fonts/helvetiker_bold.typeface.json';
+
+let THREE_default_font = (new THREE.FontLoader()).parse(THREE_default_font_json);
 
 window._wasm = wasm;
 window._uplot = uplot;
@@ -94,7 +97,7 @@ let uplot_opts = {
   let config2 = {
     "engine_config": {
       "disease_parameters": {
-        "exposed_period_ticks": 10 * 60,
+        "exposed_period_ticks": 20 * 60,
         "infectious_period_ticks": 30 * 60,
 
         "spread_parameters": {
@@ -107,7 +110,12 @@ let uplot_opts = {
         },
       },
 
-      "behavior_parameters": "shopper",
+      "behavior_parameters": {
+        "shopper": {
+          "shopping_period_ticks": 15 * 60,
+          "supplies_bought_per_trip": 35 * 60,
+        },
+      },
 
       "size": [600, 400],
       "num_people": 108,
@@ -116,7 +124,7 @@ let uplot_opts = {
     "map_name": "simple_groceries",
   };
 
-  let config = config1;
+  let config = config2;
   let world = wasm.create_world(config.engine_config, config.map_name);
   window._WORLD = world;
 
@@ -145,15 +153,49 @@ let uplot_opts = {
   let scene = new THREE.Scene();
 
   if (config.map_name != "") {
-    // Draw bounding boxes for households and stores
-    let box_material = new THREE.MeshBasicMaterial();
-
-    for (const box of world.get_bounding_boxes()) {
+    // Draw households
+    let household_material = new THREE.MeshBasicMaterial();
+    let household_text_material = new THREE.MeshBasicMaterial({
+      "color": 0xAAAAAA,
+      "side": THREE.DoubleSide,
+      "transparent": true,
+      "opacity": 0.4,
+    });
+    for (const household of world.get_households()) {
+      let box = household.bounds;
       let width = box.right - box.left;
       let height = box.bot - box.top;
 
       let plane_geo = new THREE.PlaneGeometry(width, height, 1);
-      let plane = new THREE.Mesh(plane_geo, box_material);
+      let plane = new THREE.Mesh(plane_geo, household_material);
+
+      plane.position.x = (box.left + box.right) / 2;
+      plane.position.y = (box.bot + box.top) / 2;
+
+      let plane_box = new THREE.BoxHelper(plane, 0x000000);
+      scene.add(plane_box);
+
+      let msg = (household.single_shopper) ? "1x" : "2x";
+      let text_geo = new THREE.TextGeometry(msg, {
+        "font": THREE_default_font,
+        "size": 15,
+      });
+      let text = new THREE.Mesh(text_geo, household_text_material);
+
+      text.position.x = box.left + 5;
+      text.position.y = box.top + 2;
+
+      scene.add(text);
+    }
+
+    // Draw stores
+    let store_material = new THREE.MeshBasicMaterial();
+    for (const box of world.get_stores()) {
+      let width = box.right - box.left;
+      let height = box.bot - box.top;
+
+      let plane_geo = new THREE.PlaneGeometry(width, height, 1);
+      let plane = new THREE.Mesh(plane_geo, store_material);
 
       plane.position.x = (box.left + box.right) / 2;
       plane.position.y = (box.bot + box.top) / 2;

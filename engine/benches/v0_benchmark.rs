@@ -5,7 +5,7 @@ use cpuprofiler::PROFILER;
 use criterion::{criterion_group, criterion_main, Criterion};
 use engine::v0::config::{
     BackgroundViralParticleParams, BehaviorParameters, DiseaseParameters, DiseaseSpreadParameters,
-    WorldConfig,
+    ShopperParams, WorldConfig,
 };
 use engine::v0::maps;
 use engine::v0::wasm_view::WorldView;
@@ -13,6 +13,7 @@ use engine::v0::wasm_view::WorldView;
 fn run_infection_radius_spread() {
     let world_config = WorldConfig {
         disease_parameters: DiseaseParameters {
+            exposed_period_ticks: 0,
             infectious_period_ticks: 10 * 60,
             spread_parameters: DiseaseSpreadParameters::InfectionRadius(5.0),
         },
@@ -33,7 +34,8 @@ fn run_infection_radius_spread() {
 fn run_viral_particle_spread() {
     let world_config = WorldConfig {
         disease_parameters: DiseaseParameters {
-            infectious_period_ticks: 10 * 60,
+            exposed_period_ticks: 10 * 60,
+            infectious_period_ticks: 30 * 60,
             spread_parameters: DiseaseSpreadParameters::BackgroundViralParticle(
                 BackgroundViralParticleParams {
                     exhale_radius: 9.0,
@@ -60,7 +62,8 @@ fn run_viral_particle_spread() {
 fn run_viral_particle_spread_shopping() {
     let world_config = WorldConfig {
         disease_parameters: DiseaseParameters {
-            infectious_period_ticks: 10 * 60,
+            exposed_period_ticks: 10 * 60,
+            infectious_period_ticks: 30 * 60,
             spread_parameters: DiseaseSpreadParameters::BackgroundViralParticle(
                 BackgroundViralParticleParams {
                     exhale_radius: 9.0,
@@ -70,7 +73,10 @@ fn run_viral_particle_spread_shopping() {
                 },
             ),
         },
-        behavior_parameters: BehaviorParameters::Shopper {},
+        behavior_parameters: BehaviorParameters::Shopper(ShopperParams {
+            shopping_period_ticks: 100,
+            supplies_bought_per_trip: 3000.0,
+        }),
         size: (600, 400),
         num_people: 54,
         num_initially_infected: 1,
