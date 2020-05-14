@@ -74,6 +74,7 @@ fn run_viral_particle_spread_shopping() {
             ),
         },
         behavior_parameters: BehaviorParameters::Shopper(ShopperParams {
+            fraction_dual_shopper_households: 0.5,
             shopping_period_ticks: 100,
             supplies_bought_per_trip: 3000.0,
         }),

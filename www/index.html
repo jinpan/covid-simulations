@@ -14,36 +14,84 @@
     <script src="./bootstrap.js"></script>
 
     <div>
-
-      <button id="main-canvas-start">Start</button>
-      <button id="main-canvas-reset">Reset</button>
+      <button id="radius_brownian0-start" style="width: 4em">Start</button>
+      <button id="radius_brownian0-reset">Reset</button>
       <span>Speed:
-        <button class="main-canvas-speed" data-speed="1" style="font-weight: bold" disabled>1x</button>
-        <button class="main-canvas-speed" data-speed="2">2x</button>
-        <button class="main-canvas-speed" data-speed="4">4x</button>
-        <button class="main-canvas-speed" data-speed="8">8x</button>
+        <button class="radius_brownian0-speed" data-speed="1" style="font-weight: bold" disabled>1x</button>
+        <button class="radius_brownian0-speed" data-speed="2">2x</button>
+        <button class="radius_brownian0-speed" data-speed="4">4x</button>
+        <button class="radius_brownian0-speed" data-speed="8">8x</button>
+        <button class="radius_brownian0-speed" data-speed="16">16x</button>
       </span>
-      <!--TODO: dynamically show this controller-->
-      <br>
-      <span>Percent of dual shopper households:
-        <button class="main-canvas-pct-dual-shopper" data-pct="0">0%</button>
-        <button class="main-canvas-pct-dual-shopper" data-pct="25">25%</button>
-        <button class="main-canvas-pct-dual-shopper" data-pct="50" style="font-weight: bold" disabled>50%</button>
-        <button class="main-canvas-pct-dual-shopper" data-pct="75">75%</button>
-        <button class="main-canvas-pct-dual-shopper" data-pct="100">100%</button>
-      </span>
-
       <br>
       <div
-              id="main-plot"
+              id="radius_brownian0-uplot"
               style="border: solid; border-width: thin; display: inline-block"
       ></div>
 
       <canvas
-              id="main-canvas"
+              id="radius_brownian0-canvas"
               width="600" height="400"
               style="border:1px solid #000000;">
       </canvas>
     </div>
+
+    <div>
+      <button id="particle_brownian0-start" style="width: 4em">Start</button>
+      <button id="particle_brownian0-reset">Reset</button>
+      <span>Speed:
+        <button class="particle_brownian0-speed" data-speed="1" style="font-weight: bold" disabled>1x</button>
+        <button class="particle_brownian0-speed" data-speed="2">2x</button>
+        <button class="particle_brownian0-speed" data-speed="4">4x</button>
+        <button class="particle_brownian0-speed" data-speed="8">8x</button>
+        <button class="particle_brownian0-speed" data-speed="16">16x</button>
+      </span>
+
+      <br>
+      <div
+              id="particle_brownian0-uplot"
+              style="border: solid; border-width: thin; display: inline-block"
+      ></div>
+
+      <canvas
+              id="particle_brownian0-canvas"
+              width="600" height="400"
+              style="border:1px solid #000000;">
+      </canvas>
+    </div>
+
+    <div>
+      <button id="particle_shopper0-start" style="width: 4em">Start</button>
+      <button id="particle_shopper0-reset">Reset</button>
+      <span>Speed:
+        <button class="particle_shopper0-speed" data-speed="1" style="font-weight: bold" disabled>1x</button>
+        <button class="particle_shopper0-speed" data-speed="2">2x</button>
+        <button class="particle_shopper0-speed" data-speed="4">4x</button>
+        <button class="particle_shopper0-speed" data-speed="8">8x</button>
+        <button class="particle_shopper0-speed" data-speed="16">16x</button>
+      </span>
+      <!--TODO: dynamically show this controller-->
+      <br>
+      <span>Percent of dual shopper households:
+        <button class="particle_shopper0-pct-dual-shopper" data-pct="0">0%</button>
+        <button class="particle_shopper0-pct-dual-shopper" data-pct="25">25%</button>
+        <button class="particle_shopper0-pct-dual-shopper" data-pct="50" style="font-weight: bold" disabled>50%</button>
+        <button class="particle_shopper0-pct-dual-shopper" data-pct="75">75%</button>
+        <button class="particle_shopper0-pct-dual-shopper" data-pct="100">100%</button>
+      </span>
+
+      <br>
+      <div
+              id="particle_shopper0-uplot"
+              style="border: solid; border-width: thin; display: inline-block"
+      ></div>
+
+      <canvas
+              id="particle_shopper0-canvas"
+              width="600" height="400"
+              style="border:1px solid #000000;">
+      </canvas>
+    </div>
+
   </body>
 </html>

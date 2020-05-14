@@ -9,6 +9,8 @@ pub mod v0;
 use crate::v0::config::WorldConfig;
 use crate::v0::maps;
 use crate::v0::wasm_view::WorldView;
+use rand::{RngCore, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -18,7 +20,7 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-pub fn create_world(config: &JsValue, map_name: &str) -> WorldView {
+pub fn create_world(config: &JsValue, map_name: &str, maybe_seed: Option<u32>) -> WorldView {
     log(&format!("Received config: {:?}", config));
     let world_config: WorldConfig = config.into_serde().expect("failed to parse");
     log(&format!("Parsed config: {:?}", world_config));
@@ -31,6 +33,10 @@ pub fn create_world(config: &JsValue, map_name: &str) -> WorldView {
         _ => panic!("Unknown map <{}>", map_name),
     };
 
-    let rng = Box::new(rand::thread_rng());
+    let rng: Box<dyn RngCore> = if let Some(seed_val) = maybe_seed {
+        Box::new(ChaCha8Rng::seed_from_u64(seed_val as u64))
+    } else {
+        Box::new(rand::thread_rng())
+    };
     WorldView::new(world_config, map, rng)
 }
