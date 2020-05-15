@@ -53,7 +53,7 @@ infectious person, they will catch the disease.
   <canvas
           id="radius_brownian0-canvas"
           width="600" height="400"
-          style="border:1px solid #000000;">
+          style="border:1px solid #000000; width:100%">
   </canvas>
 </div>
 
@@ -100,7 +100,7 @@ so we will use that ratio below.
   <canvas
           id="particle_brownian0-canvas"
           width="600" height="400"
-          style="border:1px solid #000000;">
+          style="border:1px solid #000000; width:100%">
   </canvas>
 </div>
 
@@ -151,7 +151,7 @@ takes longer to play out, so you may consider increasing the simulation speed.
   <canvas
           id="particle_shopper0-canvas"
           width="600" height="400"
-          style="border:1px solid #000000;">
+          style="border:1px solid #000000; width:100%">
   </canvas>
 </div>
 
