@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-This site hosts interactive simulations on the spread of SARS-CoV-2.  The goal is to better inform users about how the
+This site hosts interactive simulations on the spread of SARS-CoV-2.  The goal is to better inform readers about how the
 virus spreads, and highlight what actions they can take to effectively keep themselves and their community safer.
 
 Specifically, the following outcomes would make this site a success:

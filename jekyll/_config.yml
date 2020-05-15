@@ -16,8 +16,7 @@
 title: SARS-CoV-2 Simulations
 email: covid-contact@simrnd.com
 description: >- # this means to ignore newlines until "baseurl:"
-  Posts and interactive simulations on the spread of SARS-CoV-2.  Our goal is to better inform users about how the
-  virus spreads, and highlight what actions they can take to effectively keep themselves and their community safer.
+  Simulating the spread of SARS-CoV-2.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: jinpan20
