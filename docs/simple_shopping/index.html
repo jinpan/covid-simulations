@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Coronavirus and Shopping &middot; SARS-CoV-2 Simulations
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href=/assets/css/styles.css>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href=/assets/apple-touch-icon-precomposed.png>
+  <link rel="shortcut icon" href=/assets/favicon.ico>
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="SARS-CoV-2 Simulations" href="/feed.xml">
+</head>
+
+
+  <body>
+
+    <!-- Target for toggling the sidebar `.sidebar-checkbox` is for regular
+     styles, `#sidebar-checkbox` for behavior. -->
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+<!-- Toggleable sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p>Simulating the spread of SARS-CoV-2.</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item" href=/>Home</a>
+
+    
+
+    
+    
+      
+    
+      
+    
+      
+        
+          <a class="sidebar-nav-item" href="/about/">About</a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a class="sidebar-nav-item active" href="/simple_shopping/">Coronavirus and Shopping</a>
+        
+      
+    
+      
+    
+
+    <a class="sidebar-nav-item" href="https://github.com/jinpan/covid-simulations">GitHub project</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      &copy; 2020. All rights reserved.
+    </p>
+  </div>
+</div>
+
+
+    <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href=/ title="Home">SARS-CoV-2 Simulations</a>
+            <small></small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Coronavirus and Shopping</h1>
+  <script src="./bootstrap.js"></script>
+
+<p>Covid-19 has been spreading across our planet at a rapid pace, and has infected
+more than <a href="https://www.nytimes.com/interactive/2020/world/coronavirus-maps.html">4.3 million people
+worldwide</a>,
+with more than <a href="https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html">1.3 million cases in the United States as of mid-May
+2020</a>.
+Until a vaccine is broadly administered, society must work together to control
+the infection rate.</p>
+
+<p>There are hundreds of small questions we must all answer each day that
+collectively contribute to the infection - should I wear a mask? How far away
+should I keep from others? How often should I go shopping? Should I go
+shopping alone? Should I wear my lucky socks? Do my decisions even matter?</p>
+
+<p>While there are definitive answers to some questions (<a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/diy-cloth-face-coverings.html">The CDC recommends
+everyone to wear a mask
+outdoors</a>),
+others are harder to answer.  To answer some of the harder questions, let’s look
+at some simulations of how a hypothetical virus spreads across a virtual
+population and how individual actions affect the spread, both on a societal and
+household level.</p>
+
+<p>First, let’s simulate the
+<a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SIR_model">Susceptible-Infectious-Recovered</a>
+model.  Green circles represent susceptible people, red circles infectious, and
+gray circles recovered.  If a susceptible person gets too close to an
+infectious person, they will catch the disease.</p>
+
+<div>
+  <button id="radius_brownian0-start" style="width: 4em">Start</button>
+  <button id="radius_brownian0-reset">Reset</button>
+  <span>Speed:
+    <button class="radius_brownian0-speed" data-speed="1" style="font-weight: bold" disabled="">1x</button>
+    <button class="radius_brownian0-speed" data-speed="2">2x</button>
+    <button class="radius_brownian0-speed" data-speed="4">4x</button>
+    <button class="radius_brownian0-speed" data-speed="8">8x</button>
+  </span>
+  <br />
+  <div id="radius_brownian0-uplot" style="border: solid; border-width: thin; display: inline-block"></div>
+
+  <canvas id="radius_brownian0-canvas" width="600" height="400" style="border:1px solid #000000;">
+  </canvas>
+</div>
+
+<p>The infected population initially grows rapidly but slows as the susceptible
+population shrinks.  Eventually the virus runs out of people to infect, and the
+pandemic is over with 70+% of the population infected.</p>
+
+<p>We can improve this initial simulation in two major ways:</p>
+<ol>
+  <li>More realistically model the spread of the virus</li>
+  <li>More realistically model human behavior - we are not always trapped in a giant
+bouncy castle</li>
+</ol>
+
+<p>To more realistically model the spread of the virus, we’ll add viral particles
+to the simulation: infectious people will continuously emit viral particles
+(by breathing, coughing, sneezing, etc).  People will also continuously inhale
+viral particles, and the more particles they breathe in, the more likely they
+are to contract the disease.</p>
+
+<p>Additionally, let’s use a more realistic model of disease spread - the
+<a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model">Susceptible-Exposed-Infectious-Recovered</a>
+model.  This model introduces an exposed state, where exposed individuals are
+not immediately infectious.  The WHO <a href="https://www.who.int/docs/default-source/coronaviruse/who-china-joint-mission-on-covid-19-final-report.pdf">estimates that the Covid-19 exposed
+duration is about one third as long as the infectious
+duration</a>,
+so we will use that ratio below.</p>
+
+<div>
+  <button id="particle_brownian0-start" style="width: 4em">Start</button>
+  <button id="particle_brownian0-reset">Reset</button>
+  <span>Speed:
+    <button class="particle_brownian0-speed" data-speed="1" style="font-weight: bold" disabled="">1x</button>
+    <button class="particle_brownian0-speed" data-speed="2">2x</button>
+    <button class="particle_brownian0-speed" data-speed="4">4x</button>
+    <button class="particle_brownian0-speed" data-speed="8">8x</button>
+  </span>
+
+  <br />
+  <div id="particle_brownian0-uplot" style="border: solid; border-width: thin; display: inline-block"></div>
+
+  <canvas id="particle_brownian0-canvas" width="600" height="400" style="border:1px solid #000000;">
+  </canvas>
+</div>
+
+<p>Now that we have a more realistic model of how the virus spreads, let’s look at
+simulating more realistic human behavior.</p>
+
+<p>For the next simulation, we have a tiny community of 108 people split among 54
+households (2 people per household).  These people are social distancing and
+not seeing their friends and neighbors, but must periodically make trips to the
+store as their toilet paper and other household supplies run out.</p>
+
+<p>Some households have a single-shopper rule that only one person goes shopping,
+and they are marked as “1x”.  In other households (marked as “2x”), both people
+will go out to shop when supplies run out.</p>
+
+<p>You can configure the percentage of single-shopper households and see how quickly
+the disease spreads across the community at various percentages.  This simulation
+takes longer to play out, so you may consider increasing the simulation speed.</p>
+
+<div>
+  <button id="particle_shopper0-start" style="width: 4em">Start</button>
+  <button id="particle_shopper0-reset">Reset</button>
+  <span>Speed:
+    <button class="particle_shopper0-speed" data-speed="1" style="font-weight: bold" disabled="">1x</button>
+    <button class="particle_shopper0-speed" data-speed="2">2x</button>
+    <button class="particle_shopper0-speed" data-speed="4">4x</button>
+    <button class="particle_shopper0-speed" data-speed="8">8x</button>
+    <button class="particle_shopper0-speed" data-speed="16">16x</button>
+    <button class="particle_shopper0-speed" data-speed="32">32x</button>
+  </span>
+  <!--TODO: dynamically show this controller-->
+  <br />
+  <span>Percent of dual shopper households:
+    <button class="particle_shopper0-pct-dual-shopper" data-pct="0">0%</button>
+    <button class="particle_shopper0-pct-dual-shopper" data-pct="25">25%</button>
+    <button class="particle_shopper0-pct-dual-shopper" data-pct="50" style="font-weight: bold" disabled="">50%</button>
+    <button class="particle_shopper0-pct-dual-shopper" data-pct="75">75%</button>
+    <button class="particle_shopper0-pct-dual-shopper" data-pct="100">100%</button>
+  </span>
+
+  <br />
+  <div id="particle_shopper0-uplot" style="border: solid; border-width: thin; display: inline-block"></div>
+
+  <canvas id="particle_shopper0-canvas" width="600" height="400" style="border:1px solid #000000;">
+  </canvas>
+</div>
+
+<p>If we run this simulation many times, we will see that every 1% increase in
+dual-shopper households leads to approximately a TODO% increase in people
+infected at the end of the simulations.</p>
+
+<p>// TODO: add graph!</p>
+
+<p>We can also look at the data from a household-level perspective and answer the
+question: How does imposing a single-shopper rule in my household affect the
+risk of someone in my household getting the disease?</p>
+
+<p>// TODO: add graph!</p>
+
+<hr />
+
+<p>While we tuned many parameters of our hypothetical virus simulation to
+mimic the rate of spread of covid-19, this hypothetical virus is not covid-19
+(and there still remains much to be learned about the exact mechanisms of how
+covid-19 spreads) and the simulated circles do not capture real human behavior
+(we order grocery delivery services, maintain distance in stores, squeeze many
+avocados on the shelf to find the ripest ones, and so on).  So please wrap the
+above numbers with generous error bars when applying those judgements in your
+daily activities.</p>
+
+<p>On the other hand, building high quality models/simulations and making informed
+decisions based on them is the best way to combat this virus as a society.  The
+cost of rigorous field studies can often be too expensive (both in terms of
+time and infections), so improving these simulations and making policy off of
+them may be better than the alternative of waiting for field data.</p>
+
+<p>These simulations are all <a href="https://jinpan.github.com/covid-simulations/">open
+source</a>.</p>
+
+<h2 id="call-for-help">Call for help:</h2>
+<p>I am a software engineer, not an epidemiologist.  If you are an epidemiologist
+(or know of one), please get in touch at <code class="highlighter-rouge">covid-contact@simrnd.com</code>.  I would
+like to build more simulations to model how our behavior affects the disease
+spread and want these simulations to be calibrated against everything we know
+about covid-19.</p>
+
+<hr />
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLScaAb4nP7WCOu7TaKnvmtKayJ81Zcs5BH8kmMBD3-Xf61dHzg/viewform?embedded=true" width="640" height="807" frameborder="0" marginheight="0" marginwidth="0">
+    Feedback form
+</iframe>
+
+<hr />
+
+<h3 id="related-work">Related work</h3>
+
+<p>For more simulations, check out</p>
+<ul>
+  <li><a href="https://www.washingtonpost.com/graphics/2020/world/corona-simulator/">Harry Stevens of the Washington Post</a>.</li>
+  <li><a href="https://www.youtube.com/watch?v=gxAaO2rsdIs">3Blue1Brown from YouTube</a>.</li>
+</ul>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+    <script>
+      (function(document) {
+        var toggle = document.querySelector('.sidebar-toggle');
+        var sidebar = document.querySelector('#sidebar');
+        var checkbox = document.querySelector('#sidebar-checkbox');
+
+        document.addEventListener('click', function(e) {
+          var target = e.target;
+
+          if(!checkbox.checked ||
+             sidebar.contains(target) ||
+             (target === checkbox || target === toggle)) return;
+
+          checkbox.checked = false;
+        }, false);
+      })(document);
+    </script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-165966353-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-165966353-1');
+</script>
+
+
+  </body>
+</html>
