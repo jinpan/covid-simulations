@@ -1,23 +1,23 @@
 ---
 layout: page
-title: Coronavirus and Shopping
+title: Shopping Solo
 permalink: /simple_shopping/
 ---
 
 <script src="./bootstrap.js"></script>
 
-Covid-19 has been spreading across our planet at a rapid pace, and has infected
-more than [4.3 million people
+Covid-19 has been spreading across our planet at a rapid pace, infecting
+more than [4.4 million people
 worldwide](https://www.nytimes.com/interactive/2020/world/coronavirus-maps.html),
-with more than [1.3 million cases in the United States as of mid-May
+with more than [1.4 million cases in the United States as of mid-May
 2020](https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html).
 Until a vaccine is broadly administered, society must work together to control
 the infection rate.
 
-There are hundreds of small questions we must all answer each day that
-collectively contribute to the infection - should I wear a mask? How far away
+There are hundreds of small decisions we all must make each day that
+collectively contribute to the infection rate - should I wear a mask? How far away
 should I keep from others? How often should I go shopping? Should I go
-shopping alone? Should I wear my lucky socks? Do my decisions even matter?
+shopping solo? Should I wear my lucky socks? Do my decisions even matter?
 
 While there are definitive answers to some questions ([The CDC recommends
 everyone to wear a mask
@@ -29,8 +29,10 @@ household level.
 
 First, let's simulate the
 [Susceptible-Infectious-Recovered](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SIR_model)
-model.  Green circles represent susceptible people, red circles infectious, and
-gray circles recovered.  If a susceptible person gets too close to an
+model.  Green circles represent <span style="background-color:
+#B8F7BF">susceptible</span> people, red circles <span style="background-color:
+#EB6383">infectious</span> , and gray circles <span style="background-color:
+#C8C8C8">recovered</span> .  If a susceptible person gets too close to an
 infectious person, they will catch the disease.
 
 <div>
@@ -68,13 +70,14 @@ To more realistically model the spread of the virus, we'll add viral particles
 to the simulation: infectious people will continuously emit viral particles
 (by breathing, coughing, sneezing, etc).  People will also continuously inhale
 viral particles, and the more particles they breathe in, the more likely they
-are to contract the disease.
+are to contract the disease.  Viral particles will fade over time.
 
 Additionally, let's use a more realistic model of disease spread - the
 [Susceptible-Exposed-Infectious-Recovered](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model)
-model.  This model introduces an exposed state, where exposed individuals are
-not immediately infectious.  The WHO [estimates that the Covid-19 exposed
-duration is about one third as long as the infectious
+model.  This model introduces an <span style="background-color:
+#C7BA29">exposed</span> state, where exposed individuals are not immediately
+infectious.  The WHO [estimates that the Covid-19 exposed duration is about one
+third as long as the infectious
 duration](https://www.who.int/docs/default-source/coronaviruse/who-china-joint-mission-on-covid-19-final-report.pdf),
 so we will use that ratio below.
 
@@ -128,7 +131,6 @@ takes longer to play out, so you may consider increasing the simulation speed.
     <button class="particle_shopper0-speed" data-speed="16">16x</button>
     <button class="particle_shopper0-speed" data-speed="32">32x</button>
   </span>
-  <!--TODO: dynamically show this controller-->
   <br>
   <span>Percent of dual shopper households:
     <button class="particle_shopper0-pct-dual-shopper" data-pct="0">0%</button>
@@ -151,24 +153,65 @@ takes longer to play out, so you may consider increasing the simulation speed.
   </canvas>
 </div>
 
-If we run this simulation many times, we will see that every 1% increase in
-dual-shopper households leads to approximately a TODO% increase in people
-infected at the end of the simulations.
+<hr>
 
-// TODO: add graph!
+If we run this simulation tens of thousands of times, we will see that
+every 1% increase in dual-shopper households leads to approximately a
+0.96% increase in people infected at the end of the simulations.
 
-We can also look at the data from a household-level perspective and answer the
-question: How does imposing a single-shopper rule in my household affect the
-risk of someone in my household getting the disease?
+<div
+        id="infection_rate_vs_pct_dual_shopper"
+        style="border: solid; border-width: thin; display: inline-block"
+></div>
 
-// TODO: add graph!
+The dotted line is the median infection rate across the entire population,
+given a certain percentage of dual-shopper households. The shaded gray area
+contains the average 50% of outcomes across all the simulations.
+
+Single shopper households are already sending out 1 shopper to buy supplies
+periodically. In this community, if a single-shopper household were to convert
+to a dual-shopper household, they risk infecting `(1/54) * 0.96 * 108 = 1.92`
+more people on average (there is a `1/54` increase in number of dual-shopper
+households, which we multiply by the `0.96` slope of the graph to get the
+percentage increase of infected people, which we then scale by the total number
+of people `108` to get an absolute number of additional infected people). In
+other words:
+
+> Each additional shopper infects 1.92 more people on average.
+
+So yes, our decisions absolutely matter and they can matter beyond ourselves.
+
+<hr>
+
+We can also look at the same data from a household-level perspective and tackle
+the question:
+
+> How does imposing a single-shopper rule in _my_ household affect the risk of
+> someone in _my_ household getting the disease?
+
+<div
+        id="infection_rate_by_household_type_vs_pct_dual_shopper"
+        style="border: solid; border-width: thin; display: inline-block"
+></div>
+
+The shaded green region represents the average 50% of outcomes for
+single-shopper households, and the red region for dual-shopper households.
+Initially infected households were excluded from this data for fairness.
+
+As the data shows, our decisions do not exist in a vacuum - our rate of infection
+depends on others within our community. What is interesting here is that
+our decisions matter most when our community is most at risk - the gap between
+household infection rates is greatest when there are many dual-shopper households
+in the community.
+
+> Our decisions matter most when our community is most at risk.
 
 <hr>
 
 While we tuned many parameters of our hypothetical virus simulation to
 mimic the rate of spread of covid-19, this hypothetical virus is not covid-19
 (and there still remains much to be learned about the exact mechanisms of how
-covid-19 spreads) and the simulated circles do not capture real human behavior
+it spreads) and the simulated circles do not capture real human behavior
 (we order grocery delivery services, maintain distance in stores, squeeze many
 avocados on the shelf to find the ripest ones, and so on).  So please wrap the
 above numbers with generous error bars when applying those judgements in your
