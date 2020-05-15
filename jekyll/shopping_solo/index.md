@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Shopping Solo
-permalink: /simple_shopping/
+permalink: /shopping_solo/
 ---
 
 <script src="./bootstrap.js"></script>
