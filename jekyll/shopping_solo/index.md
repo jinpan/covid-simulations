@@ -107,6 +107,8 @@ so we will use that ratio below.
 Now that we have a more realistic model of how the virus spreads, let's look at
 simulating more realistic human behavior.
 
+### Shopping Simulation
+
 For the next simulation, we have a tiny community of 108 people split among 54
 households (2 people per household).  These people are social distancing and
 not seeing their friends and neighbors, but must periodically make trips to the
