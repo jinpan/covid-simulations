@@ -249,10 +249,18 @@ class Simulation {
     for (let idx = 0; idx < width * height; idx++) {
       const stride = idx * 3;
       const val = background_viral_particles[idx];
-      this.background_color_data[stride] = Math.min(255, 250 + val);
-      this.background_color_data[stride+1] = Math.max(0, 250 - 8*val);
-      this.background_color_data[stride+2] = Math.max(0, 250 - 8*val);
+
+      // Math.min/max is really slow on safari/ios
+      let red = 250 + val;
+      red = (red > 255) ? 255 : red;
+      let greenblue = 250 - 8*val;
+      greenblue = (greenblue < 0) ? 0 : 250 - 8*val;
+
+      this.background_color_data[stride] = red;
+      this.background_color_data[stride+1] = greenblue;
+      this.background_color_data[stride+2] = greenblue;
     }
+
     this.texture.needsUpdate = true;
   }
 
