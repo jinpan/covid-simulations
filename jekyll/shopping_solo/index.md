@@ -113,7 +113,7 @@ not seeing their friends and neighbors, but must periodically make trips to the
 store as their toilet paper and other household supplies run out.
 
 Some households have a single-shopper rule that only one person goes shopping,
-and they are marked as "1x".  In other households (marked as "2x"), both people
+and they are marked as `1x`.  In other households (marked as `2x`), both people
 will go out to shop when supplies run out.
 
 You can configure the percentage of single-shopper households and see how quickly
@@ -177,7 +177,7 @@ percentage increase of infected people, which we then scale by the total number
 of people `108` to get an absolute number of additional infected people). In
 other words:
 
-> Each additional shopper infects 1.92 more people on average.
+> Each additional shopper infects 1.9 more people on average.
 
 So yes, our decisions absolutely matter and they can matter beyond ourselves.
 
