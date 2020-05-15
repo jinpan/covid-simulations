@@ -2,11 +2,37 @@
 use wasm_bindgen::prelude::*;
 
 use crate::v0::config::{DiseaseSpreadParameters, WorldConfig};
-use crate::v0::core::{DiseaseState, World};
+use crate::v0::core;
 use crate::v0::geometry;
 use crate::v0::maps;
 use itertools::Itertools;
 use rand::RngCore;
+
+#[derive(Serialize)]
+pub enum DiseaseState {
+    #[serde(rename = "susceptible")]
+    Susceptible,
+
+    #[serde(rename = "exposed")]
+    Exposed,
+
+    #[serde(rename = "infectious")]
+    Infectious,
+
+    #[serde(rename = "recovered")]
+    Recovered,
+}
+
+impl DiseaseState {
+    fn from_core(ds: &core::DiseaseState) -> Self {
+        match ds {
+            core::DiseaseState::Susceptible => DiseaseState::Susceptible,
+            core::DiseaseState::Exposed(_) => DiseaseState::Exposed,
+            core::DiseaseState::Infectious(_) => DiseaseState::Infectious,
+            core::DiseaseState::Recovered => DiseaseState::Recovered,
+        }
+    }
+}
 
 #[derive(Serialize)]
 pub struct BoundingBox {
@@ -36,27 +62,32 @@ pub struct Household {
 #[derive(Serialize)]
 pub struct Person {
     pub id: usize,
-    pub px: f32,
-    pub py: f32,
-    pub ds: String,
+
+    #[serde(rename = "px")]
+    pub position_x: f32,
+
+    #[serde(rename = "py")]
+    pub position_y: f32,
+
+    #[serde(rename = "ds")]
+    pub disease_state: DiseaseState,
 }
 
 #[derive(Serialize)]
 pub struct State {
-    pub tick: usize,
     pub people: Vec<Person>,
 }
 
 #[wasm_bindgen]
 pub struct WorldView {
-    world: World,
+    world: core::World,
 
     background_viral_particles: Vec<f32>,
 }
 
 impl WorldView {
     pub fn new(config: WorldConfig, map: Option<maps::Map>, rng: Box<dyn RngCore>) -> Self {
-        let world = World::new(rng, config, map);
+        let world = core::World::new(rng, config, map);
 
         let background_viral_particles =
             Vec::with_capacity(world.config.size.0 as usize * world.config.size.1 as usize);
@@ -66,39 +97,33 @@ impl WorldView {
             background_viral_particles,
         }
     }
-}
 
-#[wasm_bindgen]
-impl WorldView {
-    pub fn step(&mut self) {
-        self.world.step();
-    }
-
-    pub fn to_json(&self) -> JsValue {
+    pub fn get_state(&self) -> State {
         let people = self
             .world
             .people
             .iter()
-            .map(|p| {
-                let disease_state = match p.disease_state {
-                    DiseaseState::Susceptible => "susceptible",
-                    DiseaseState::Exposed(_) => "exposed",
-                    DiseaseState::Infectious(_) => "infectious",
-                    DiseaseState::Recovered => "recovered",
-                };
-                Person {
-                    id: p.id,
-                    px: p.position.x,
-                    py: p.position.y,
-                    ds: disease_state.to_string(),
-                }
+            .map(|p| Person {
+                id: p.id,
+                position_x: p.position.x,
+                position_y: p.position.y,
+                disease_state: DiseaseState::from_core(&p.disease_state),
             })
             .collect::<Vec<_>>();
 
-        let state = State {
-            tick: self.world.tick,
-            people,
-        };
+        State { people }
+    }
+}
+
+#[wasm_bindgen]
+impl WorldView {
+    pub fn step(&mut self) -> usize {
+        self.world.step();
+        self.world.tick
+    }
+
+    pub fn to_json(&self) -> JsValue {
+        let state = self.get_state();
 
         JsValue::from_serde(&state).unwrap()
     }

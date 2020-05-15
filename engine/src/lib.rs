@@ -21,9 +21,7 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn create_world(config: &JsValue, map_name: &str, maybe_seed: Option<u32>) -> WorldView {
-    log(&format!("Received config: {:?}", config));
     let world_config: WorldConfig = config.into_serde().expect("failed to parse");
-    log(&format!("Parsed config: {:?}", world_config));
 
     let map = match map_name {
         "" => None,

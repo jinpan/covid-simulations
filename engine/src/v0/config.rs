@@ -9,9 +9,6 @@ pub struct BackgroundViralParticleParams {
     // TODO: add parameter for exhale density function: the amount of particles exhaled should
     // not be uniform across the circle.
 
-    // The quantity of particles an infected person emits per unit square per tick
-    pub exhale_amount: f32,
-
     // What percentage of particles deactivate each tick.
     // 0 means that no particles are ever deactivated, 1 means that all particles are instantly
     // deactivated.

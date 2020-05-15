@@ -153,7 +153,7 @@ impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
             Self::get_cells(&p.position, params.exhale_radius, world_size)
                 .iter()
                 .for_each(|(x, y)| {
-                    background_viral_particles[*y as usize][*x as usize] += params.exhale_amount;
+                    background_viral_particles[*y as usize][*x as usize] += 1.0;
                 });
         }
     }

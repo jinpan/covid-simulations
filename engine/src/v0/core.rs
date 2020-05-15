@@ -7,6 +7,7 @@ use crate::v0::disease_spread::{
 use crate::v0::geometry::Position;
 use crate::v0::maps;
 use crate::v0::person_behavior::{BrownianMotionBehavior, PersonBehavior, ShopperBehavior};
+use rand::prelude::SliceRandom;
 use rand::{Rng, RngCore};
 
 #[derive(PartialEq, Debug)]
@@ -50,11 +51,17 @@ impl World {
     ) -> Self {
         assert!(config.num_people >= config.num_initially_infected);
 
+        let mut infected_people = vec![false; config.num_people];
+        for i in 0..config.num_initially_infected {
+            infected_people[i] = true;
+        }
+        infected_people.shuffle(&mut rng);
+
         let mut current_household_idx = 0;
         let mut people_in_current_household = 0;
         let people = (0..config.num_people)
             .map(|i| {
-                let disease_state = if i < config.num_initially_infected {
+                let disease_state = if infected_people[i] {
                     DiseaseState::Infectious(0)
                 } else {
                     DiseaseState::Susceptible
@@ -249,7 +256,6 @@ mod tests {
                 spread_parameters: DiseaseSpreadParameters::BackgroundViralParticle(
                     BackgroundViralParticleParams {
                         exhale_radius: 4.0,
-                        exhale_amount: 1.0,
                         decay_rate: 0.5,
                         infection_risk_per_particle: 0.8,
                     },
