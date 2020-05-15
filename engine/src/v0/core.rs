@@ -203,33 +203,28 @@ mod tests {
 
         let mut world = World::new(rng, config, None);
         let mut expected_disease_states = vec![
+            DiseaseState::Susceptible,
+            DiseaseState::Susceptible,
+            DiseaseState::Susceptible,
             DiseaseState::Infectious(0),
             DiseaseState::Infectious(0),
-            DiseaseState::Susceptible,
-            DiseaseState::Susceptible,
-            DiseaseState::Susceptible,
         ];
 
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[3] = DiseaseState::Infectious(1);
-        expected_disease_states[4] = DiseaseState::Infectious(1);
+        expected_disease_states[2] = DiseaseState::Infectious(1);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[1] = DiseaseState::Infectious(2);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[0] = DiseaseState::Infectious(3);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[2] = DiseaseState::Infectious(4);
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[0] = DiseaseState::Recovered;
-        expected_disease_states[1] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
@@ -238,11 +233,15 @@ mod tests {
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-        world.step();
         expected_disease_states[2] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[1] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[0] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
     }
 
@@ -269,11 +268,11 @@ mod tests {
 
         let mut world = World::new(rng, config, None);
         let mut expected_disease_states = vec![
+            DiseaseState::Susceptible,
+            DiseaseState::Susceptible,
+            DiseaseState::Susceptible,
             DiseaseState::Infectious(0),
             DiseaseState::Infectious(0),
-            DiseaseState::Susceptible,
-            DiseaseState::Susceptible,
-            DiseaseState::Susceptible,
         ];
 
         check_disease_states(&world.people, &expected_disease_states);
@@ -281,43 +280,43 @@ mod tests {
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
         world.step();
-        expected_disease_states[3] = DiseaseState::Exposed(2);
-        expected_disease_states[4] = DiseaseState::Exposed(2);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[3] = DiseaseState::Infectious(3);
-        expected_disease_states[4] = DiseaseState::Infectious(3);
+        expected_disease_states[1] = DiseaseState::Exposed(3);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[1] = DiseaseState::Infectious(4);
+        expected_disease_states[2] = DiseaseState::Exposed(4);
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
-        expected_disease_states[0] = DiseaseState::Recovered;
-        expected_disease_states[1] = DiseaseState::Recovered;
-        expected_disease_states[2] = DiseaseState::Exposed(5);
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[2] = DiseaseState::Infectious(6);
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
+        expected_disease_states[0] = DiseaseState::Exposed(5);
+        expected_disease_states[2] = DiseaseState::Infectious(5);
         expected_disease_states[3] = DiseaseState::Recovered;
         expected_disease_states[4] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[0] = DiseaseState::Infectious(6);
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
         check_disease_states(&world.people, &expected_disease_states);
         world.step();
         check_disease_states(&world.people, &expected_disease_states);
 
         world.step();
+        expected_disease_states[1] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
         expected_disease_states[2] = DiseaseState::Recovered;
+        check_disease_states(&world.people, &expected_disease_states);
+
+        world.step();
+        expected_disease_states[0] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
     }
 }
