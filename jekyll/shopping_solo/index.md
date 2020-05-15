@@ -224,7 +224,7 @@ time and infections), so improving these simulations and making policy off of
 them may be better than the alternative of waiting for field data.
 
 These simulations are all [open
-source](https://jinpan.github.com/covid-simulations/).
+source](https://www.github.com/jinpan/covid-simulations/).
 
 ## Call for help:
 I am a software engineer, not an epidemiologist.  If you are an epidemiologist
