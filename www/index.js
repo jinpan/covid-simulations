@@ -491,9 +491,16 @@ const simulations = (function() {
     71.3, 71.3, 75.0, 73.84, 74.77, 77.78, 76.62, 80.32, 80.32, 80.56, 83.33,
     82.87, 84.03, 86.11, 86.81, 87.96, 88.89, 91.67];
 
+  let best_fit = []
+  for (let x = 0; x <= 100; x += 2) {
+    const y = -3.09 + 0.96 * x;
+    best_fit.push(y.toFixed(1));
+  }
+
   let data = [
     xs,
     q1, q3, q2,
+    best_fit,
   ];
 
   const opts = {
@@ -522,6 +529,11 @@ const simulations = (function() {
       {
         label: "Median",
         dash: [1, 5],
+        points: {show: false},
+        value: (_, v) => v + "%",
+      },
+      {
+        label: "Linear Regression",
         points: {show: false},
         value: (_, v) => v + "%",
       },
