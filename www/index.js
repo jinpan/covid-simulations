@@ -250,8 +250,8 @@ class Simulation {
       const stride = idx * 3;
       const val = background_viral_particles[idx];
       this.background_color_data[stride] = Math.min(255, 250 + val);
-      this.background_color_data[stride+1] = Math.max(0, 250 - 20*val);
-      this.background_color_data[stride+2] = Math.max(0, 250 - 20*val);
+      this.background_color_data[stride+1] = Math.max(0, 250 - 8*val);
+      this.background_color_data[stride+2] = Math.max(0, 250 - 8*val);
     }
     this.texture.needsUpdate = true;
   }
@@ -262,10 +262,19 @@ class Simulation {
     }
     requestAnimationFrame( () => {this.animate();} );
 
+    let state = null;
     for (let i = 0; i < this.speed; i++) {
-      this.world.step();
+      const tick = this.world.step();
+      if (tick > this.next_chart_update_tick) {
+        this.next_chart_update_tick += this.config["chart_update_period_ticks"];
+
+        state = this.world.to_json();
+        this.update_chart(state["people"]);
+      }
     }
-    let state = this.world.to_json();
+    if (state == null) {
+      state = this.world.to_json();
+    }
 
     this.animate_people(state["people"]);
     let spread_params = this.config["engine_config"]["disease_parameters"]["spread_parameters"];
@@ -273,10 +282,6 @@ class Simulation {
       this.update_background_viral_particles();
     }
 
-    if (state["tick"] > this.next_chart_update_tick) {
-      this.next_chart_update_tick += this.config["chart_update_period_ticks"];
-      this.update_chart(state["people"]);
-    }
 
     this.renderer.render( this.scene, this.camera );
   }
@@ -383,71 +388,69 @@ const configs = (function() {
     "engine_config": {
       "disease_parameters": {
         "exposed_period_ticks": 0 * 60,
-        "infectious_period_ticks": 10 * 60,
+        "infectious_period_ticks": 345,
         "spread_parameters": {
-          "infection_radius": 3,
+          "infection_radius": 3.2,
         },
       },
       "behavior_parameters": "brownian_motion",
       "size": [width, height],
       "num_people": 200,
-      "num_initially_infected": 1,
+      "num_initially_infected": 3,
     },
     "map_name": "",
     "initial_seed": 10914,
-    "chart_update_period_ticks": 10,
+    "chart_update_period_ticks": 4,
   });
   add_config("particle_brownian0", {
     "engine_config": {
       "disease_parameters": {
-        "exposed_period_ticks": 10 * 60,
-        "infectious_period_ticks": 10 * 60,
+        "exposed_period_ticks": 115,
+        "infectious_period_ticks": 345,
         "spread_parameters": {
           "background_viral_particle": {
             "exhale_radius": 9,
-            "exhale_amount": 0.4,
             "decay_rate": 0.05,
-            "infection_risk_per_particle": 0.004,
+            "infection_risk_per_particle": 0.0019,
           },
         },
       },
       "behavior_parameters": "brownian_motion",
       "size": [width, height],
       "num_people": 200,
-      "num_initially_infected": 1,
+      "num_initially_infected": 3,
     },
     "map_name": "",
     "initial_seed": 10914,
-    "chart_update_period_ticks": 10,
+    "chart_update_period_ticks": 6,
   });
   add_config("particle_shopper0", {
     "engine_config": {
       "disease_parameters": {
-        "exposed_period_ticks": 20 * 60,
-        "infectious_period_ticks": 30 * 60,
+        "exposed_period_ticks": 15 * 60,
+        "infectious_period_ticks": 45 * 60,
         "spread_parameters": {
           "background_viral_particle": {
             "exhale_radius": 9,
-            "exhale_amount": 0.4,
-            "decay_rate": 0.05,
-            "infection_risk_per_particle": 0.0008,
+            "decay_rate": 0.055,
+            "infection_risk_per_particle": 0.00013,
           },
         },
       },
       "behavior_parameters": {
         "shopper": {
           "fraction_dual_shopper_households": 0.5,
-          "shopping_period_ticks": 15 * 60,
-          "supplies_bought_per_trip": 35 * 60,
+          "shopping_period_ticks": 10 * 60,
+          "supplies_bought_per_trip": 30 * 60,
         },
       },
       "size": [width, height],
       "num_people": 108,
-      "num_initially_infected": 1,
+      "num_initially_infected": 2,
     },
     "map_name": "simple_groceries",
     "initial_seed": 10914,
-    "chart_update_period_ticks": 10,
+    "chart_update_period_ticks": 30,
   });
 
   return config_builder;
