@@ -49,7 +49,7 @@ infectious person, they will catch the disease.
   <br>
   <div
           id="radius_brownian0-uplot"
-          style="border: solid; border-width: thin; display: inline-block"
+          style="border: solid; border-width: thin; display: inline-block; width:100%"
   ></div>
 
   <canvas
@@ -96,7 +96,7 @@ so we will use that ratio below.
   <br>
   <div
           id="particle_brownian0-uplot"
-          style="border: solid; border-width: thin; display: inline-block"
+          style="border: solid; border-width: thin; display: inline-block; width:100%"
   ></div>
 
   <canvas
@@ -147,7 +147,7 @@ takes longer to play out, so you may consider increasing the simulation speed.
   <br>
   <div
           id="particle_shopper0-uplot"
-          style="border: solid; border-width: thin; display: inline-block"
+          style="border: solid; border-width: thin; display: inline-block; width:100%"
   ></div>
 
   <canvas

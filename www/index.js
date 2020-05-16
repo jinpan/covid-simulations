@@ -19,7 +19,8 @@ const color_map = {
   "recovered": 0xC8C8C8,
 };
 const uplot_opts = {
-  width: width, height: 50,
+  // width is set dynamically
+  height: 50,
   scales: { x: { time: false }, y: { range: [0, 200] }, },
   axes: [ { show: false }, { show: false }, ],
   cursor: { show: false },
@@ -48,10 +49,15 @@ class Simulation {
   }
 
   reset_uplot() {
+    this.uplot_el = document.getElementById(`${this.config.name}-uplot`);
+    let uplot_width = this.uplot_el.clientWidth;
+
     let opts_copy = Object.assign({}, uplot_opts);
     opts_copy['scales']['y']['range'] = [0, this.config['engine_config']['num_people']];
+    opts_copy['width'] = uplot_width;
+
     this.uplot_data = [
-      Array.from(Array(width).keys()),
+      Array.from(Array(uplot_width).keys()),
       [], // susceptible
       [], // exposed + susceptible
       [], // exposed + infectious + susceptible
@@ -60,7 +66,7 @@ class Simulation {
     if (this.uplot_inst === undefined) {
       this.uplot_inst = new uplot.default(
         opts_copy, this.uplot_data,
-        document.getElementById(`${this.config.name}-uplot`),
+        this.uplot_el,
       );
     } else {
       // A uplot instance has been previously created.
@@ -227,11 +233,24 @@ class Simulation {
     this.uplot_data[3].push(b);
     this.uplot_data[4].push(a);
 
-    if (this.uplot_data[1].length > width) {
-      this.uplot_data[1].shift();
-      this.uplot_data[2].shift();
-      this.uplot_data[3].shift();
-      this.uplot_data[4].shift();
+    if (this.uplot_data[1].length > this.uplot_data[0].length) {
+      for (let i=1; i<=4; i++) {
+        this.uplot_data[i].shift();
+      }
+    }
+
+    // Check to see if we need to resize this container.
+    let uplot_width = this.uplot_el.clientWidth;
+    if (this.uplot_data[0].length != uplot_width) {
+      this.uplot_data[0] = Array.from(Array(uplot_width).keys());
+
+      const diff = this.uplot_data[1].length - this.uplot_data[0].length;
+      if (diff > 0) {
+        for (let i=1; i<=4; i++) {
+          this.uplot_data[i] = this.uplot_data[i].slice(diff);
+        }
+      }
+      this.uplot_inst.setSize({'width': uplot_width, 'height': uplot_opts['height']});
     }
     this.uplot_inst.setData(this.uplot_data);
   }
