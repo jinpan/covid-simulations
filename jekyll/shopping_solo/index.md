@@ -6,6 +6,8 @@ permalink: /shopping_solo/
 
 <script src="./bootstrap.js"></script>
 
+### 2020-05-15 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 Covid-19 has been spreading across our planet at a rapid pace, infecting
 more than [4.4 million people
 worldwide](https://www.nytimes.com/interactive/2020/world/coronavirus-maps.html),
@@ -240,6 +242,7 @@ let's work together to spread high quality information and control the spread of
 the virus.
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I built some <a href="https://twitter.com/hashtag/coronavirus?src=hash&amp;ref_src=twsrc%5Etfw">#coronavirus</a> simulations, exploring how the way we shop affects the infection rate. Check out the 60fps simulations at <a href="https://t.co/Qa2evarhM4">https://t.co/Qa2evarhM4</a>. <a href="https://t.co/fpGH25QzGM">pic.twitter.com/fpGH25QzGM</a></p>&mdash; Jin Pan (@JinPan20) <a href="https://twitter.com/JinPan20/status/1261462639516909569?ref_src=twsrc%5Etfw">May 16, 2020</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 <hr>
 
