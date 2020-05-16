@@ -118,7 +118,7 @@ store as their toilet paper and other household supplies run out.
 
 Some households have a single-shopper rule that only one person goes shopping,
 and they are marked as `1x`.  In other households (marked as `2x`), both people
-will go out to shop when supplies run out.
+will go out to shop and stick together in the store.
 
 You can configure the percentage of single-shopper households and see how quickly
 the disease spreads across the community at various percentages.  This simulation
