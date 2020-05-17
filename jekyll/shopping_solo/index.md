@@ -134,6 +134,7 @@ shop and stick together in the store. See this footnote for all parameters
     the store.  Travel time depends on household distance to the store.
     * Both types of households will buy 1800 supplies from the store and add them to the household supply levels.  This
     is 1800 per household, _not_ per person.
+    * Initially, two randomly chosen people are infected.  They could be from the same household with probability 1/103.
     * Infectious people exhale 1 particle in a circle of radius 9 around them on the grid, once per tick
     * People only inhale particles for the grid point that they are on.
     * When a susceptible person inhales N particles, they have a N * 0.013% chance of becoming exposed during on that
