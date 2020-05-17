@@ -533,7 +533,7 @@ const simulations = (function() {
   const opts = {
     width: 700,
     height: 400,
-    title: "Infection rate vs Percentage of Dual-Shopper Households",
+    title: "Infection Rate vs Percentage of 2x-Shopper Households",
     scales: { x: { time: false }, y: { range: [0, 100] }, },
     series: [
       { },
@@ -567,7 +567,7 @@ const simulations = (function() {
     ],
     axes: [
       {
-        label: "Percentage of dual-shopper households",
+        label: "Percentage of 2x-shopper households",
         values: (_, vals) => vals.map(v => v + "%")
       },
       {
@@ -641,7 +641,7 @@ const simulations = (function() {
   const opts = {
     width: 700,
     height: 400,
-    title: "Infection by Household Type vs % Dual-Shopper Households",
+    title: "Infection by Household Type vs % 2x-Shopper Households",
     scales: { x: { time: false }, y: { range: [0, 100] }, },
     series: [
       { label: "% 2x" },
@@ -692,11 +692,11 @@ const simulations = (function() {
     ],
     axes: [
       {
-        label: "Percentage of dual-shopper households",
+        label: "Percentage of 2x-shopper households",
         values: (_, vals) => vals.map(v => v + "%")
       },
       {
-        label: "Infection rate",
+        label: "Infection Rate",
         values: (_, vals) => vals.map(v => v + "%")
       },
     ]
