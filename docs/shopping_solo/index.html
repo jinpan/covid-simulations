@@ -102,31 +102,29 @@
 
 <h3 id="2020-05-15--jin-pan--follow-jinpan20">2020-05-15 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></h3>
 
-<p>Covid-19 has been spreading across our planet at a rapid pace, infecting
-more than <a href="https://www.nytimes.com/interactive/2020/world/coronavirus-maps.html">4.4 million people
+<p>Covid-19 has spread across our planet at a rapid pace, infecting
+<a href="https://www.nytimes.com/interactive/2020/world/coronavirus-maps.html">4.4 million+ people
 worldwide</a>,
-with more than <a href="https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html">1.4 million cases in the United States as of mid-May
+with <a href="https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html">1.4 million+ cases in the United States as of mid-May
 2020</a>.
-Until a vaccine is broadly administered, society must work together to control
-the infection rate.</p>
+Until a vaccine is broadly administered, society must continue working together to
+control the infection rate.</p>
 
-<p>There are hundreds of small decisions we all must make each day that
-collectively contribute to the infection rate - should I wear a mask? How far away
-should I keep from others? How often should I go shopping? Should I go
-shopping solo? Should I wear my lucky socks? Do my decisions even matter?</p>
+<p>There are hundreds of small decisions we make each day that
+collectively contribute to the infection rate - should I wear a mask?
+Should I go shopping solo? Should I wear my lucky socks? Do my
+decisions even matter?</p>
 
 <p>While there are definitive answers to some questions (<a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/diy-cloth-face-coverings.html">The CDC recommends
 everyone to wear a mask
 outdoors</a>),
-others are harder to answer.  To answer some of the harder questions, let’s look
-at some simulations of how a hypothetical virus spreads across a virtual
-population and how individual actions affect the spread, both on a societal and
-household level.</p>
+others are harder to answer.  To answer the harder questions, let’s
+simulate how a hypothetical virus spreads across a virtual population.</p>
 
 <p>First, let’s simulate the
 <a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SIR_model">Susceptible-Infectious-Recovered</a>
-model.  Green circles represent <span style="background-color: #B8F7BF">susceptible</span> people, red circles <span style="background-color: #EB6383">infectious</span> , and gray circles <span style="background-color: #C8C8C8">recovered</span> .  If a susceptible person gets too close to an
-infectious person, they will catch the disease.</p>
+model.  Green circles represent <span style="background-color: #B8F7BF">susceptible</span> people, red <span style="background-color: #EB6383">infectious</span>, and gray <span style="background-color: #C8C8C8">recovered</span>.  A susceptible person who gets too close to an
+infectious person will catch the disease.</p>
 
 <div>
   <button id="radius_brownian0-start" style="width: 4em">Start</button>
@@ -145,29 +143,30 @@ infectious person, they will catch the disease.</p>
 </div>
 
 <p>The infected population initially grows rapidly but slows as the susceptible
-population shrinks.  Eventually the virus runs out of people to infect, and the
-pandemic is over with 70+% of the population infected.</p>
+population shrinks, and eventually the virus runs out of people to infect. In
+this rough model, the pandemic is over with 70+% of the population infected.</p>
 
-<p>We can improve this initial simulation in two major ways:</p>
+<p>We can improve this initial simulation by more realistically modelling</p>
 <ol>
-  <li>More realistically model the spread of the virus</li>
-  <li>More realistically model human behavior - we are not always trapped in a giant
-bouncy castle</li>
+  <li>Virus Spread</li>
+  <li>Human Behavior</li>
 </ol>
 
-<p>To more realistically model the spread of the virus, we’ll add viral particles
-to the simulation: infectious people will continuously emit viral particles
-(by breathing, coughing, sneezing, etc).  People will also continuously inhale
-viral particles, and the more particles they breathe in, the more likely they
-are to contract the disease.  Viral particles will fade over time.</p>
-
-<p>Additionally, let’s use a more realistic model of disease spread - the
+<p>We will use the
 <a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model">Susceptible-Exposed-Infectious-Recovered</a>
-model.  This model introduces an <span style="background-color: #C7BA29">exposed</span> state, where exposed individuals are not immediately
-infectious.  The WHO <a href="https://www.who.int/docs/default-source/coronaviruse/who-china-joint-mission-on-covid-19-final-report.pdf">estimates that the Covid-19 exposed duration is about one
-third as long as the infectious
-duration</a>,
-so we will use that ratio below.</p>
+model, a more realistic model of disease spread.  People are
+<span style="background-color: #C7BA29">exposed</span>
+for one third as long as they are infectious, which is the estimated ratio
+for Covid-19
+<a href="https://www.who.int/docs/default-source/coronaviruse/who-china-joint-mission-on-covid-19-final-report.pdf">according to the WHO</a>.</p>
+
+<p>Instead of spreading via contact, the disease will be spread through viral particles:</p>
+<ul>
+  <li>Infectious people emit viral particles by breathing, coughing, sneezing, etc</li>
+  <li>People continuously inhale viral particles; the more particles they breathe, the
+more likely they are to be exposed to the disease</li>
+  <li>Viral particles fade over time</li>
+</ul>
 
 <div>
   <button id="particle_brownian0-start" style="width: 4em">Start</button>
@@ -186,23 +185,24 @@ so we will use that ratio below.</p>
   </canvas>
 </div>
 
-<p>Now that we have a more realistic model of how the virus spreads, let’s look at
-simulating more realistic human behavior.</p>
+<p>We are not always trapped in a giant bouncy castle.  Next, let’s simulate
+more realistic human behavior - shopping.</p>
+
+<hr />
 
 <h3 id="shopping-simulation">Shopping Simulation</h3>
 
-<p>For the next simulation, we have a tiny community of 108 people split among 54
-households (2 people per household).  These people are social distancing and
-not seeing their friends and neighbors, but must periodically make trips to the
-store as their toilet paper and other household supplies run out.</p>
+<p>Let’s simulate a tiny community of 108 people split among 54 households (2 people
+per household).  All people are social distancing, but households must
+periodically make trips to the store as they run out of supplies.</p>
 
-<p>Some households have a single-shopper rule that only one person goes shopping,
-and they are marked as <code class="highlighter-rouge">1x</code>.  In other households (marked as <code class="highlighter-rouge">2x</code>), both people
-will go out to shop and stick together in the store.</p>
+<p>Some households (marked <code class="highlighter-rouge">1x</code>) have a 1x shopper rule that only one person goes
+shopping, and other households (marked as <code class="highlighter-rouge">2x</code>), both people will go out to
+shop and stick together in the store. See this footnote for all parameters
+<sup id="fnref:shopping_parameters"><a href="#fn:shopping_parameters" class="footnote">1</a></sup>.</p>
 
-<p>You can configure the percentage of single-shopper households and see how quickly
-the disease spreads across the community at various percentages.  This simulation
-takes longer to play out, so you may consider increasing the simulation speed.</p>
+<p>You can configure the percentage of 2x shopper households and observe how that affects
+disease spread.</p>
 
 <div>
   <button id="particle_shopper0-start" style="width: 4em">Start</button>
@@ -216,7 +216,7 @@ takes longer to play out, so you may consider increasing the simulation speed.</
     <button class="particle_shopper0-speed" data-speed="32">32x</button>
   </span>
   <br />
-  <span>Percent of dual shopper households:
+  <span>Percent of 2x shopper households:
     <button class="particle_shopper0-pct-dual-shopper" data-pct="0">0%</button>
     <button class="particle_shopper0-pct-dual-shopper" data-pct="25">25%</button>
     <button class="particle_shopper0-pct-dual-shopper" data-pct="50" style="font-weight: bold" disabled="">50%</button>
@@ -233,20 +233,20 @@ takes longer to play out, so you may consider increasing the simulation speed.</
 
 <hr />
 
-<p>If we run this simulation tens of thousands of times, we will see that
-every 1% increase in dual-shopper households leads to approximately a
-0.96% increase in people infected at the end of the simulations.</p>
+<p>Running this simulation tens of thousands of times, we see that a 1% increase in
+2x-shopper households leads to a ~0.96% increase in people infected at the end of
+the simulations.</p>
 
 <div id="infection_rate_vs_pct_dual_shopper" style="border: solid; border-width: thin; display: inline-block"></div>
 
 <p>The dotted line is the median infection rate across the entire population,
-given a certain percentage of dual-shopper households. The shaded gray area
+given a certain percentage of 2x-shopper households. The shaded gray area
 contains the average 50% of outcomes across all the simulations.</p>
 
 <p>Single shopper households are already sending out 1 shopper to buy supplies
-periodically. In this community, if a single-shopper household were to convert
-to a dual-shopper household, they risk infecting <code class="highlighter-rouge">(1/54) * 0.96 * 108 = 1.92</code>
-more people on average (there is a <code class="highlighter-rouge">1/54</code> increase in number of dual-shopper
+periodically. In this community, if a 1x-shopper household were to convert
+to a 2x-shopper household, they risk infecting <code class="highlighter-rouge">(1/54) * 0.96 * 108 = 1.92</code>
+more people on average (there is a <code class="highlighter-rouge">1/54</code> increase in number of 2x-shopper
 households, which we multiply by the <code class="highlighter-rouge">0.96</code> slope of the graph to get the
 percentage increase of infected people, which we then scale by the total number
 of people <code class="highlighter-rouge">108</code> to get an absolute number of additional infected people). In
@@ -260,28 +260,28 @@ other words:</p>
 
 <hr />
 
-<p>We can also look at the same data from a household-level perspective and tackle
+<p>We can also look at the same data from a household-level perspective and address
 the question:</p>
 
 <blockquote>
-  <p>How does imposing a single-shopper rule in <em>my</em> household affect the risk of
+  <p>How does imposing a 1x-shopper rule in <em>my</em> household affect the risk of
 someone in <em>my</em> household getting the disease?</p>
 </blockquote>
 
 <div id="infection_rate_by_household_type_vs_pct_dual_shopper" style="border: solid; border-width: thin; display: inline-block"></div>
 
 <p>The shaded green region represents the average 50% of outcomes for
-single-shopper households, and the red region for dual-shopper households.
+1x-shopper households, and the red region for 2x-shopper households.
 Initially infected households were excluded from this data for fairness.</p>
 
-<p>As the data shows, our decisions do not exist in a vacuum - our rate of infection
+<p>Our decisions do not exist in a vacuum, and our rate of infection
 depends on others within our community. What is interesting here is that
-our decisions matter most when our community is most at risk - the gap between
-household infection rates is greatest when there are many dual-shopper households
+our decisions matter more when our community is more at risk - the gap between
+household infection rates is greatest when there are many 2x-shopper households
 in the community.</p>
 
 <blockquote>
-  <p>Our decisions matter most when our community is most at risk.</p>
+  <p>Our decisions matter more when our community is more at risk.</p>
 </blockquote>
 
 <hr />
@@ -335,6 +335,39 @@ the virus.</p>
   <li><a href="https://www.washingtonpost.com/graphics/2020/world/corona-simulator/">Harry Stevens of the Washington Post</a>.</li>
   <li><a href="https://www.youtube.com/watch?v=gxAaO2rsdIs">3Blue1Brown from YouTube</a>.</li>
 </ul>
+
+<h3 id="footnotes">Footnotes</h3>
+<div class="footnotes">
+  <ol>
+    <li id="fn:shopping_parameters">
+      <p>Shopping simulation parameters:</p>
+      <ul>
+        <li>At 1x speed, each second is divided into 60 ticks.  At 2x speed, each second into 120 ticks, and so on.</li>
+        <li>The map is a 600 x 400 grid.</li>
+        <li>Within households and stores, people will move at 1 unit per tick, and bounce off of walls.</li>
+        <li>On roads, people will move at 3 units per tick and take the shortest path from their household to the store
+and vice versa.</li>
+        <li>Households randomly start with 150-450 supplies, and consume 1 supply per tick.  This is independent of how many
+people are in the household at that time.</li>
+        <li>Households go shopping when the supply level hits 0.  However, the supply level will continue
+dropping by 1 per tick and go negative.</li>
+        <li>1x-shopper households will send out the same person each time they go shopping.</li>
+        <li>At the store, 2x-shopper households stick together.</li>
+        <li>Both types of households will spend 600 ticks at the store, not including time to travel to/from
+the store.  Travel time depends on household distance to the store.</li>
+        <li>Both types of households will buy 1800 supplies from the store and add them to the household supply levels.  This
+is 1800 per household, <em>not</em> per person.</li>
+        <li>Infectious people exhale 1 particle in a circle of radius 9 around them on the grid, once per tick</li>
+        <li>People only inhale particles for the grid point that they are on.</li>
+        <li>When a susceptible person inhales N particles, they have a N * 0.013% chance of becoming exposed during on that
+tick.  They do not accumulate inhaled particles - each tick is independent of the previous.</li>
+        <li>When initially exposed, people stay exposed for 900 ticks and become infectious for 2700 ticks before recovering.</li>
+        <li>Each tick, the number of particles at each location on the grid decays by 5.5%</li>
+      </ul>
+      <p><a href="#fnref:shopping_parameters" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
 
 </div>
 
