@@ -61,17 +61,17 @@ The infected population initially grows rapidly but slows as the susceptible
 population shrinks, and eventually the virus runs out of people to infect. In
 this rough model, the pandemic is over with 70+% of the population infected.
 
-We can improve this initial simulation by more realistically modelling
+We can improve this initial simulation by more realistically modeling
 1. Virus Spread
 1. Human Behavior
 
-We will use the
+We will use the more realistic
 [Susceptible-Exposed-Infectious-Recovered](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model)
-model, a more realistic model of disease spread.  People are
-<span style="background-color: #C7BA29">exposed</span>
-for one third as long as they are infectious, which is the estimated ratio
-for Covid-19
-[according to the WHO](https://www.who.int/docs/default-source/coronaviruse/who-china-joint-mission-on-covid-19-final-report.pdf).
+model, which introduces an <span style="background-color: #C7BA29">exposed</span>
+state, during which a person does not spread the disease.
+[The WHO](https://www.who.int/docs/default-source/coronaviruse/who-china-joint-mission-on-covid-19-final-report.pdf)
+estimates that Covid-19's exposed duration is one third the infectious
+duration, so we will use that ratio below.
 
 Instead of spreading via contact, the disease will be spread through viral particles:
 * Infectious people emit viral particles by breathing, coughing, sneezing, etc
@@ -110,13 +110,12 @@ more realistic human behavior - shopping.
 ### Shopping Simulation
 
 Let's simulate a tiny community of 108 people split among 54 households (2 people
-per household).  All people are social distancing, but households must
+per household).  Everyone is social distancing, but households must
 periodically make trips to the store as they run out of supplies.
 
 Some households (marked `1x`) have a 1x shopper rule that only one person goes
 shopping, and other households (marked as `2x`), both people will go out to
-shop and stick together in the store. See this footnote for all parameters
-[^shopping_parameters].
+shop and stick together in the store. All parameters at this footnote[^shopping_parameters].
 
 [^shopping_parameters]: Shopping simulation parameters:
     * At 1x speed, each second is divided into 60 ticks.  At 2x speed, each second into 120 ticks, and so on.
@@ -186,82 +185,88 @@ Running this simulation tens of thousands of times, we see that a 1% increase in
 the simulations.
 
 <div
-        id="infection_rate_vs_pct_dual_shopper"
-        style="border: solid; border-width: thin; display: inline-block"
-></div>
+    style="border: solid; border-width: thin; display: inline-block"
+>
+    <div id="infection_rate_vs_pct_dual_shopper"></div>
 
-The dotted line is the median infection rate across the entire population,
-given a certain percentage of 2x-shopper households. The shaded gray area
-contains the average 50% of outcomes across all the simulations.
+    <div style="padding: 1em">
+The shaded gray area contains the average 50% of outcomes across all the simulations.
+    </div>
+</div>
 
-Single shopper households are already sending out 1 shopper to buy supplies
-periodically. In this community, if a 1x-shopper household were to convert
-to a 2x-shopper household, they risk infecting `(1/54) * 0.96 * 108 = 1.92`
-more people on average (there is a `1/54` increase in number of 2x-shopper
-households, which we multiply by the `0.96` slope of the graph to get the
-percentage increase of infected people, which we then scale by the total number
-of people `108` to get an absolute number of additional infected people). In
-other words:
+> What happens if a 1x households sends out a second shopper?
 
-> Each additional shopper infects 1.9 more people on average.
+**Each additional shopper infects 1.9 more people:**
 
-So yes, our decisions absolutely matter and they can matter beyond ourselves.
+* An additional shopper means 1 more 2x shopper household, a `1/54` increase in the number of 2x households
+* A 1% increase in number of 2x households leads to a `0.96`% increase in infected people
+* There are `108` total people
+* `(1/54) * 0.96 * 108 = 1.92`
+
+The intuition behind this is that the additional shopper increases the chances that they get infected, increasing
+the chances their household gets infected, increasing the chances that someone in their household infects someone
+else, and so on, setting off an infection chain reaction.  In epidemiology
+terms, additional shoppers increase the
+[effective reproduction number](https://www.healthknowledge.org.uk/public-health-textbook/research-methods/1a-epidemiology/epidemic-theory).
+
+So yes, our decisions absolutely matter and matter beyond ourselves.
 
 <hr>
 
-We can also look at the same data from a household-level perspective and address
-the question:
+### How does this affect me?
 
 > How does imposing a 1x-shopper rule in _my_ household affect the risk of
 > someone in _my_ household getting the disease?
 
 <div
-        id="infection_rate_by_household_type_vs_pct_dual_shopper"
-        style="border: solid; border-width: thin; display: inline-block"
-></div>
+    style="border: solid; border-width: thin; display: inline-block"
+>
+    <div id="infection_rate_by_household_type_vs_pct_dual_shopper"></div>
 
-The shaded green region represents the average 50% of outcomes for
-1x-shopper households, and the red region for 2x-shopper households.
-Initially infected households were excluded from this data for fairness.
+    <div style="padding: 1em">
+The green area represents the average 50% of outcomes for
+1x-shopper households; the red represents 2x-shopper households.
+    </div>
+</div>
+More details about this chart at this footnote[^my_household_chart_details].
+
+[^my_household_chart_details]: Infection by Household Type vs % 2x Shopper Households chart notes
+    * Initially infected households were excluded from this data - their behavior does not cause them to be
+      infected.
+    * The green `25%` label represents the 25th percentile of infections among 1x shopper households.  The `75%` label
+      represents the 75th percentile, and the `50%` label represents the median.
+    * There is no data for 2x households at a 0% percentage of 2x households because there are no 2x households.  Same
+      for 1x households at 100%.
 
 Our decisions do not exist in a vacuum, and our rate of infection
 depends on others within our community. What is interesting here is that
 our decisions matter more when our community is more at risk - the gap between
-household infection rates is greatest when there are many 2x-shopper households
-in the community.
+household infection rates increases with the percentage of 2x-shopper households
+community.
 
-> Our decisions matter more when our community is more at risk.
+**Safer decisions matter more when our community is more at risk.**
+
+**The more people we see not taking precautions, the more we need take precautions
+ourselves.**
 
 <hr>
 
-While we tuned many parameters of our hypothetical virus simulation to
-mimic the rate of spread of covid-19, this hypothetical virus is not covid-19
-(and there still remains much to be learned about the exact mechanisms of how
-it spreads) and the simulated circles do not capture real human behavior
-(we order grocery delivery services, maintain distance in stores, squeeze many
-avocados on the shelf to find the ripest ones, and so on).  So please wrap the
-above numbers with generous error bars when applying those judgements in your
-daily activities.
+### Future work
 
-On the other hand, building high quality models/simulations and making informed
-decisions based on them is the best way to combat this virus as a society.  The
-cost of rigorous field studies can often be too expensive (both in terms of
-time and infections), so improving these simulations and making policy off of
-them may be better than the alternative of waiting for field data.
+The best way to combat this virus is to make data-driven policies and decisions.
+High quality simulations offer a fast and safe way to estimate the risk of our actions.
 
-These simulations are all [open
-source](https://www.github.com/jinpan/covid-simulations/).
+That being said, the virus modeled above is not Covid-19 and the tiny community
+does not capture real human behavior.  We order delivery services, maintain distance
+in stores, self-quarantine if we are sick, and so on.  Researchers are discovering more about
+Covid-19 every day, about how it spreads, symptoms it produces, how to treat it, and so on.
 
-## Call for help:
-I am a software engineer, not an epidemiologist.  If you are an epidemiologist
-(or know of one), please get in touch at `covid-contact@simrnd.com`.  I would
-like to build more simulations to model how our behavior affects the disease
-spread and want these simulations to be calibrated against everything we know
-about covid-19.
+Future work will focus on incorporating the latest research and simulating more realistic human
+behavior. These simulations are all [open source](https://www.github.com/jinpan/covid-simulations/).
+You can reach out to me privately at `covid-contact@simrnd.com` or on Twitter.
 
-Also, please consider sharing these simulations if you found them informative -
-let's work together to spread high quality information and control the spread of
-the virus.
+Please share these simulations if you found them informative - as the above data shows, **we all
+need to work together to control the spread of the virus**.
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I built some <a href="https://twitter.com/hashtag/coronavirus?src=hash&amp;ref_src=twsrc%5Etfw">#coronavirus</a> simulations, exploring how the way we shop affects the infection rate. Check out the 60fps simulations at <a href="https://t.co/Qa2evarhM4">https://t.co/Qa2evarhM4</a>. <a href="https://t.co/fpGH25QzGM">pic.twitter.com/fpGH25QzGM</a></p>&mdash; Jin Pan (@JinPan20) <a href="https://twitter.com/JinPan20/status/1261462639516909569?ref_src=twsrc%5Etfw">May 16, 2020</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
