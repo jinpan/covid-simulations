@@ -1,7 +1,5 @@
 extern crate approx;
 extern crate rand;
-#[macro_use]
-extern crate serde_derive;
 extern crate wasm_bindgen;
 
 pub mod v0;

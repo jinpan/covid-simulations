@@ -339,7 +339,9 @@ impl PersonBehavior for ShopperBehavior {
         //   Case AtHome:
         //     Check the supply levels of the household.
         //     If they are acceptable, then brownian motion within the household.
-        //     Otherwise, calculate a path towards the store and update state to GoingToStore.
+        //     If they are the head of household, calculate a path towards the store and update
+        //       state to GoingToStore.
+        //     If they are in a 2x-shopper household, then
         //   Case GoingToStore:
         //     If they are at the store, then advance the state to GoingToStore.
         //     Otherwise, continue on path towards the store.
@@ -350,6 +352,7 @@ impl PersonBehavior for ShopperBehavior {
         //   Case ReturningHome:
         //     If they are at home, then advance the state to Athome.
         //     Otherwise, continue on path towards home.
+        //   Case FollowHeadOfHousehold:
         for idx in 0..people.len() {
             let (left_people, right_people) = people.split_at_mut(idx);
             let person = &mut right_people[0];

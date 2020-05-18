@@ -17,6 +17,13 @@ crate-type = ["cdylib", "lib"]
 name = "v0_benchmark"
 harness = false
 
+[[bin]]
+name = "parameter_calibration"
+path = "src/parameter_calibration/bin/main.rs"
+
+[profile.release]
+lto = true
+
 [dev-dependencies]
 criterion = "0.3"
 cpuprofiler = "0.0.4"
@@ -25,11 +32,12 @@ counter = "0.4"
 [dependencies]
 anyhow = "1.0"
 approx = "0.3"
+clap = "2"
 itertools = "0.9"
 rand = { version = "0.7", features = ["wasm-bindgen"] }
 rand_core = "0.5"
 rand_chacha = "0.2"
-serde = "1.0"
-serde_derive = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 wasm-bindgen = {version = "0.2", features = ["serde-serialize"] }
 pathfinding = "2.0.4"

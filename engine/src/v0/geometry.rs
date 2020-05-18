@@ -6,6 +6,7 @@
 // https://docs.rs/bracket-geometry/0.8.1/bracket_geometry/
 // Concerns are wasm compatibility / correctness / performance.
 
+use serde::{Deserialize, Serialize};
 use std::f32::consts::PI;
 
 #[derive(Debug)]
@@ -16,12 +17,12 @@ pub(crate) struct Position {
 
 #[derive(Debug, PartialEq, Ord, PartialOrd, Eq, Copy, Clone, Deserialize, Serialize)]
 pub struct BoundingBox {
-    pub(crate) bottom: usize,
-    pub(crate) left: usize,
+    pub bottom: usize,
+    pub left: usize,
 
     // The bounding box does not include the top right boundary
-    pub(crate) top: usize,
-    pub(crate) right: usize,
+    pub top: usize,
+    pub right: usize,
 }
 
 impl BoundingBox {

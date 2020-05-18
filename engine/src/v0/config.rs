@@ -1,8 +1,9 @@
 // Contains configuration files for the v0 engine.
 
 use crate::v0::geometry::BoundingBox;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Debug, Copy, Clone)]
+#[derive(Deserialize, Serialize, Debug, Copy, Clone)]
 pub struct BackgroundViralParticleParams {
     // How far an infected person spreads background particles
     // TODO: this should vary as a function of PPE.
@@ -21,7 +22,7 @@ pub struct BackgroundViralParticleParams {
     pub infection_risk_per_particle: f32,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum DiseaseSpreadParameters {
     #[serde(rename = "infection_radius")]
     InfectionRadius(f32),
@@ -30,7 +31,7 @@ pub enum DiseaseSpreadParameters {
     BackgroundViralParticle(BackgroundViralParticleParams),
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct DiseaseParameters {
     pub exposed_period_ticks: usize,
     pub infectious_period_ticks: usize,
@@ -38,14 +39,14 @@ pub struct DiseaseParameters {
     pub spread_parameters: DiseaseSpreadParameters,
 }
 
-#[derive(Deserialize, Debug, Copy, Clone)]
+#[derive(Deserialize, Serialize, Debug, Copy, Clone)]
 pub struct ShopperParams {
     pub fraction_dual_shopper_households: f32,
     pub shopping_period_ticks: usize,
     pub supplies_bought_per_trip: f32,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum BehaviorParameters {
     #[serde(rename = "brownian_motion")]
     BrownianMotion,
@@ -54,7 +55,7 @@ pub enum BehaviorParameters {
     Shopper(ShopperParams),
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct WorldConfig {
     pub disease_parameters: DiseaseParameters,
     pub behavior_parameters: BehaviorParameters,

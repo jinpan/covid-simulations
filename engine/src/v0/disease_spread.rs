@@ -119,7 +119,7 @@ impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
             }
         }
 
-        // Step 2: All people inhale, and may become infected according to how much they have
+        // Step 2: All people inhale, and may become exposed according to how much they have
         // inhaled.
         for p in people.iter_mut() {
             if let DiseaseState::Susceptible = p.disease_state {

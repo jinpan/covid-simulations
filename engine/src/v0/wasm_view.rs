@@ -3,13 +3,13 @@ use wasm_bindgen::prelude::*;
 
 use crate::v0::config::{DiseaseSpreadParameters, WorldConfig};
 use crate::v0::core;
-use crate::v0::geometry;
 use crate::v0::geometry::BoundingBox;
 use crate::v0::maps;
 use itertools::Itertools;
 use rand::RngCore;
+use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub enum DiseaseState {
     #[serde(rename = "susceptible")]
     Susceptible,
@@ -59,6 +59,7 @@ pub struct Person {
 
 #[derive(Serialize)]
 pub struct State {
+    pub tick: usize,
     pub people: Vec<Person>,
 }
 
@@ -95,7 +96,10 @@ impl WorldView {
             })
             .collect::<Vec<_>>();
 
-        State { people }
+        State {
+            tick: self.world.tick,
+            people,
+        }
     }
 
     pub fn get_dual_shopper_households(&self) -> Vec<bool> {
