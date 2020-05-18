@@ -3,7 +3,7 @@
 use crate::rand::Rng;
 use crate::v0::config::BackgroundViralParticleParams;
 use crate::v0::core::{DiseaseState, Person};
-use crate::v0::geometry::Position;
+use crate::v0::geometry::{BoundingBox, Position};
 use rand_core::RngCore;
 
 pub(crate) trait DiseaseSpreader {
@@ -60,18 +60,17 @@ impl DiseaseSpreader for InfectionRadiusDiseaseSpreader {
 }
 
 pub(crate) struct BackgroundViralParticleDiseaseSpreader {
-    world_size: (u16, u16),
+    world_bounding_box: BoundingBox,
     params: BackgroundViralParticleParams,
     background_viral_particles: Vec<Vec<f32>>,
 }
 
 impl BackgroundViralParticleDiseaseSpreader {
-    pub(crate) fn new(world_size: (u16, u16), params: BackgroundViralParticleParams) -> Self {
-        let background_viral_particles =
-            vec![vec![0.0; world_size.0 as usize]; world_size.1 as usize];
+    pub(crate) fn new(world_bb: BoundingBox, params: BackgroundViralParticleParams) -> Self {
+        let background_viral_particles = vec![vec![0.0; world_bb.right]; world_bb.bottom];
 
         BackgroundViralParticleDiseaseSpreader {
-            world_size,
+            world_bounding_box: world_bb,
             params,
             background_viral_particles,
         }
@@ -80,12 +79,12 @@ impl BackgroundViralParticleDiseaseSpreader {
 
 impl BackgroundViralParticleDiseaseSpreader {
     // Helper function for getting cells within a radius of the position
-    fn get_cells(pos: &Position, radius: f32, world_size: (u16, u16)) -> Vec<(u16, u16)> {
+    fn get_cells(pos: &Position, radius: f32, world_bb: &BoundingBox) -> Vec<(u16, u16)> {
         let min_x = f32::max(0.0, pos.x - radius).round() as u16;
-        let max_x = f32::min(world_size.0 as f32 - 1.0, pos.x + radius).round() as u16;
+        let max_x = f32::min(world_bb.right as f32 - 1.0, pos.x + radius).round() as u16;
 
         let min_y = f32::max(0.0, pos.y - radius).round() as u16;
-        let max_y = f32::min(world_size.1 as f32 - 1.0, pos.y + radius).round() as u16;
+        let max_y = f32::min(world_bb.bottom as f32 - 1.0, pos.y + radius).round() as u16;
 
         let mut cells = vec![];
         for x in min_x..=max_x {
@@ -105,7 +104,6 @@ impl BackgroundViralParticleDiseaseSpreader {
 
 impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
     fn spread(&mut self, tick: usize, rng: &mut dyn RngCore, people: &mut [Person]) {
-        let world_size = self.world_size;
         let params = &self.params;
         let background_viral_particles = &mut self.background_viral_particles;
 
@@ -150,7 +148,7 @@ impl DiseaseSpreader for BackgroundViralParticleDiseaseSpreader {
                 continue;
             }
 
-            Self::get_cells(&p.position, params.exhale_radius, world_size)
+            Self::get_cells(&p.position, params.exhale_radius, &self.world_bounding_box)
                 .iter()
                 .for_each(|(x, y)| {
                     background_viral_particles[*y as usize][*x as usize] += 1.0;
@@ -169,17 +167,23 @@ mod tests {
 
     #[test]
     fn test_get_cells() {
+        let world_bb = BoundingBox {
+            top: 0,
+            left: 0,
+            bottom: 10,
+            right: 10,
+        };
         let cells = BackgroundViralParticleDiseaseSpreader::get_cells(
             &Position { x: 5.0, y: 5.0 },
             0.5,
-            (10, 10),
+            &world_bb,
         );
         assert_eq!(cells, vec![(5, 5)]);
 
         let mut cells = BackgroundViralParticleDiseaseSpreader::get_cells(
             &Position { x: 5.0, y: 5.0 },
             1.0,
-            (10, 10),
+            &world_bb,
         );
         cells.sort();
         assert_eq!(cells, vec![(4, 5), (5, 4), (5, 5), (5, 6), (6, 5)]);
@@ -188,7 +192,7 @@ mod tests {
         let mut cells = BackgroundViralParticleDiseaseSpreader::get_cells(
             &Position { x: 0.0, y: 0.0 },
             1.0,
-            (10, 10),
+            &world_bb,
         );
         cells.sort();
         assert_eq!(cells, vec![(0, 0), (0, 1), (1, 0)]);
@@ -197,7 +201,7 @@ mod tests {
         let mut cells = BackgroundViralParticleDiseaseSpreader::get_cells(
             &Position { x: 0.0, y: 9.0 },
             1.0,
-            (10, 10),
+            &world_bb,
         );
         cells.sort();
         assert_eq!(cells, vec![(0, 8), (0, 9), (1, 9)]);
@@ -206,7 +210,7 @@ mod tests {
         let mut cells = BackgroundViralParticleDiseaseSpreader::get_cells(
             &Position { x: 9.0, y: 0.0 },
             1.0,
-            (10, 10),
+            &world_bb,
         );
         cells.sort();
         assert_eq!(cells, vec![(8, 0), (9, 0), (9, 1)]);
@@ -215,7 +219,7 @@ mod tests {
         let mut cells = BackgroundViralParticleDiseaseSpreader::get_cells(
             &Position { x: 9.0, y: 9.0 },
             1.0,
-            (10, 10),
+            &world_bb,
         );
         cells.sort();
         assert_eq!(cells, vec![(8, 9), (9, 8), (9, 9)]);

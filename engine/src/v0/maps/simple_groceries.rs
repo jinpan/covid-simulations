@@ -5,7 +5,7 @@
 // H: Household
 // R: Road
 // S: Store
-pub static MAP_ASCII_STR: &str = "\
+pub(crate) static MAP_ASCII_STR: &str = "\
 HHH.R..HHH...HHH...HHH...HHH....HHH...HHH...HHH...HHH..R.HHH
 HHH.R..HHH...HHH...HHH...HHH....HHH...HHH...HHH...HHH..R.HHH
 HHH.R..HHH...HHH...HHH...HHH....HHH...HHH...HHH...HHH..R.HHH

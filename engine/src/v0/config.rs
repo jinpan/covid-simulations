@@ -1,5 +1,7 @@
 // Contains configuration files for the v0 engine.
 
+use crate::v0::geometry::BoundingBox;
+
 #[derive(Deserialize, Debug, Copy, Clone)]
 pub struct BackgroundViralParticleParams {
     // How far an infected person spreads background particles
@@ -56,7 +58,7 @@ pub enum BehaviorParameters {
 pub struct WorldConfig {
     pub disease_parameters: DiseaseParameters,
     pub behavior_parameters: BehaviorParameters,
-    pub size: (u16, u16),
+    pub bounding_box: BoundingBox,
     pub num_people: usize,
     pub num_initially_infected: usize,
 }

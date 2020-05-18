@@ -79,17 +79,11 @@ impl World {
                     people_in_current_household += 1;
 
                     let household = &map.households[current_household_idx];
-                    x = rng.gen_range(
-                        household.bounds.top_left.1 as f32,
-                        household.bounds.bottom_right.1 as f32,
-                    );
-                    y = rng.gen_range(
-                        household.bounds.top_left.0 as f32,
-                        household.bounds.bottom_right.0 as f32,
-                    );
+                    x = rng.gen_range(household.bounds.left as f32, household.bounds.right as f32);
+                    y = rng.gen_range(household.bounds.top as f32, household.bounds.bottom as f32);
                 } else {
-                    x = rng.gen_range(0.0, config.size.0 as f32);
-                    y = rng.gen_range(0.0, config.size.1 as f32);
+                    x = rng.gen_range(0.0, config.bounding_box.right as f32);
+                    y = rng.gen_range(0.0, config.bounding_box.bottom as f32);
                 }
 
                 Person {
@@ -109,18 +103,18 @@ impl World {
                 }
 
                 DiseaseSpreadParameters::BackgroundViralParticle(params) => Box::new(
-                    BackgroundViralParticleDiseaseSpreader::new(config.size, params),
+                    BackgroundViralParticleDiseaseSpreader::new(config.bounding_box, params),
                 ),
             };
 
         let person_behavior: Box<dyn PersonBehavior> = match config.behavior_parameters {
             BehaviorParameters::BrownianMotion => Box::new(BrownianMotionBehavior::new(
-                config.size,
+                config.bounding_box,
                 config.num_people,
                 &mut rng,
             )),
             BehaviorParameters::Shopper(params) => Box::new(ShopperBehavior::new(
-                config.size,
+                config.bounding_box,
                 params,
                 &people,
                 maybe_map
@@ -176,6 +170,7 @@ impl World {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::v0::geometry::BoundingBox;
     use itertools::Itertools;
     use rand::SeedableRng;
     use rand_chacha::ChaCha8Rng;
@@ -196,7 +191,12 @@ mod tests {
                 spread_parameters: DiseaseSpreadParameters::InfectionRadius(5.0),
             },
             behavior_parameters: BehaviorParameters::BrownianMotion,
-            size: (10, 10),
+            bounding_box: BoundingBox {
+                top: 0,
+                left: 0,
+                bottom: 10,
+                right: 10,
+            },
             num_people: 5,
             num_initially_infected: 2,
         };
@@ -261,7 +261,12 @@ mod tests {
                 ),
             },
             behavior_parameters: BehaviorParameters::BrownianMotion,
-            size: (10, 10),
+            bounding_box: BoundingBox {
+                top: 0,
+                left: 0,
+                bottom: 10,
+                right: 10,
+            },
             num_people: 5,
             num_initially_infected: 2,
         };

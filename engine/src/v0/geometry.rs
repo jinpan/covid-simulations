@@ -14,35 +14,39 @@ pub(crate) struct Position {
     pub(crate) y: f32,
 }
 
-#[derive(Debug, PartialEq, Ord, PartialOrd, Eq, Copy, Clone)]
-pub(crate) struct BoundingBox {
-    // Tuples are (row, col)
-    pub(crate) top_left: (usize, usize),
-    // The bounding box does not include the bottom_right
-    // Can be thought of as [top_left, bottom_right)
-    pub(crate) bottom_right: (usize, usize),
+#[derive(Debug, PartialEq, Ord, PartialOrd, Eq, Copy, Clone, Deserialize, Serialize)]
+pub struct BoundingBox {
+    pub(crate) top: usize,
+    pub(crate) left: usize,
+
+    // The bounding box does not include the bottom right boundary
+    pub(crate) bottom: usize,
+    pub(crate) right: usize,
 }
 
 impl BoundingBox {
     pub(crate) fn rows(&self) -> std::ops::Range<usize> {
-        self.top_left.0..self.bottom_right.0
+        self.top..self.bottom
     }
 
     pub(crate) fn cols(&self) -> std::ops::Range<usize> {
-        self.top_left.1..self.bottom_right.1
+        self.left..self.right
     }
 
     pub(crate) fn scale(&self, factor: u8) -> Self {
         BoundingBox {
-            top_left: (
-                self.top_left.0 * (factor as usize),
-                self.top_left.1 * (factor as usize),
-            ),
-            bottom_right: (
-                self.bottom_right.0 * (factor as usize),
-                self.bottom_right.1 * (factor as usize),
-            ),
+            top: self.top * (factor as usize),
+            left: self.left * (factor as usize),
+            bottom: self.bottom * (factor as usize),
+            right: self.right * (factor as usize),
         }
+    }
+
+    pub(crate) fn size(&self) -> usize {
+        let rows = self.bottom - self.top;
+        let cols = self.right - self.left;
+
+        rows * cols
     }
 }
 
@@ -51,14 +55,14 @@ impl Position {
         ((self.x - other.x) * (self.x - other.x) + (self.y - other.y) * (self.y - other.y)).sqrt()
     }
 
-    pub(crate) fn advance2(&mut self, direction_rad: &mut f32, bounding_box: &BoundingBox) {
+    pub(crate) fn advance(&mut self, direction_rad: &mut f32, bounding_box: &BoundingBox) {
         self.x += direction_rad.cos();
         self.y -= direction_rad.sin();
 
-        let top_boundary = bounding_box.top_left.0 as f32;
-        let left_boundary = bounding_box.top_left.1 as f32;
-        let bottom_boundary = bounding_box.bottom_right.0 as f32;
-        let right_boundary = bounding_box.bottom_right.1 as f32;
+        let top_boundary = bounding_box.top as f32;
+        let left_boundary = bounding_box.left as f32;
+        let bottom_boundary = bounding_box.bottom as f32;
+        let right_boundary = bounding_box.right as f32;
 
         if self.x < left_boundary {
             self.x = 2.0 * left_boundary - self.x;
@@ -84,16 +88,6 @@ impl Position {
             self.y -= 0.01;
         }
     }
-
-    pub(crate) fn advance(&mut self, direction_rad: &mut f32, world_size: (u16, u16)) {
-        self.advance2(
-            direction_rad,
-            &BoundingBox {
-                top_left: (0, 0),
-                bottom_right: (world_size.1 as usize, world_size.0 as usize),
-            },
-        )
-    }
 }
 
 fn normalize_angle(t: f32) -> f32 {
@@ -109,20 +103,13 @@ fn normalize_angle(t: f32) -> f32 {
 mod tests {
     use super::*;
 
-    impl BoundingBox {
-        pub(crate) fn size(&self) -> usize {
-            let rows = self.bottom_right.0 - self.top_left.0;
-            let cols = self.bottom_right.1 - self.top_left.1;
-
-            rows * cols
-        }
-    }
-
     #[test]
     fn test_bounding_box() {
         let bb = BoundingBox {
-            top_left: (1, 2),
-            bottom_right: (6, 10),
+            top: 1,
+            left: 2,
+            bottom: 6,
+            right: 10,
         };
 
         assert_eq!(bb.rows(), 1..6);
@@ -155,8 +142,8 @@ mod tests {
     }
 
     impl PositionAndDirection {
-        fn advance(&mut self, world_size: (u16, u16)) {
-            self.position.advance(&mut self.direction_rad, world_size);
+        fn advance(&mut self, world_bb: &BoundingBox) {
+            self.position.advance(&mut self.direction_rad, world_bb);
         }
     }
 
@@ -166,13 +153,19 @@ mod tests {
             position: Position { x: 10.0, y: 10.0 },
             direction_rad: 0.0,
         };
+        let world_size = BoundingBox {
+            top: 0,
+            left: 0,
+            bottom: 20,
+            right: 20,
+        };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
             p.position.x = 10.0;
             p.position.y = 10.0;
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance((20, 20));
+            p.advance(&world_size);
         };
 
         reset_position_direction(&mut pd, 0.0 * PI / 4.0);
@@ -222,13 +215,19 @@ mod tests {
             position: Position { x: 0.1, y: 10.0 },
             direction_rad: 0.0,
         };
+        let world_size = BoundingBox {
+            top: 0,
+            left: 0,
+            bottom: 20,
+            right: 20,
+        };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
             p.position.x = 0.1;
             p.position.y = 10.0;
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance((20, 20));
+            p.advance(&world_size);
         };
 
         reset_position_direction(&mut pd, 2.0 * PI / 3.0);
@@ -250,13 +249,19 @@ mod tests {
             position: Position { x: 19.9, y: 10.0 },
             direction_rad: 0.0,
         };
+        let world_size = BoundingBox {
+            top: 0,
+            left: 0,
+            bottom: 20,
+            right: 20,
+        };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
             p.position.x = 19.9;
             p.position.y = 10.0;
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance((20, 20));
+            p.advance(&world_size);
         };
 
         reset_position_direction(&mut pd, PI / 4.0);
@@ -278,13 +283,19 @@ mod tests {
             position: Position { x: 10.0, y: 0.1 },
             direction_rad: 0.0,
         };
+        let world_size = BoundingBox {
+            top: 0,
+            left: 0,
+            bottom: 20,
+            right: 20,
+        };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
             p.position.x = 10.0;
             p.position.y = 0.1;
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance((20, 20));
+            p.advance(&world_size);
         };
 
         reset_position_direction(&mut pd, 5.0 * PI / 6.0);
@@ -306,13 +317,19 @@ mod tests {
             position: Position { x: 10.0, y: 19.9 },
             direction_rad: 0.0,
         };
+        let world_size = BoundingBox {
+            top: 0,
+            left: 0,
+            bottom: 20,
+            right: 20,
+        };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
             p.position.x = 10.0;
             p.position.y = 19.9;
             p.direction_rad = t;
         };
         let advance = |p: &mut PositionAndDirection| {
-            p.advance((20, 20));
+            p.advance(&world_size);
         };
 
         reset_position_direction(&mut pd, 7.0 * PI / 6.0);

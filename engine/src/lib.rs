@@ -25,10 +25,7 @@ pub fn create_world(config: &JsValue, map_name: &str, maybe_seed: Option<u32>) -
 
     let map = match map_name {
         "" => None,
-        "simple_groceries" => {
-            Some(maps::Map::load_from_ascii_str(10, maps::simple_groceries::MAP_ASCII_STR).unwrap())
-        }
-        _ => panic!("Unknown map <{}>", map_name),
+        _ => Some(maps::loader::load(map_name, 10).unwrap()),
     };
 
     let rng: Box<dyn RngCore> = if let Some(seed_val) = maybe_seed {

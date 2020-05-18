@@ -3,6 +3,7 @@ pub mod simple_groceries;
 use crate::v0::geometry::BoundingBox;
 use anyhow::{anyhow, Result};
 use std::collections::HashSet;
+pub mod loader;
 
 pub(crate) struct Household {
     pub(crate) bounds: BoundingBox,
@@ -108,43 +109,45 @@ impl Map {
 
         while let Some((row, col)) = remaining_coordinates.iter().next() {
             let mut bb = BoundingBox {
-                top_left: (*row, *col),
-                bottom_right: (*row + 1, *col + 1),
+                top: *row,
+                left: *col,
+                bottom: *row + 1,
+                right: *col + 1,
             };
 
             loop {
                 // Try extending the box to the right
-                if bb.bottom_right.1 < map_cols {
-                    let c = bb.bottom_right.1;
+                if bb.right < map_cols {
+                    let c = bb.right;
                     if bb.rows().all(|r| parsed_ascii_map[r][c] == el) {
-                        bb.bottom_right.1 += 1;
+                        bb.right += 1;
                         continue;
                     }
                 }
 
                 // Try extending the box to the top
-                if bb.top_left.0 > 0 {
-                    let r = bb.top_left.0 - 1;
+                if bb.top > 0 {
+                    let r = bb.top - 1;
                     if bb.cols().all(|c| parsed_ascii_map[r][c] == el) {
-                        bb.top_left.0 = r;
+                        bb.top = r;
                         continue;
                     }
                 }
 
                 // Try extending the box to the left
-                if bb.top_left.1 > 0 {
-                    let c = bb.top_left.1 - 1;
+                if bb.left > 0 {
+                    let c = bb.left - 1;
                     if bb.rows().all(|r| parsed_ascii_map[r][c] == el) {
-                        bb.top_left.1 = c;
+                        bb.left = c;
                         continue;
                     }
                 }
 
                 // Try extending the box to the bottom
-                if bb.bottom_right.0 < map_rows {
-                    let r = bb.bottom_right.0;
+                if bb.bottom < map_rows {
+                    let r = bb.bottom;
                     if bb.cols().all(|c| parsed_ascii_map[r][c] == el) {
-                        bb.bottom_right.0 += 1;
+                        bb.bottom += 1;
                         continue;
                     }
                 }
@@ -246,8 +249,10 @@ mod tests {
         assert_eq!(
             store_bounds,
             vec![BoundingBox {
-                top_left: (10, 10),
-                bottom_right: (30, 50),
+                top: 10,
+                left: 10,
+                bottom: 30,
+                right: 50,
             }]
         );
 

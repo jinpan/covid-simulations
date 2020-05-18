@@ -110,13 +110,13 @@ class Simulation {
     for (const household of world.get_households()) {
       let box = household.bounds;
       let width = box.right - box.left;
-      let height = box.bot - box.top;
+      let height = box.bottom - box.top;
 
       let plane_geo = new THREE.PlaneGeometry(width, height, 1);
       let plane = new THREE.Mesh(plane_geo, household_material);
 
       plane.position.x = (box.left + box.right) / 2;
-      plane.position.y = (box.bot + box.top) / 2;
+      plane.position.y = (box.bottom + box.top) / 2;
 
       let plane_box = new THREE.BoxHelper(plane, 0x000000);
       scene.add(plane_box);
@@ -138,13 +138,13 @@ class Simulation {
     let store_material = new THREE.MeshBasicMaterial();
     for (const box of world.get_stores()) {
       let width = box.right - box.left;
-      let height = box.bot - box.top;
+      let height = box.bottom - box.top;
 
       let plane_geo = new THREE.PlaneGeometry(width, height, 1);
       let plane = new THREE.Mesh(plane_geo, store_material);
 
       plane.position.x = (box.left + box.right) / 2;
-      plane.position.y = (box.bot + box.top) / 2;
+      plane.position.y = (box.bottom + box.top) / 2;
 
       let plane_box = new THREE.BoxHelper(plane, 0x000000);
       scene.add(plane_box);
@@ -156,13 +156,13 @@ class Simulation {
     });
     for (const box of world.get_roads()) {
       let width = box.right - box.left;
-      let height = box.bot - box.top;
+      let height = box.bottom - box.top;
 
       let plane_geo = new THREE.PlaneGeometry(width, height, 1);
       let plane = new THREE.Mesh(plane_geo, road_material);
 
       plane.position.x = (box.left + box.right) / 2;
-      plane.position.y = (box.bot + box.top) / 2;
+      plane.position.y = (box.bottom + box.top) / 2;
 
       scene.add(plane);
     }
@@ -421,7 +421,12 @@ const configs = (function() {
         },
       },
       "behavior_parameters": "brownian_motion",
-      "size": [width, height],
+      "bounding_box": {
+        "top": 0,
+        "left": 0,
+        "right": width,
+        "bottom": height,
+      },
       "num_people": 200,
       "num_initially_infected": 3,
     },
@@ -443,7 +448,12 @@ const configs = (function() {
         },
       },
       "behavior_parameters": "brownian_motion",
-      "size": [width, height],
+      "bounding_box": {
+        "top": 0,
+        "left": 0,
+        "right": width,
+        "bottom": height,
+      },
       "num_people": 200,
       "num_initially_infected": 3,
     },
@@ -471,7 +481,12 @@ const configs = (function() {
           "supplies_bought_per_trip": 30 * 60,
         },
       },
-      "size": [width, height],
+      "bounding_box": {
+        "top": 0,
+        "left": 0,
+        "right": width,
+        "bottom": height,
+      },
       "num_people": 108,
       "num_initially_infected": 2,
     },

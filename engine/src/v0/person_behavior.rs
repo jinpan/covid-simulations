@@ -32,12 +32,16 @@ struct BrownianMotionPersonState {
 }
 
 pub(crate) struct BrownianMotionBehavior {
-    world_size: (u16, u16),
+    world_bounding_box: BoundingBox,
     per_person_states: Vec<BrownianMotionPersonState>,
 }
 
 impl BrownianMotionBehavior {
-    pub(crate) fn new(world_size: (u16, u16), num_people: usize, rng: &mut dyn RngCore) -> Self {
+    pub(crate) fn new(
+        world_bounding_box: BoundingBox,
+        num_people: usize,
+        rng: &mut dyn RngCore,
+    ) -> Self {
         let per_person_states = (0..num_people)
             .map(|_| BrownianMotionPersonState {
                 direction_rad: rng.gen_range(0.0, 2.0 * PI),
@@ -45,7 +49,7 @@ impl BrownianMotionBehavior {
             .collect();
 
         BrownianMotionBehavior {
-            world_size,
+            world_bounding_box,
             per_person_states,
         }
     }
@@ -63,7 +67,7 @@ impl PersonBehavior for BrownianMotionBehavior {
 
             person
                 .position
-                .advance(&mut state.direction_rad, self.world_size)
+                .advance(&mut state.direction_rad, &self.world_bounding_box)
         }
     }
 }
@@ -98,7 +102,7 @@ struct HouseholdState {
 }
 
 pub(crate) struct ShopperBehavior {
-    world_size: (u16, u16),
+    world_bounding_box: BoundingBox,
     params: ShopperParams,
     per_person_states: Vec<ShopperState>,
     per_household_states: Vec<HouseholdState>,
@@ -106,7 +110,7 @@ pub(crate) struct ShopperBehavior {
 
 impl ShopperBehavior {
     pub(crate) fn new(
-        world_size: (u16, u16),
+        world_bounding_box: BoundingBox,
         params: ShopperParams,
         people: &Vec<Person>,
         map: &maps::Map,
@@ -143,7 +147,7 @@ impl ShopperBehavior {
             .collect();
 
         ShopperBehavior {
-            world_size,
+            world_bounding_box,
             params,
             per_person_states,
             per_household_states,
@@ -151,7 +155,7 @@ impl ShopperBehavior {
     }
 
     fn find_bb_road_intersection(
-        world_size: (u16, u16),
+        world_bb: &BoundingBox,
         bb: &BoundingBox,
         map: &maps::Map,
     ) -> Vec<((u16, u16), (u16, u16))> {
@@ -162,34 +166,32 @@ impl ShopperBehavior {
         let mut intersections = vec![];
 
         // Iterate over the top boundary of the bounding box.
-        if bb.top_left.0 > 0 {
-            let row = bb.top_left.0 - 1;
+        if bb.top > 0 {
+            let row = bb.top - 1;
             for col in bb.cols() {
                 if map.get_element(row, col) == maps::MapElement::Road {
-                    intersections
-                        .push(((bb.top_left.0 as u16, col as u16), (row as u16, col as u16)));
+                    intersections.push(((bb.top as u16, col as u16), (row as u16, col as u16)));
                 }
             }
         }
 
         // Iterate over the left boundary of the bounding box.
-        if bb.top_left.1 > 0 {
-            let col = bb.top_left.1 - 1;
+        if bb.left > 0 {
+            let col = bb.left - 1;
             for row in bb.rows() {
                 if map.get_element(row, col) == maps::MapElement::Road {
-                    intersections
-                        .push(((row as u16, bb.top_left.1 as u16), (row as u16, col as u16)));
+                    intersections.push(((row as u16, bb.left as u16), (row as u16, col as u16)));
                 }
             }
         }
 
         // Iterate over the bottom boundary of the bounding box
-        if (bb.bottom_right.0 as u16) < world_size.1 {
-            let row = bb.bottom_right.0;
+        if bb.bottom < world_bb.bottom {
+            let row = bb.bottom;
             for col in bb.cols() {
                 if map.get_element(row, col) == maps::MapElement::Road {
                     intersections.push((
-                        ((bb.bottom_right.0 - 1) as u16, col as u16),
+                        ((bb.bottom - 1) as u16, col as u16),
                         (row as u16, col as u16),
                     ));
                 }
@@ -197,12 +199,12 @@ impl ShopperBehavior {
         }
 
         // Iterate over the right boundary of the bounding box.
-        if (bb.bottom_right.1 as u16) < world_size.0 {
-            let col = bb.bottom_right.1;
+        if bb.right < world_bb.right {
+            let col = bb.right;
             for row in bb.rows() {
                 if map.get_element(row, col) == maps::MapElement::Road {
                     intersections.push((
-                        (row as u16, (bb.bottom_right.1 - 1) as u16),
+                        (row as u16, (bb.right - 1) as u16),
                         (row as u16, col as u16),
                     ));
                 }
@@ -216,18 +218,18 @@ impl ShopperBehavior {
         starting: &Position,
         from_bb: &BoundingBox,
         to_bb: &BoundingBox,
-        world_size: (u16, u16),
+        world_bb: &BoundingBox,
         map: &maps::Map,
         rng: &mut dyn RngCore,
     ) -> Result<Vec<(u16, u16)>> {
         // List of (from, road) points.
-        let starting_intersections = Self::find_bb_road_intersection(world_size, from_bb, map);
+        let starting_intersections = Self::find_bb_road_intersection(world_bb, from_bb, map);
         if starting_intersections.is_empty() {
             return Err(anyhow!("empty starting intersections"));
         }
 
         // List of (to, road) points
-        let ending_intersections = Self::find_bb_road_intersection(world_size, to_bb, map);
+        let ending_intersections = Self::find_bb_road_intersection(world_bb, to_bb, map);
         if ending_intersections.is_empty() {
             return Err(anyhow!("empty ending intersections"));
         }
@@ -251,13 +253,13 @@ impl ShopperBehavior {
                     if d_row == -1 && pos.0 == 0 {
                         continue;
                     }
-                    if d_row == 1 && pos.0 + 1 == world_size.1 {
+                    if d_row == 1 && pos.0 + 1 == world_bb.bottom as u16 {
                         continue;
                     }
                     if d_col == -1 && pos.1 == 0 {
                         continue;
                     }
-                    if d_col == 1 && pos.1 + 1 == world_size.0 {
+                    if d_col == 1 && pos.1 + 1 == world_bb.right as u16 {
                         continue;
                     }
 
@@ -366,7 +368,7 @@ impl PersonBehavior for ShopperBehavior {
                     let household_state = &mut self.per_household_states[person.household_idx];
                     if household_state.supply_levels > 0.0 {
                         // Household supply levels are acceptable, brownian motion within household
-                        person.position.advance2(direction_rad, &household.bounds);
+                        person.position.advance(direction_rad, &household.bounds);
                         continue;
                     }
 
@@ -375,7 +377,7 @@ impl PersonBehavior for ShopperBehavior {
                             &person.position,
                             &household.bounds,
                             &map.stores[0].bounds,
-                            self.world_size,
+                            &self.world_bounding_box,
                             map,
                             rng,
                         )
@@ -389,7 +391,7 @@ impl PersonBehavior for ShopperBehavior {
 
                     // This household only has a single shopper (head of household).
                     // We are not the head, so do not shop.
-                    person.position.advance2(direction_rad, &household.bounds);
+                    person.position.advance(direction_rad, &household.bounds);
                 }
                 ShopperState::GoingToStore { path_idx, path } => {
                     if *path_idx < path.len() {
@@ -416,19 +418,18 @@ impl PersonBehavior for ShopperBehavior {
                     direction_rad,
                     shopping_duration_ticks,
                 } => {
-                    // TODO: stop hardcoding this limit
                     if *shopping_duration_ticks < self.params.shopping_period_ticks {
                         *shopping_duration_ticks += 1;
                         person
                             .position
-                            .advance2(direction_rad, &map.stores[0].bounds);
+                            .advance(direction_rad, &map.stores[0].bounds);
                     } else {
                         let household = &map.households[person.household_idx];
                         let path = Self::find_path(
                             &person.position,
                             &map.stores[0].bounds,
                             &household.bounds,
-                            self.world_size,
+                            &self.world_bounding_box,
                             map,
                             rng,
                         )
@@ -516,13 +517,18 @@ mod tests {
 
     #[test]
     fn test_find_bb_road_intersection() -> Result<()> {
-        let world_size = (600, 400);
+        let world_bb = BoundingBox {
+            top: 0,
+            left: 0,
+            bottom: 400,
+            right: 600,
+        };
 
         let sg_map = maps::Map::load_from_ascii_str(10, simple_groceries::MAP_ASCII_STR)?;
         let store = &sg_map.stores[0];
 
         let intersections =
-            ShopperBehavior::find_bb_road_intersection(world_size, &store.bounds, &sg_map);
+            ShopperBehavior::find_bb_road_intersection(&world_bb, &store.bounds, &sg_map);
         assert_eq!(
             intersections,
             (290..310)
@@ -531,11 +537,13 @@ mod tests {
         );
 
         let box_with_left_intersection = BoundingBox {
-            top_left: (110, 60),
-            bottom_right: (140, 90),
+            top: 110,
+            left: 60,
+            bottom: 140,
+            right: 90,
         };
         let intersections = ShopperBehavior::find_bb_road_intersection(
-            world_size,
+            &world_bb,
             &box_with_left_intersection,
             &sg_map,
         );
@@ -554,21 +562,28 @@ mod tests {
     #[test]
     fn test_find_path() -> Result<()> {
         let mut rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
-        let world_size = (600, 400);
+        let world_bb = BoundingBox {
+            top: 0,
+            left: 0,
+            bottom: 400,
+            right: 600,
+        };
 
         let sg_map = maps::Map::load_from_ascii_str(10, simple_groceries::MAP_ASCII_STR)?;
         let store_bb = &sg_map.stores[0].bounds;
 
         let household_bb = BoundingBox {
-            top_left: (110, 60),
-            bottom_right: (140, 90),
+            top: 110,
+            left: 60,
+            bottom: 140,
+            right: 90,
         };
 
         let path = ShopperBehavior::find_path(
             &Position { x: 65.0, y: 125.0 },
             &household_bb,
             store_bb,
-            world_size,
+            &world_bb,
             &sg_map,
             &mut rng,
         )?;
