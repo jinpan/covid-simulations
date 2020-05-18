@@ -103,10 +103,20 @@ class Simulation {
   draw_map(world, scene) {
     // Draw households
     let household_material = new THREE.MeshBasicMaterial();
-    let household_text_material = new THREE.MeshBasicMaterial({
+
+    let household_txt_material = new THREE.MeshBasicMaterial({
       "color": 0xAAAAAA, "side": THREE.DoubleSide,
       "transparent": true, "opacity": 0.4,
     });
+    const single_household_txt_geo = new THREE.TextGeometry("1x", {
+      "font": THREE_default_font,
+      "size": 15,
+    });
+    const dual_household_txt_geo = new THREE.TextGeometry("2x", {
+      "font": THREE_default_font,
+      "size": 15,
+    });
+
     for (const household of world.get_households()) {
       let box = household.bounds;
       let width = box.right - box.left;
@@ -121,17 +131,13 @@ class Simulation {
       let plane_box = new THREE.BoxHelper(plane, 0x000000);
       scene.add(plane_box);
 
-      let msg = (household.dual_shopper) ? "2x" : "1x";
-      let text_geo = new THREE.TextGeometry(msg, {
-        "font": THREE_default_font,
-        "size": 15,
-      });
-      let text = new THREE.Mesh(text_geo, household_text_material);
+      let txt_geo = (household.dual_shopper) ? dual_household_txt_geo : single_household_txt_geo;
+      let txt = new THREE.Mesh(txt_geo, household_txt_material);
 
-      text.position.x = box.left + 5;
-      text.position.y = box.bottom + 2;
+      txt.position.x = box.left + 5;
+      txt.position.y = box.bottom + 2;
 
-      scene.add(text);
+      scene.add(txt);
     }
 
     // Draw stores
