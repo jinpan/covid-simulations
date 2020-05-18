@@ -165,18 +165,17 @@ impl ShopperBehavior {
         //   the first and second points are adjacent
         let mut intersections = vec![];
 
-        // Iterate over the top boundary of the bounding box.
-        if bb.top > 0 {
-            let row = bb.top - 1;
+        // Iterate over the bottom boundary of the bounding box.
+        if bb.bottom > world_bb.bottom {
+            let row = bb.bottom - 1;
             for col in bb.cols() {
                 if map.get_element(row, col) == maps::MapElement::Road {
-                    intersections.push(((bb.top as u16, col as u16), (row as u16, col as u16)));
+                    intersections.push(((bb.bottom as u16, col as u16), (row as u16, col as u16)));
                 }
             }
         }
-
         // Iterate over the left boundary of the bounding box.
-        if bb.left > 0 {
+        if bb.left > world_bb.left {
             let col = bb.left - 1;
             for row in bb.rows() {
                 if map.get_element(row, col) == maps::MapElement::Road {
@@ -185,19 +184,16 @@ impl ShopperBehavior {
             }
         }
 
-        // Iterate over the bottom boundary of the bounding box
-        if bb.bottom < world_bb.bottom {
-            let row = bb.bottom;
+        // Iterate over the top boundary of the bounding box
+        if bb.top < world_bb.top {
+            let row = bb.top;
             for col in bb.cols() {
                 if map.get_element(row, col) == maps::MapElement::Road {
-                    intersections.push((
-                        ((bb.bottom - 1) as u16, col as u16),
-                        (row as u16, col as u16),
-                    ));
+                    intersections
+                        .push((((bb.top - 1) as u16, col as u16), (row as u16, col as u16)));
                 }
             }
         }
-
         // Iterate over the right boundary of the bounding box.
         if bb.right < world_bb.right {
             let col = bb.right;
@@ -253,7 +249,7 @@ impl ShopperBehavior {
                     if d_row == -1 && pos.0 == 0 {
                         continue;
                     }
-                    if d_row == 1 && pos.0 + 1 == world_bb.bottom as u16 {
+                    if d_row == 1 && pos.0 + 1 == world_bb.top as u16 {
                         continue;
                     }
                     if d_col == -1 && pos.1 == 0 {
@@ -518,9 +514,9 @@ mod tests {
     #[test]
     fn test_find_bb_road_intersection() -> Result<()> {
         let world_bb = BoundingBox {
-            top: 0,
+            bottom: 0,
             left: 0,
-            bottom: 400,
+            top: 400,
             right: 600,
         };
 
@@ -537,9 +533,9 @@ mod tests {
         );
 
         let box_with_left_intersection = BoundingBox {
-            top: 110,
+            bottom: 110,
             left: 60,
-            bottom: 140,
+            top: 140,
             right: 90,
         };
         let intersections = ShopperBehavior::find_bb_road_intersection(
@@ -563,9 +559,9 @@ mod tests {
     fn test_find_path() -> Result<()> {
         let mut rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
         let world_bb = BoundingBox {
-            top: 0,
+            bottom: 0,
             left: 0,
-            bottom: 400,
+            top: 400,
             right: 600,
         };
 
@@ -573,9 +569,9 @@ mod tests {
         let store_bb = &sg_map.stores[0].bounds;
 
         let household_bb = BoundingBox {
-            top: 110,
+            bottom: 110,
             left: 60,
-            bottom: 140,
+            top: 140,
             right: 90,
         };
 

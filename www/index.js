@@ -110,7 +110,7 @@ class Simulation {
     for (const household of world.get_households()) {
       let box = household.bounds;
       let width = box.right - box.left;
-      let height = box.bottom - box.top;
+      let height = box.top - box.bottom;
 
       let plane_geo = new THREE.PlaneGeometry(width, height, 1);
       let plane = new THREE.Mesh(plane_geo, household_material);
@@ -129,7 +129,7 @@ class Simulation {
       let text = new THREE.Mesh(text_geo, household_text_material);
 
       text.position.x = box.left + 5;
-      text.position.y = box.top + 2;
+      text.position.y = box.bottom + 2;
 
       scene.add(text);
     }
@@ -138,7 +138,7 @@ class Simulation {
     let store_material = new THREE.MeshBasicMaterial();
     for (const box of world.get_stores()) {
       let width = box.right - box.left;
-      let height = box.bottom - box.top;
+      let height = box.top - box.bottom;
 
       let plane_geo = new THREE.PlaneGeometry(width, height, 1);
       let plane = new THREE.Mesh(plane_geo, store_material);
@@ -156,7 +156,7 @@ class Simulation {
     });
     for (const box of world.get_roads()) {
       let width = box.right - box.left;
-      let height = box.bottom - box.top;
+      let height = box.top - box.bottom;
 
       let plane_geo = new THREE.PlaneGeometry(width, height, 1);
       let plane = new THREE.Mesh(plane_geo, road_material);
@@ -422,10 +422,10 @@ const configs = (function() {
       },
       "behavior_parameters": "brownian_motion",
       "bounding_box": {
-        "top": 0,
+        "bottom": 0,
         "left": 0,
+        "top": height,
         "right": width,
-        "bottom": height,
       },
       "num_people": 200,
       "num_initially_infected": 3,
@@ -449,10 +449,10 @@ const configs = (function() {
       },
       "behavior_parameters": "brownian_motion",
       "bounding_box": {
-        "top": 0,
+        "bottom": 0,
         "left": 0,
+        "top": height,
         "right": width,
-        "bottom": height,
       },
       "num_people": 200,
       "num_initially_infected": 3,
@@ -482,10 +482,10 @@ const configs = (function() {
         },
       },
       "bounding_box": {
-        "top": 0,
+        "bottom": 0,
         "left": 0,
+        "top": height,
         "right": width,
-        "bottom": height,
       },
       "num_people": 108,
       "num_initially_infected": 2,
@@ -498,15 +498,11 @@ const configs = (function() {
   return config_builder;
 })();
 
-const simulations = (function() {
-  let simulations_builder = [];
-
-  for (const config_name in configs) {
-    simulations_builder.push(new Simulation(configs[config_name]));
-  }
-
-  return simulations_builder;
-})();
+const simulations = [
+  new Simulation(configs["radius_brownian0"]),
+  new Simulation(configs["particle_brownian0"]),
+  new Simulation(configs["particle_shopper0"]),
+];
 
 // Draw the infection rate vs percent dual shopper plot
 (function(){

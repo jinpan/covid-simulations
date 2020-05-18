@@ -67,7 +67,7 @@ pub(crate) struct BackgroundViralParticleDiseaseSpreader {
 
 impl BackgroundViralParticleDiseaseSpreader {
     pub(crate) fn new(world_bb: BoundingBox, params: BackgroundViralParticleParams) -> Self {
-        let background_viral_particles = vec![vec![0.0; world_bb.right]; world_bb.bottom];
+        let background_viral_particles = vec![vec![0.0; world_bb.right]; world_bb.top];
 
         BackgroundViralParticleDiseaseSpreader {
             world_bounding_box: world_bb,
@@ -84,7 +84,7 @@ impl BackgroundViralParticleDiseaseSpreader {
         let max_x = f32::min(world_bb.right as f32 - 1.0, pos.x + radius).round() as u16;
 
         let min_y = f32::max(0.0, pos.y - radius).round() as u16;
-        let max_y = f32::min(world_bb.bottom as f32 - 1.0, pos.y + radius).round() as u16;
+        let max_y = f32::min(world_bb.top as f32 - 1.0, pos.y + radius).round() as u16;
 
         let mut cells = vec![];
         for x in min_x..=max_x {
@@ -168,9 +168,9 @@ mod tests {
     #[test]
     fn test_get_cells() {
         let world_bb = BoundingBox {
-            top: 0,
+            bottom: 0,
             left: 0,
-            bottom: 10,
+            top: 10,
             right: 10,
         };
         let cells = BackgroundViralParticleDiseaseSpreader::get_cells(

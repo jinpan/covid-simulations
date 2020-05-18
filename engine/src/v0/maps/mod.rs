@@ -109,27 +109,18 @@ impl Map {
 
         while let Some((row, col)) = remaining_coordinates.iter().next() {
             let mut bb = BoundingBox {
-                top: *row,
+                bottom: *row,
                 left: *col,
-                bottom: *row + 1,
+                top: *row + 1,
                 right: *col + 1,
             };
 
             loop {
-                // Try extending the box to the right
-                if bb.right < map_cols {
-                    let c = bb.right;
-                    if bb.rows().all(|r| parsed_ascii_map[r][c] == el) {
-                        bb.right += 1;
-                        continue;
-                    }
-                }
-
-                // Try extending the box to the top
-                if bb.top > 0 {
-                    let r = bb.top - 1;
+                // Try extending the box to the bottom
+                if bb.bottom > 0 {
+                    let r = bb.bottom - 1;
                     if bb.cols().all(|c| parsed_ascii_map[r][c] == el) {
-                        bb.top = r;
+                        bb.bottom = r;
                         continue;
                     }
                 }
@@ -143,11 +134,20 @@ impl Map {
                     }
                 }
 
-                // Try extending the box to the bottom
-                if bb.bottom < map_rows {
-                    let r = bb.bottom;
+                // Try extending the box to the top
+                if bb.top < map_rows {
+                    let r = bb.top;
                     if bb.cols().all(|c| parsed_ascii_map[r][c] == el) {
-                        bb.bottom += 1;
+                        bb.top += 1;
+                        continue;
+                    }
+                }
+
+                // Try extending the box to the right
+                if bb.right < map_cols {
+                    let c = bb.right;
+                    if bb.rows().all(|r| parsed_ascii_map[r][c] == el) {
+                        bb.right += 1;
                         continue;
                     }
                 }
@@ -249,9 +249,9 @@ mod tests {
         assert_eq!(
             store_bounds,
             vec![BoundingBox {
-                top: 10,
+                bottom: 10,
                 left: 10,
-                bottom: 30,
+                top: 30,
                 right: 50,
             }]
         );

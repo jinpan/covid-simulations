@@ -67,10 +67,7 @@ impl World {
                     DiseaseState::Susceptible
                 };
 
-                let x: f32;
-                let y: f32;
-
-                if let Some(map) = &maybe_map {
+                let bb = if let Some(map) = &maybe_map {
                     let household = &map.households[current_household_idx];
                     if people_in_current_household == household.num_people {
                         current_household_idx += 1;
@@ -78,13 +75,12 @@ impl World {
                     }
                     people_in_current_household += 1;
 
-                    let household = &map.households[current_household_idx];
-                    x = rng.gen_range(household.bounds.left as f32, household.bounds.right as f32);
-                    y = rng.gen_range(household.bounds.top as f32, household.bounds.bottom as f32);
+                    map.households[current_household_idx].bounds
                 } else {
-                    x = rng.gen_range(0.0, config.bounding_box.right as f32);
-                    y = rng.gen_range(0.0, config.bounding_box.bottom as f32);
-                }
+                    config.bounding_box
+                };
+                let x = rng.gen_range(bb.left as f32, bb.right as f32);
+                let y = rng.gen_range(bb.bottom as f32, bb.top as f32);
 
                 Person {
                     id: i,
@@ -192,9 +188,9 @@ mod tests {
             },
             behavior_parameters: BehaviorParameters::BrownianMotion,
             bounding_box: BoundingBox {
-                top: 0,
+                bottom: 0,
                 left: 0,
-                bottom: 10,
+                top: 10,
                 right: 10,
             },
             num_people: 5,
@@ -262,9 +258,9 @@ mod tests {
             },
             behavior_parameters: BehaviorParameters::BrownianMotion,
             bounding_box: BoundingBox {
-                top: 0,
+                bottom: 0,
                 left: 0,
-                bottom: 10,
+                top: 10,
                 right: 10,
             },
             num_people: 5,

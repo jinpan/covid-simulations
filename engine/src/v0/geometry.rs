@@ -16,17 +16,17 @@ pub(crate) struct Position {
 
 #[derive(Debug, PartialEq, Ord, PartialOrd, Eq, Copy, Clone, Deserialize, Serialize)]
 pub struct BoundingBox {
-    pub(crate) top: usize,
+    pub(crate) bottom: usize,
     pub(crate) left: usize,
 
-    // The bounding box does not include the bottom right boundary
-    pub(crate) bottom: usize,
+    // The bounding box does not include the top right boundary
+    pub(crate) top: usize,
     pub(crate) right: usize,
 }
 
 impl BoundingBox {
     pub(crate) fn rows(&self) -> std::ops::Range<usize> {
-        self.top..self.bottom
+        self.bottom..self.top
     }
 
     pub(crate) fn cols(&self) -> std::ops::Range<usize> {
@@ -35,15 +35,15 @@ impl BoundingBox {
 
     pub(crate) fn scale(&self, factor: u8) -> Self {
         BoundingBox {
-            top: self.top * (factor as usize),
-            left: self.left * (factor as usize),
             bottom: self.bottom * (factor as usize),
+            left: self.left * (factor as usize),
+            top: self.top * (factor as usize),
             right: self.right * (factor as usize),
         }
     }
 
     pub(crate) fn size(&self) -> usize {
-        let rows = self.bottom - self.top;
+        let rows = self.top - self.bottom;
         let cols = self.right - self.left;
 
         rows * cols
@@ -76,15 +76,15 @@ impl Position {
             self.x -= 0.01;
         }
 
-        if self.y < top_boundary {
-            self.y = 2.0 * top_boundary - self.y;
+        if self.y < bottom_boundary {
+            self.y = 2.0 * bottom_boundary - self.y;
             *direction_rad = normalize_angle(-*direction_rad);
         }
 
-        if self.y > bottom_boundary {
-            self.y = 2.0 * bottom_boundary - self.y;
+        if self.y > top_boundary {
+            self.y = 2.0 * top_boundary - self.y;
             *direction_rad = normalize_angle(-*direction_rad);
-        } else if self.y == bottom_boundary {
+        } else if self.y == top_boundary {
             self.y -= 0.01;
         }
     }
@@ -106,9 +106,9 @@ mod tests {
     #[test]
     fn test_bounding_box() {
         let bb = BoundingBox {
-            top: 1,
+            bottom: 1,
             left: 2,
-            bottom: 6,
+            top: 6,
             right: 10,
         };
 
@@ -154,9 +154,9 @@ mod tests {
             direction_rad: 0.0,
         };
         let world_size = BoundingBox {
-            top: 0,
+            bottom: 0,
             left: 0,
-            bottom: 20,
+            top: 20,
             right: 20,
         };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
@@ -216,9 +216,9 @@ mod tests {
             direction_rad: 0.0,
         };
         let world_size = BoundingBox {
-            top: 0,
+            bottom: 0,
             left: 0,
-            bottom: 20,
+            top: 20,
             right: 20,
         };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
@@ -250,9 +250,9 @@ mod tests {
             direction_rad: 0.0,
         };
         let world_size = BoundingBox {
-            top: 0,
+            bottom: 0,
             left: 0,
-            bottom: 20,
+            top: 20,
             right: 20,
         };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
@@ -284,9 +284,9 @@ mod tests {
             direction_rad: 0.0,
         };
         let world_size = BoundingBox {
-            top: 0,
+            bottom: 0,
             left: 0,
-            bottom: 20,
+            top: 20,
             right: 20,
         };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
@@ -318,9 +318,9 @@ mod tests {
             direction_rad: 0.0,
         };
         let world_size = BoundingBox {
-            top: 0,
+            bottom: 0,
             left: 0,
-            bottom: 20,
+            top: 20,
             right: 20,
         };
         let reset_position_direction = |p: &mut PositionAndDirection, t: f32| {
