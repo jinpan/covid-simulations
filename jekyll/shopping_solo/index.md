@@ -9,7 +9,7 @@ permalink: /shopping_solo/
 
 ### 2020-05-15 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-*Before we dive in, you may want to check out the [intro to SIR/SEIR simulations post](/intro)*.
+*Before we dive in, you may want to check out the [Intro to SIR/SEIR simulations post](/intro)*.
 
 Let's simulate a tiny community of 108 people split among 54 households (2 people
 per household).  Everyone is social distancing, but households must

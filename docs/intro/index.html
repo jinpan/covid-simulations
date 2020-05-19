@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Intro to Simulations &middot; Coronavirus Simulations
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href=/assets/css/styles.css>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href=/assets/apple-touch-icon-precomposed.png>
+  <link rel="shortcut icon" href=/assets/favicon.ico>
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="Coronavirus Simulations" href="/feed.xml">
+</head>
+
+
+  <body>
+
+    <!-- Target for toggling the sidebar `.sidebar-checkbox` is for regular
+     styles, `#sidebar-checkbox` for behavior. -->
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+<!-- Toggleable sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p>Simulating the spread of Coronavirus.</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item" href=/>Home</a>
+
+    
+
+    
+    
+      
+    
+      
+    
+      
+        
+          
+            <a class="sidebar-nav-item" href="/about/">About</a>
+          
+        
+      
+    
+      
+    
+      
+    
+      
+        
+        <a class="sidebar-nav-item active" href="/intro/">SIM&#58; Intro to Simulations</a>
+        
+      
+    
+      
+    
+      
+        
+        <a class="sidebar-nav-item" href="/shopping_solo/">SIM&#58; Shopping Solo</a>
+        
+      
+    
+      
+    
+
+    <a class="sidebar-nav-item" href="https://github.com/jinpan/covid-simulations">GitHub project</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      &copy; 2020. All rights reserved.
+    </p>
+  </div>
+</div>
+
+
+    <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href=/ title="Home">Coronavirus Simulations</a>
+            <small></small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Intro to Simulations</h1>
+  <script src="./intro.bundle.js"></script>
+
+<h3 id="2020-05-18--jin-pan--follow-jinpan20">2020-05-18 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></h3>
+
+<p>Covid-19 has spread across our planet at a rapid pace, infecting
+<a href="https://www.nytimes.com/interactive/2020/world/coronavirus-maps.html">4.4 million+ people
+worldwide</a>,
+with <a href="https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html">1.4 million+ cases in the United States as of mid-May
+2020</a>.
+Until a vaccine is broadly administered, society must continue working together to
+control the infection rate.</p>
+
+<p>There are hundreds of small decisions we make each day that
+collectively contribute to the infection rate - should I wear a mask?
+Should I go <a href="/shopping_solo">shopping solo</a>? Should I wear my lucky socks?
+Do my decisions even matter?</p>
+
+<p>While there are definitive answers to some questions (<a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/diy-cloth-face-coverings.html">The CDC recommends
+everyone to wear a mask
+outdoors</a>),
+others are harder to answer.  To answer the harder questions, let’s
+simulate how a hypothetical virus spreads across a virtual population.</p>
+
+<p>First, let’s simulate the
+<a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SIR_model">Susceptible-Infectious-Recovered</a>
+model.  Green circles represent <span style="background-color: #B8F7BF">susceptible</span> people, red <span style="background-color: #EB6383">infectious</span>, and gray <span style="background-color: #C8C8C8">recovered</span>.  A susceptible person who gets too close to an
+infectious person will catch the disease.</p>
+
+<div>
+  <button id="radius_brownian0-start" style="width: 4em">Start</button>
+  <button id="radius_brownian0-reset">Reset</button>
+  <span>Speed:
+    <button class="radius_brownian0-speed" data-speed="1" style="font-weight: bold" disabled="">1x</button>
+    <button class="radius_brownian0-speed" data-speed="2">2x</button>
+    <button class="radius_brownian0-speed" data-speed="4">4x</button>
+    <button class="radius_brownian0-speed" data-speed="8">8x</button>
+  </span>
+  <br />
+  <div id="radius_brownian0-uplot" style="border: solid; border-width: thin; display: inline-block; width:100%"></div>
+
+  <canvas id="radius_brownian0-canvas" width="600" height="400" style="border:1px solid #000000; width:100%">
+  </canvas>
+</div>
+
+<p>The infected population initially grows rapidly but slows as the susceptible
+population shrinks, and eventually the virus runs out of people to infect. In
+this rough model, the pandemic is over with 70+% of the population infected.</p>
+
+<p>We can improve this initial simulation by more realistically modeling</p>
+<ol>
+  <li>Virus Spread</li>
+  <li>Human Behavior</li>
+</ol>
+
+<p>We will use the more realistic
+<a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model">Susceptible-Exposed-Infectious-Recovered</a>
+model, which introduces an <span style="background-color: #C7BA29">exposed</span>
+state, during which a person does not spread the disease.
+<a href="https://www.who.int/docs/default-source/coronaviruse/who-china-joint-mission-on-covid-19-final-report.pdf">The WHO</a>
+estimates that Covid-19’s exposed duration is one third the infectious
+duration, so we will use that ratio below.</p>
+
+<p>Instead of spreading via contact, the disease will be spread through viral particles:</p>
+<ul>
+  <li>Infectious people emit viral particles by breathing, coughing, sneezing, etc</li>
+  <li>People continuously inhale viral particles; the more particles they breathe, the
+more likely they are to be exposed to the disease</li>
+  <li>Viral particles fade over time</li>
+</ul>
+
+<div>
+  <button id="particle_brownian0-start" style="width: 4em">Start</button>
+  <button id="particle_brownian0-reset">Reset</button>
+  <span>Speed:
+    <button class="particle_brownian0-speed" data-speed="1" style="font-weight: bold" disabled="">1x</button>
+    <button class="particle_brownian0-speed" data-speed="2">2x</button>
+    <button class="particle_brownian0-speed" data-speed="4">4x</button>
+    <button class="particle_brownian0-speed" data-speed="8">8x</button>
+  </span>
+
+  <br />
+  <div id="particle_brownian0-uplot" style="border: solid; border-width: thin; display: inline-block; width:100%"></div>
+
+  <canvas id="particle_brownian0-canvas" width="600" height="400" style="border:1px solid #000000; width:100%">
+  </canvas>
+</div>
+
+<p>We are not always trapped in a giant bouncy castle.  Next, let’s simulate
+more realistic human behavior - <a href="/shopping_solo">shopping</a>.</p>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+    <script>
+      (function(document) {
+        var toggle = document.querySelector('.sidebar-toggle');
+        var sidebar = document.querySelector('#sidebar');
+        var checkbox = document.querySelector('#sidebar-checkbox');
+
+        document.addEventListener('click', function(e) {
+          var target = e.target;
+
+          if(!checkbox.checked ||
+             sidebar.contains(target) ||
+             (target === checkbox || target === toggle)) return;
+
+          checkbox.checked = false;
+        }, false);
+      })(document);
+    </script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-165966353-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-165966353-1');
+</script>
+
+
+  </body>
+</html>

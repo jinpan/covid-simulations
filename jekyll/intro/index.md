@@ -1,6 +1,6 @@
 ---
 layout: page
-sidebar_title: SIM&#58; Intro
+sidebar_title: SIM&#58; Intro to Simulations
 title: Intro to Simulations
 permalink: /intro/
 ---
