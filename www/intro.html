@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>npm local</title>
+  </head>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+  </style>
+
+  <body>
+    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+
+    <h1>Intro.html</h1>
+
+    <div>
+      <button id="radius_brownian0-start" style="width: 4em">Start</button>
+      <button id="radius_brownian0-reset">Reset</button>
+      <span>Speed:
+        <button class="radius_brownian0-speed" data-speed="1" style="font-weight: bold" disabled>1x</button>
+        <button class="radius_brownian0-speed" data-speed="2">2x</button>
+        <button class="radius_brownian0-speed" data-speed="4">4x</button>
+        <button class="radius_brownian0-speed" data-speed="8">8x</button>
+      </span>
+      <br>
+      <div
+              id="radius_brownian0-uplot"
+              style="border: solid; border-width: thin; display: inline-block; width: 100%"
+      ></div>
+
+      <canvas
+              id="radius_brownian0-canvas"
+              width="600" height="400"
+              style="border:1px solid #000000; width: 100%">
+      </canvas>
+    </div>
+
+    <div>
+      <button id="particle_brownian0-start" style="width: 4em">Start</button>
+      <button id="particle_brownian0-reset">Reset</button>
+      <span>Speed:
+        <button class="particle_brownian0-speed" data-speed="1" style="font-weight: bold" disabled>1x</button>
+        <button class="particle_brownian0-speed" data-speed="2">2x</button>
+        <button class="particle_brownian0-speed" data-speed="4">4x</button>
+        <button class="particle_brownian0-speed" data-speed="8">8x</button>
+      </span>
+
+      <br>
+      <div
+              id="particle_brownian0-uplot"
+              style="border: solid; border-width: thin; display: inline-block; width: 100%"
+      ></div>
+
+      <canvas
+              id="particle_brownian0-canvas"
+              width="600" height="400"
+              style="border:1px solid #000000; width: 100%">
+      </canvas>
+    </div>
+
+  </body>
+</html>

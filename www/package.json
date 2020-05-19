@@ -36,6 +36,7 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
+    "html-webpack-plugin": "^4.3.0",
     "three": "^0.116.1",
     "uplot": "^1.0.8",
     "wasm-engine": "file:../engine/pkg"
