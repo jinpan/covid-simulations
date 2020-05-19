@@ -40,6 +40,7 @@ impl DiseaseState {
 pub struct Household {
     pub bounds: BoundingBox,
     pub dual_shopper: bool,
+    pub bulk_shopper: bool,
 }
 
 #[derive(Serialize)]
@@ -106,6 +107,9 @@ impl WorldView {
     pub fn get_dual_shopper_households(&self) -> Vec<bool> {
         self.world.person_behavior.get_dual_shopper_households()
     }
+    pub fn get_bulk_shopper_households(&self) -> Vec<bool> {
+        self.world.person_behavior.get_bulk_shopper_households()
+    }
 }
 
 #[wasm_bindgen]
@@ -142,15 +146,12 @@ impl WorldView {
             // TODO: decouple this from the map: the js client currently assumes that if there is
             // a map, then we can safely call this method.
             let dual_shopper_households = self.get_dual_shopper_households();
-            boxes.extend(
-                map.households
-                    .iter()
-                    .zip_eq(dual_shopper_households.iter())
-                    .map(|(h, dual_shopper)| Household {
-                        bounds: h.bounds,
-                        dual_shopper: *dual_shopper,
-                    }),
-            );
+            let bulk_shopper_households = self.get_bulk_shopper_households();
+            boxes.extend(map.households.iter().enumerate().map(|(idx, h)| Household {
+                bounds: h.bounds,
+                dual_shopper: dual_shopper_households[idx],
+                bulk_shopper: bulk_shopper_households[idx],
+            }));
         }
 
         JsValue::from_serde(&boxes).unwrap()

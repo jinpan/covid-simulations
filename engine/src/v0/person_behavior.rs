@@ -21,6 +21,9 @@ pub(crate) trait PersonBehavior {
     fn get_dual_shopper_households(&self) -> Vec<bool> {
         unimplemented!()
     }
+    fn get_bulk_shopper_households(&self) -> Vec<bool> {
+        unimplemented!()
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -99,6 +102,10 @@ struct HouseholdState {
     head_of_household_idx: usize,
     supply_levels: f32,
     dual_shopper: bool,
+    bulk_shopper: bool,
+
+    shopping_period_ticks: usize,
+    supplies_bought_per_trip: f32,
 }
 
 pub(crate) struct ShopperBehavior {
@@ -116,20 +123,52 @@ impl ShopperBehavior {
         map: &maps::Map,
         rng: &mut dyn RngCore,
     ) -> Self {
-        let mut dual_shopper_households = vec![false; map.households.len()];
-        let num_dual_shopper_households =
-            ((map.households.len() as f32) * params.fraction_dual_shopper_households) as usize;
-        for i in 0..num_dual_shopper_households {
-            dual_shopper_households[i] = true;
-        }
-        dual_shopper_households.shuffle(rng);
+        let dual_shopper_households = {
+            let mut builder = vec![false; map.households.len()];
+            let num_dual_shopper_households =
+                ((map.households.len() as f32) * params.fraction_dual_shopper_households) as usize;
+            for i in 0..num_dual_shopper_households {
+                builder[i] = true;
+            }
+            builder.shuffle(rng);
+            builder
+        };
+        let bulk_shopper_households = {
+            let mut builder = vec![false; map.households.len()];
+            let num_bulk_shopper_households =
+                ((map.households.len() as f32) * params.fraction_bulk_shopper_households) as usize;
+            for i in 0..num_bulk_shopper_households {
+                builder[i] = true;
+            }
+            builder.shuffle(rng);
+            builder
+        };
 
         let mut per_household_states = (0..map.households.len())
-            .map(|idx| HouseholdState {
-                head_of_household_idx: 0, // To be filled in.
-                // TODO: load this from some config.
-                supply_levels: rng.gen_range(150.0, 450.0),
-                dual_shopper: dual_shopper_households[idx],
+            .map(|idx| {
+                let bulk_shopper = bulk_shopper_households[idx];
+
+                let shopping_period_ticks = if bulk_shopper {
+                    (params.shopping_period_ticks as f32 * params.bulk_shopper_time_multiplier)
+                        as usize
+                } else {
+                    params.shopping_period_ticks
+                };
+                let supplies_bought_per_trip = if bulk_shopper {
+                    params.supplies_bought_per_trip * params.bulk_shopper_supplies_multiplier
+                } else {
+                    params.supplies_bought_per_trip
+                };
+
+                HouseholdState {
+                    head_of_household_idx: 0, // To be filled in.
+                    supply_levels: rng
+                        .gen_range(params.init_supply_low_range, params.init_supply_high_range),
+                    dual_shopper: dual_shopper_households[idx],
+                    bulk_shopper,
+                    shopping_period_ticks,
+                    supplies_bought_per_trip,
+                }
             })
             .collect::<Vec<_>>();
 
@@ -359,12 +398,13 @@ impl PersonBehavior for ShopperBehavior {
 
             let (left_people_states, right_people_states) =
                 self.per_person_states.split_at_mut(idx);
-            // let state = &mut self.per_person_states[idx];
             let state = &mut right_people_states[0];
+
+            let household = &map.households[person.household_idx];
+            let household_state = &mut self.per_household_states[person.household_idx];
+
             match state {
                 ShopperState::AtHome { direction_rad } => {
-                    let household = &map.households[person.household_idx];
-                    let household_state = &mut self.per_household_states[person.household_idx];
                     if household_state.supply_levels > 0.0 {
                         // Household supply levels are acceptable, brownian motion within household
                         person.position.advance(direction_rad, &household.bounds);
@@ -417,7 +457,7 @@ impl PersonBehavior for ShopperBehavior {
                     direction_rad,
                     shopping_duration_ticks,
                 } => {
-                    if *shopping_duration_ticks < self.params.shopping_period_ticks {
+                    if *shopping_duration_ticks < household_state.shopping_period_ticks {
                         *shopping_duration_ticks += 1;
                         person
                             .position
@@ -452,8 +492,7 @@ impl PersonBehavior for ShopperBehavior {
                         person.position.x = path[path.len() - 1].1 as f32;
                         person.position.y = path[path.len() - 1].0 as f32;
 
-                        let household_state = &mut self.per_household_states[person.household_idx];
-                        household_state.supply_levels += self.params.supplies_bought_per_trip;
+                        household_state.supply_levels += household_state.supplies_bought_per_trip;
 
                         *state = ShopperState::AtHome {
                             direction_rad: rng.gen_range(0.0, 2.0 * PI),
@@ -463,7 +502,6 @@ impl PersonBehavior for ShopperBehavior {
                 ShopperState::FollowHeadOfHousehold => {
                     // If the head of household is at home and we are in the household, then
                     // transition to AtHome.
-                    let household_state = &self.per_household_states[person.household_idx];
                     // This is sound because the head of household always has a lower index than
                     // anyone else in their household.
                     let head_of_household_state =
@@ -503,6 +541,13 @@ impl PersonBehavior for ShopperBehavior {
         self.per_household_states
             .iter()
             .map(|hs| hs.dual_shopper)
+            .collect()
+    }
+
+    fn get_bulk_shopper_households(&self) -> Vec<bool> {
+        self.per_household_states
+            .iter()
+            .map(|hs| hs.bulk_shopper)
             .collect()
     }
 }

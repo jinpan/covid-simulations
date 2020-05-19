@@ -41,9 +41,17 @@ pub struct DiseaseParameters {
 
 #[derive(Deserialize, Serialize, Debug, Copy, Clone)]
 pub struct ShopperParams {
-    pub fraction_dual_shopper_households: f32,
     pub shopping_period_ticks: usize,
+
+    pub init_supply_low_range: f32,
+    pub init_supply_high_range: f32,
     pub supplies_bought_per_trip: f32,
+
+    pub fraction_dual_shopper_households: f32,
+
+    pub fraction_bulk_shopper_households: f32,
+    pub bulk_shopper_time_multiplier: f32,
+    pub bulk_shopper_supplies_multiplier: f32,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
