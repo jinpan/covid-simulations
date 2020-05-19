@@ -8,6 +8,7 @@ use engine::v0::geometry::BoundingBox;
 use engine::v0::wasm_view::{DiseaseState, State, WorldView};
 use serde::Serialize;
 use serde_json;
+use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 
@@ -184,13 +185,35 @@ fn generate_viral_particle_spread_shopping() -> WorldConfig {
 }
 
 fn main() {
+    let config_name_to_fn = {
+        let mut builder: HashMap<&str, &dyn Fn() -> WorldConfig> = HashMap::new();
+
+        builder.insert("infection_radius", &generate_infection_radius_spread_config);
+        builder.insert("viral_particle", &generate_viral_particle_spread);
+        builder.insert(
+            "viral_particle_shopper",
+            &generate_viral_particle_spread_shopping,
+        );
+
+        builder
+    };
+
     let matches = App::new("Parameter Calibration")
+        .arg(
+            Arg::with_name("generate_config_fn")
+                .takes_value(true)
+                .possible_values(&config_name_to_fn.keys().cloned().collect::<Vec<_>>()),
+        )
         .arg(
             Arg::with_name("output_file")
                 .takes_value(true)
                 .default_value("simulation_data.txt"),
         )
         .get_matches();
+
+    let generate_config_fn = config_name_to_fn
+        .get(matches.value_of("generate_config_fn").unwrap())
+        .unwrap();
 
     let output_filename = matches.value_of("output_file").unwrap();
 
@@ -200,9 +223,7 @@ fn main() {
         .open(output_filename)
         .expect("failed to open file");
     let mut run_recorder = RunRecorder {
-        // generate_config_fn: generate_infection_radius_spread_config,
-        // generate_config_fn: generate_viral_particle_spread,
-        generate_config_fn: generate_viral_particle_spread_shopping,
+        generate_config_fn,
         output_file: file,
     };
 

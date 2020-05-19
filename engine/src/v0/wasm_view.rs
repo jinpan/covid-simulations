@@ -5,8 +5,6 @@ use crate::v0::config::{DiseaseSpreadParameters, WorldConfig};
 use crate::v0::core;
 use crate::v0::geometry::BoundingBox;
 use crate::v0::maps;
-use itertools::Itertools;
-use js_sys;
 use rand::RngCore;
 use serde::Serialize;
 
@@ -37,10 +35,22 @@ impl DiseaseState {
 }
 
 #[derive(Serialize)]
-pub struct Household {
+pub struct HouseholdState {
     pub bounds: BoundingBox,
     pub dual_shopper: bool,
     pub bulk_shopper: bool,
+    pub supply_levels: f32,
+}
+
+impl HouseholdState {
+    fn from_bounds(bounds: BoundingBox) -> Self {
+        HouseholdState {
+            bounds,
+            dual_shopper: false,
+            bulk_shopper: false,
+            supply_levels: 0.0,
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -103,13 +113,6 @@ impl WorldView {
             people,
         }
     }
-
-    pub fn get_dual_shopper_households(&self) -> Vec<bool> {
-        self.world.person_behavior.get_dual_shopper_households()
-    }
-    pub fn get_bulk_shopper_households(&self) -> Vec<bool> {
-        self.world.person_behavior.get_bulk_shopper_households()
-    }
 }
 
 #[wasm_bindgen]
@@ -143,14 +146,13 @@ impl WorldView {
         let mut boxes = vec![];
 
         if let Some(map) = &self.world.map {
-            // TODO: decouple this from the map: the js client currently assumes that if there is
-            // a map, then we can safely call this method.
-            let dual_shopper_households = self.get_dual_shopper_households();
-            let bulk_shopper_households = self.get_bulk_shopper_households();
-            boxes.extend(map.households.iter().enumerate().map(|(idx, h)| Household {
-                bounds: h.bounds,
-                dual_shopper: dual_shopper_households[idx],
-                bulk_shopper: bulk_shopper_households[idx],
+            boxes.extend(map.households.iter().enumerate().map(|(idx, h)| {
+                let mut hs = HouseholdState::from_bounds(h.bounds);
+                self.world
+                    .person_behavior
+                    .update_household_state(idx, &mut hs);
+
+                hs
             }));
         }
 

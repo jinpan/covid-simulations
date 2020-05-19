@@ -52,8 +52,11 @@ impl World {
         assert!(config.num_people >= config.num_initially_infected);
 
         let mut infected_people = vec![false; config.num_people];
-        for i in 0..config.num_initially_infected {
-            infected_people[i] = true;
+        for p in infected_people
+            .iter_mut()
+            .take(config.num_initially_infected)
+        {
+            *p = true;
         }
         infected_people.shuffle(&mut rng);
 
@@ -90,7 +93,7 @@ impl World {
                     head_of_household: people_in_current_household == 1,
                 }
             })
-            .collect();
+            .collect::<Vec<_>>();
 
         let disease_spreader: Box<dyn DiseaseSpreader> =
             match config.disease_parameters.spread_parameters {

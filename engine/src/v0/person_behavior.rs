@@ -1,8 +1,8 @@
 use crate::v0::config::ShopperParams;
 use crate::v0::core::Person;
 use crate::v0::geometry::{BoundingBox, Position};
-use crate::v0::maps;
 use crate::v0::maps::MapElement;
+use crate::v0::{maps, wasm_view};
 use anyhow::{anyhow, Result};
 use pathfinding::prelude::astar;
 use rand::seq::SliceRandom;
@@ -18,10 +18,7 @@ pub(crate) trait PersonBehavior {
         rng: &mut dyn RngCore,
     );
 
-    fn get_dual_shopper_households(&self) -> Vec<bool> {
-        unimplemented!()
-    }
-    fn get_bulk_shopper_households(&self) -> Vec<bool> {
+    fn update_household_state(&self, _idx: usize, _state: &mut wasm_view::HouseholdState) {
         unimplemented!()
     }
 }
@@ -100,17 +97,18 @@ enum ShopperState {
 
 struct HouseholdState {
     head_of_household_idx: usize,
-    supply_levels: f32,
+
     dual_shopper: bool,
     bulk_shopper: bool,
 
     shopping_period_ticks: usize,
     supplies_bought_per_trip: f32,
+
+    supply_levels: f32,
 }
 
 pub(crate) struct ShopperBehavior {
     world_bounding_box: BoundingBox,
-    params: ShopperParams,
     per_person_states: Vec<ShopperState>,
     per_household_states: Vec<HouseholdState>,
 }
@@ -119,7 +117,7 @@ impl ShopperBehavior {
     pub(crate) fn new(
         world_bounding_box: BoundingBox,
         params: ShopperParams,
-        people: &Vec<Person>,
+        people: &[Person],
         map: &maps::Map,
         rng: &mut dyn RngCore,
     ) -> Self {
@@ -127,8 +125,8 @@ impl ShopperBehavior {
             let mut builder = vec![false; map.households.len()];
             let num_dual_shopper_households =
                 ((map.households.len() as f32) * params.fraction_dual_shopper_households) as usize;
-            for i in 0..num_dual_shopper_households {
-                builder[i] = true;
+            for b in builder.iter_mut().take(num_dual_shopper_households) {
+                *b = true;
             }
             builder.shuffle(rng);
             builder
@@ -137,8 +135,8 @@ impl ShopperBehavior {
             let mut builder = vec![false; map.households.len()];
             let num_bulk_shopper_households =
                 ((map.households.len() as f32) * params.fraction_bulk_shopper_households) as usize;
-            for i in 0..num_bulk_shopper_households {
-                builder[i] = true;
+            for b in builder.iter_mut().take(num_bulk_shopper_households) {
+                *b = true;
             }
             builder.shuffle(rng);
             builder
@@ -162,12 +160,12 @@ impl ShopperBehavior {
 
                 HouseholdState {
                     head_of_household_idx: 0, // To be filled in.
-                    supply_levels: rng
-                        .gen_range(params.init_supply_low_range, params.init_supply_high_range),
                     dual_shopper: dual_shopper_households[idx],
                     bulk_shopper,
                     shopping_period_ticks,
                     supplies_bought_per_trip,
+                    supply_levels: rng
+                        .gen_range(params.init_supply_low_range, params.init_supply_high_range),
                 }
             })
             .collect::<Vec<_>>();
@@ -187,7 +185,6 @@ impl ShopperBehavior {
 
         ShopperBehavior {
             world_bounding_box,
-            params,
             per_person_states,
             per_household_states,
         }
@@ -284,17 +281,17 @@ impl ShopperBehavior {
             &starting_road_point,
             |pos| {
                 let mut successors = vec![];
-                for (d_row, d_col) in vec![(-1, 0), (0, -1), (0, 1), (1, 0)] {
-                    if d_row == -1 && pos.0 == 0 {
+                for (d_row, d_col) in &[(-1, 0), (0, -1), (0, 1), (1, 0)] {
+                    if *d_row == -1 && pos.0 == 0 {
                         continue;
                     }
-                    if d_row == 1 && pos.0 + 1 == world_bb.top as u16 {
+                    if *d_row == 1 && pos.0 + 1 == world_bb.top as u16 {
                         continue;
                     }
-                    if d_col == -1 && pos.1 == 0 {
+                    if *d_col == -1 && pos.1 == 0 {
                         continue;
                     }
-                    if d_col == 1 && pos.1 + 1 == world_bb.right as u16 {
+                    if *d_col == 1 && pos.1 + 1 == world_bb.right as u16 {
                         continue;
                     }
 
@@ -315,7 +312,7 @@ impl ShopperBehavior {
             },
             |pos| *pos == ending_road_point,
         )
-        .ok_or(anyhow!("failed to find road path"))?;
+        .ok_or_else(|| anyhow!("failed to find road path"))?;
 
         // Add intermediate nodes from the starting position to the starting intersection.
         // Search again.
@@ -537,18 +534,12 @@ impl PersonBehavior for ShopperBehavior {
         }
     }
 
-    fn get_dual_shopper_households(&self) -> Vec<bool> {
-        self.per_household_states
-            .iter()
-            .map(|hs| hs.dual_shopper)
-            .collect()
-    }
+    fn update_household_state(&self, idx: usize, state: &mut wasm_view::HouseholdState) {
+        let hs = &self.per_household_states[idx];
 
-    fn get_bulk_shopper_households(&self) -> Vec<bool> {
-        self.per_household_states
-            .iter()
-            .map(|hs| hs.bulk_shopper)
-            .collect()
+        state.dual_shopper = hs.dual_shopper;
+        state.bulk_shopper = hs.bulk_shopper;
+        state.supply_levels = hs.supply_levels;
     }
 }
 
