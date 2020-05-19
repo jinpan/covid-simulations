@@ -113,7 +113,7 @@ else, and so on, setting off an infection chain reaction.  In epidemiology
 terms, additional shoppers increase the
 [effective reproduction number](https://www.healthknowledge.org.uk/public-health-textbook/research-methods/1a-epidemiology/epidemic-theory).
 
-So yes, our decisions absolutely matter and matter beyond ourselves.
+Our decisions absolutely matter and matter beyond ourselves.
 
 <hr>
 
