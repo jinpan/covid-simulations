@@ -34,6 +34,7 @@ anyhow = "1.0"
 approx = "0.3"
 clap = "2"
 itertools = "0.9"
+js-sys = "0.3"
 rand = { version = "0.7", features = ["wasm-bindgen"] }
 rand_core = "0.5"
 rand_chacha = "0.2"

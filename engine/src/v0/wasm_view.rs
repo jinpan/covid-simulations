@@ -6,6 +6,7 @@ use crate::v0::core;
 use crate::v0::geometry::BoundingBox;
 use crate::v0::maps;
 use itertools::Itertools;
+use js_sys;
 use rand::RngCore;
 use serde::Serialize;
 
@@ -120,26 +121,7 @@ impl WorldView {
         JsValue::from_serde(&state).unwrap()
     }
 
-    pub fn get_background_viral_particles(&self) -> Vec<f32> {
-        let background_viral_particles =
-            match self.world.config.disease_parameters.spread_parameters {
-                DiseaseSpreadParameters::InfectionRadius(_) => vec![],
-                DiseaseSpreadParameters::BackgroundViralParticle(_) => self
-                    .world
-                    .disease_spreader
-                    .get_background_viral_levels()
-                    .clone(),
-            };
-
-        let mut flat_particles = vec![];
-        for row in background_viral_particles {
-            flat_particles.extend(row);
-        }
-
-        flat_particles
-    }
-
-    pub fn get_background_viral_particles2(&mut self) -> *const f32 {
+    pub fn get_background_viral_particles(&mut self) -> js_sys::Float32Array {
         self.background_viral_particles.clear();
         match self.world.config.disease_parameters.spread_parameters {
             DiseaseSpreadParameters::InfectionRadius(_) => {}
@@ -150,7 +132,7 @@ impl WorldView {
             }
         };
 
-        &self.background_viral_particles[0]
+        unsafe { js_sys::Float32Array::view(self.background_viral_particles.as_slice()) }
     }
 
     pub fn get_households(&self) -> JsValue {

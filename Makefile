@@ -1,5 +1,5 @@
 jekyll-assets :
-	cd engine; wasm-pack build --release; echo 'export var _WASM_MEMORY = wasm.memory;' >> pkg/engine_bg.js
+	cd engine; wasm-pack build --release
 	rm www/dist/*
 	cd www; npm run build
 	rm jekyll/shopping_solo/*.js
