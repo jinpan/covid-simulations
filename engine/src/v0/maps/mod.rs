@@ -171,7 +171,11 @@ impl Map {
         boxes
     }
 
-    pub fn load_from_ascii_str(scale_factor: u8, s: &str) -> Result<Self> {
+    pub fn load_from_ascii_str(
+        s: &str,
+        scale_factor: u8,
+        num_people_per_household: u8,
+    ) -> Result<Self> {
         let parsed_ascii_map = Self::load_lines(s)?;
 
         let household_boxes = Self::get_bounding_boxes(&parsed_ascii_map, MapElement::Household);
@@ -179,8 +183,7 @@ impl Map {
             .into_iter()
             .map(|bb| Household {
                 bounds: bb.scale(scale_factor),
-                // TODO: load this from some parameter file.
-                num_people: 2,
+                num_people: num_people_per_household,
             })
             .collect();
 
@@ -222,7 +225,7 @@ mod tests {
 
     #[test]
     fn test_load_simple_groceries() -> Result<()> {
-        let sg_map = Map::load_from_ascii_str(1, simple_groceries::MAP_ASCII_STR)?;
+        let sg_map = Map::load_from_ascii_str(simple_groceries::MAP_ASCII_STR, 1, 1)?;
 
         let household_bounds = sg_map
             .households

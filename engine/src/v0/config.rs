@@ -3,6 +3,13 @@
 use crate::v0::geometry::BoundingBox;
 use serde::{Deserialize, Serialize};
 
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct MapParams {
+    pub name: String,
+    pub scale: u8,
+    pub num_people_per_household: u8,
+}
+
 #[derive(Deserialize, Serialize, Debug, Copy, Clone)]
 pub struct BackgroundViralParticleParams {
     // How far an infected person spreads background particles
@@ -70,4 +77,5 @@ pub struct WorldConfig {
     pub bounding_box: BoundingBox,
     pub num_people: usize,
     pub num_initially_infected: usize,
+    pub map_params: Option<MapParams>,
 }

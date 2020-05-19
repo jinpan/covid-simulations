@@ -559,7 +559,7 @@ mod tests {
             right: 600,
         };
 
-        let sg_map = maps::Map::load_from_ascii_str(10, simple_groceries::MAP_ASCII_STR)?;
+        let sg_map = maps::Map::load_from_ascii_str(simple_groceries::MAP_ASCII_STR, 10, 1)?;
         let store = &sg_map.stores[0];
 
         let intersections =
@@ -604,7 +604,7 @@ mod tests {
             right: 600,
         };
 
-        let sg_map = maps::Map::load_from_ascii_str(10, simple_groceries::MAP_ASCII_STR)?;
+        let sg_map = maps::Map::load_from_ascii_str(simple_groceries::MAP_ASCII_STR, 10, 1)?;
         let store_bb = &sg_map.stores[0].bounds;
 
         let household_bb = BoundingBox {

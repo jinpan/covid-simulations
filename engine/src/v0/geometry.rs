@@ -70,10 +70,11 @@ impl Position {
             *direction_rad = normalize_angle(PI - *direction_rad);
         }
 
-        if self.x >= right_boundary {
-            // Subtract a bit more to ensure self.x is not exactly right_boundary
-            self.x = 2.0 * right_boundary - self.x - f32::EPSILON;
+        if self.x > right_boundary {
+            self.x = 2.0 * right_boundary - self.x;
             *direction_rad = normalize_angle(PI - *direction_rad);
+        } else if self.x == right_boundary {
+            self.x -= 0.01;
         }
 
         if self.y < bottom_boundary {
@@ -81,10 +82,11 @@ impl Position {
             *direction_rad = normalize_angle(-*direction_rad);
         }
 
-        if self.y >= top_boundary {
-            // Subtract a bit more to ensure self.y is not exactly top_boundary
-            self.y = 2.0 * top_boundary - self.y - f32::EPSILON;
+        if self.y > top_boundary {
+            self.y = 2.0 * top_boundary - self.y;
             *direction_rad = normalize_angle(-*direction_rad);
+        } else if self.y == top_boundary {
+            self.y -= 0.01;
         }
     }
 }

@@ -7,6 +7,7 @@ use crate::v0::disease_spread::{
 use crate::v0::geometry::Position;
 use crate::v0::maps;
 use crate::v0::person_behavior::{BrownianMotionBehavior, PersonBehavior, ShopperBehavior};
+use anyhow::Result;
 use rand::prelude::SliceRandom;
 use rand::{Rng, RngCore};
 
@@ -44,11 +45,14 @@ pub(crate) struct World {
 }
 
 impl World {
-    pub(crate) fn new(
-        mut rng: Box<dyn RngCore>,
-        config: WorldConfig,
-        maybe_map: Option<maps::Map>,
-    ) -> Self {
+    pub(crate) fn new(mut rng: Box<dyn RngCore>, config: WorldConfig) -> Result<Self> {
+        // Load the map
+        let maybe_map = if let Some(map_params) = &config.map_params {
+            Some(maps::loader::load(map_params)?)
+        } else {
+            None
+        };
+
         assert!(config.num_people >= config.num_initially_infected);
 
         let mut infected_people = vec![false; config.num_people];
@@ -123,7 +127,7 @@ impl World {
             )),
         };
 
-        World {
+        Ok(World {
             config,
             map: maybe_map,
             tick: 0,
@@ -131,7 +135,7 @@ impl World {
             disease_spreader,
             person_behavior,
             rng,
-        }
+        })
     }
 
     pub fn step(&mut self) {
@@ -181,7 +185,7 @@ mod tests {
     }
 
     #[test]
-    fn test_infection_radius_world() {
+    fn test_infection_radius_world() -> Result<()> {
         let rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
         let config = WorldConfig {
             disease_parameters: DiseaseParameters {
@@ -198,9 +202,10 @@ mod tests {
             },
             num_people: 5,
             num_initially_infected: 2,
+            map_params: None,
         };
 
-        let mut world = World::new(rng, config, None);
+        let mut world = World::new(rng, config)?;
         let mut expected_disease_states = vec![
             DiseaseState::Susceptible,
             DiseaseState::Susceptible,
@@ -242,10 +247,12 @@ mod tests {
         world.step();
         expected_disease_states[0] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
+
+        Ok(())
     }
 
     #[test]
-    fn test_viral_particle_spread_world() {
+    fn test_viral_particle_spread_world() -> Result<()> {
         let rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
         let config = WorldConfig {
             disease_parameters: DiseaseParameters {
@@ -268,9 +275,10 @@ mod tests {
             },
             num_people: 5,
             num_initially_infected: 2,
+            map_params: None,
         };
 
-        let mut world = World::new(rng, config, None);
+        let mut world = World::new(rng, config)?;
         let mut expected_disease_states = vec![
             DiseaseState::Susceptible,
             DiseaseState::Susceptible,
@@ -322,5 +330,7 @@ mod tests {
         world.step();
         expected_disease_states[0] = DiseaseState::Recovered;
         check_disease_states(&world.people, &expected_disease_states);
+
+        Ok(())
     }
 }

@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 use crate::v0::config::{DiseaseSpreadParameters, WorldConfig};
 use crate::v0::core;
 use crate::v0::geometry::BoundingBox;
-use crate::v0::maps;
+use anyhow::Result;
 use rand::RngCore;
 use serde::Serialize;
 
@@ -73,6 +73,7 @@ pub struct Person {
 pub struct State {
     pub tick: usize,
     pub people: Vec<Person>,
+    pub households: Vec<HouseholdState>,
 }
 
 #[wasm_bindgen]
@@ -83,15 +84,15 @@ pub struct WorldView {
 }
 
 impl WorldView {
-    pub fn new(config: WorldConfig, map: Option<maps::Map>, rng: Box<dyn RngCore>) -> Self {
-        let world = core::World::new(rng, config, map);
+    pub fn new(config: WorldConfig, rng: Box<dyn RngCore>) -> Result<Self> {
+        let world = core::World::new(rng, config)?;
 
         let background_viral_particles = Vec::with_capacity(world.config.bounding_box.size());
 
-        WorldView {
+        Ok(WorldView {
             world,
             background_viral_particles,
-        }
+        })
     }
 
     pub fn get_state(&self) -> State {
@@ -108,9 +109,22 @@ impl WorldView {
             })
             .collect::<Vec<_>>();
 
+        let mut households = vec![];
+        if let Some(map) = &self.world.map {
+            households.extend(map.households.iter().enumerate().map(|(idx, h)| {
+                let mut hs = HouseholdState::from_bounds(h.bounds);
+                self.world
+                    .person_behavior
+                    .update_household_state(idx, &mut hs);
+
+                hs
+            }));
+        }
+
         State {
             tick: self.world.tick,
             people,
+            households,
         }
     }
 }

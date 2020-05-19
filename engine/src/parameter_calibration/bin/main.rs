@@ -2,12 +2,11 @@ extern crate clap;
 use clap::{App, Arg};
 use engine::v0::config::{
     BackgroundViralParticleParams, BehaviorParameters, DiseaseParameters, DiseaseSpreadParameters,
-    ShopperParams, WorldConfig,
+    MapParams, ShopperParams, WorldConfig,
 };
 use engine::v0::geometry::BoundingBox;
 use engine::v0::wasm_view::{DiseaseState, State, WorldView};
 use serde::Serialize;
-use serde_json;
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
@@ -83,7 +82,7 @@ where
     fn add_record(&mut self) {
         let config = (self.generate_config_fn)();
         let rng = Box::new(rand::thread_rng());
-        let mut world_view = WorldView::new(config.clone(), None, rng);
+        let mut world_view = WorldView::new(config.clone(), rng).unwrap();
 
         run_to_completion(&mut world_view);
         let ending_state = EndingState::from_state(&world_view.get_state());
@@ -119,6 +118,7 @@ fn generate_infection_radius_spread_config() -> WorldConfig {
         },
         num_people: 200,
         num_initially_infected: 3,
+        map_params: None,
     }
 }
 
@@ -144,6 +144,7 @@ fn generate_viral_particle_spread() -> WorldConfig {
         },
         num_people: 200,
         num_initially_infected: 3,
+        map_params: None,
     }
 }
 
@@ -181,6 +182,11 @@ fn generate_viral_particle_spread_shopping() -> WorldConfig {
         },
         num_people: 108,
         num_initially_infected: 2,
+        map_params: Some(MapParams {
+            name: "simple_groceries".to_string(),
+            scale: 10,
+            num_people_per_household: 2,
+        }),
     }
 }
 
