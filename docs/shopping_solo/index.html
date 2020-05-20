@@ -112,8 +112,12 @@
 
 <p><em>Before we dive in, you may want to check out the <a href="/intro">Intro to SIR/SEIR simulations post</a></em>.</p>
 
-<p>Let’s simulate a tiny community of 108 people split among 54 households (2 people
-per household).  Everyone is social distancing, but households must
+<blockquote>
+  <p>How does the number of shoppers a household sends out affect the spread of Covid-19?</p>
+</blockquote>
+
+<p>To answer this question, let’s simulate a tiny community of 108 people split among 54 households
+(2 people per household).  Everyone is social distancing, but households must
 periodically make trips to the store as they run out of supplies.</p>
 
 <p>Some households (marked <code class="highlighter-rouge">1x</code>) have a 1x shopper rule that only one person goes
@@ -163,6 +167,7 @@ the simulations.</p>
 
     <div style="padding: 1em">
 The shaded gray area contains the average 50% of outcomes across all the simulations.
+The solid line is the median outcome, and the dotted line is the best fit.
     </div>
 </div>
 
@@ -202,6 +207,7 @@ someone in <em>my</em> household getting the disease?</p>
     <div style="padding: 1em">
 The green area represents the average 50% of outcomes for
 1x-shopper households; the red represents 2x-shopper households.
+Lines represent the median outcome for the two types of households.
     </div>
 </div>
 <p>More details about this chart at this footnote<sup id="fnref:my_household_chart_details"><a href="#fn:my_household_chart_details" class="footnote">2</a></sup>.</p>
@@ -261,7 +267,7 @@ need to work together to control the spread of the virus</strong>.</p>
 <div class="footnotes">
   <ol>
     <li id="fn:shopping_parameters">
-      <p>Shopping simulation parameters:</p>
+      <p>Simulation parameters:</p>
       <ul>
         <li>At 1x speed, each second is divided into 60 ticks.  At 2x speed, each second into 120 ticks, and so on.</li>
         <li>The map is a 600 x 400 grid.</li>

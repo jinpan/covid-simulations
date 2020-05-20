@@ -11,15 +11,17 @@ permalink: /shopping_solo/
 
 *Before we dive in, you may want to check out the [Intro to SIR/SEIR simulations post](/intro)*.
 
-Let's simulate a tiny community of 108 people split among 54 households (2 people
-per household).  Everyone is social distancing, but households must
+> How does the number of shoppers a household sends out affect the spread of Covid-19?
+
+To answer this question, let's simulate a tiny community of 108 people split among 54 households
+(2 people per household).  Everyone is social distancing, but households must
 periodically make trips to the store as they run out of supplies.
 
 Some households (marked `1x`) have a 1x shopper rule that only one person goes
 shopping, and other households (marked as `2x`), both people will go out to
 shop and stick together in the store. All parameters at this footnote[^shopping_parameters].
 
-[^shopping_parameters]: Shopping simulation parameters:
+[^shopping_parameters]: Simulation parameters:
     * At 1x speed, each second is divided into 60 ticks.  At 2x speed, each second into 120 ticks, and so on.
     * The map is a 600 x 400 grid.
     * Within households and stores, people will move at 1 unit per tick, and bounce off of walls.
@@ -95,6 +97,7 @@ the simulations.
 
     <div style="padding: 1em">
 The shaded gray area contains the average 50% of outcomes across all the simulations.
+The solid line is the median outcome, and the dotted line is the best fit.
     </div>
 </div>
 
@@ -130,6 +133,7 @@ Our decisions absolutely matter and matter beyond ourselves.
     <div style="padding: 1em">
 The green area represents the average 50% of outcomes for
 1x-shopper households; the red represents 2x-shopper households.
+Lines represent the median outcome for the two types of households.
     </div>
 </div>
 More details about this chart at this footnote[^my_household_chart_details].

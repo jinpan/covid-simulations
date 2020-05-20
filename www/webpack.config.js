@@ -12,8 +12,8 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     filename: "./[name].bundle.js",
   },
-  // mode: "production",
-  mode: "development",
+  mode: "production",
+  // mode: "development",
   plugins: [
     new CopyWebpackPlugin(['index.html']),
     new HtmlWebpackPlugin({

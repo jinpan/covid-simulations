@@ -128,6 +128,8 @@ new Simulation({
         value: (_, v) => v + "%",
       },
     ],
+    cursor: { show: false },
+    legend: { show: false },
     axes: [
       {
         label: "Percentage of 2x-shopper households",
@@ -253,6 +255,8 @@ new Simulation({
         value: (_, v) => v + "%",
       },
     ],
+    cursor: { show: false },
+    legend: { show: false },
     axes: [
       {
         label: "Percentage of 2x-shopper households",
