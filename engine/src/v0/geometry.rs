@@ -6,6 +6,7 @@
 // https://docs.rs/bracket-geometry/0.8.1/bracket_geometry/
 // Concerns are wasm compatibility / correctness / performance.
 
+use rand::{Rng, RngCore};
 use serde::{Deserialize, Serialize};
 use std::f32::consts::PI;
 
@@ -48,6 +49,13 @@ impl BoundingBox {
         let cols = self.right - self.left;
 
         rows * cols
+    }
+
+    pub(crate) fn random_point(&self, rng: &mut dyn RngCore) -> Position {
+        let x = rng.gen_range(self.left as f32, self.right as f32);
+        let y = rng.gen_range(self.bottom as f32, self.top as f32);
+
+        Position { x, y }
     }
 }
 

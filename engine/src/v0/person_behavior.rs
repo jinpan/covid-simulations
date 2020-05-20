@@ -2,10 +2,10 @@ use crate::v0::config::ShopperParams;
 use crate::v0::core::Person;
 use crate::v0::geometry::{BoundingBox, Position};
 use crate::v0::maps::MapElement;
+use crate::v0::utils::random_bool_vec;
 use crate::v0::{maps, wasm_view};
 use anyhow::{anyhow, Result};
 use pathfinding::prelude::astar;
-use rand::seq::SliceRandom;
 use rand::{Rng, RngCore};
 use std::f32::consts::PI;
 use std::iter::Iterator;
@@ -121,26 +121,16 @@ impl ShopperBehavior {
         map: &maps::Map,
         rng: &mut dyn RngCore,
     ) -> Self {
-        let dual_shopper_households = {
-            let mut builder = vec![false; map.households.len()];
-            let num_dual_shopper_households =
-                ((map.households.len() as f32) * params.fraction_dual_shopper_households) as usize;
-            for b in builder.iter_mut().take(num_dual_shopper_households) {
-                *b = true;
-            }
-            builder.shuffle(rng);
-            builder
-        };
-        let bulk_shopper_households = {
-            let mut builder = vec![false; map.households.len()];
-            let num_bulk_shopper_households =
-                ((map.households.len() as f32) * params.fraction_bulk_shopper_households) as usize;
-            for b in builder.iter_mut().take(num_bulk_shopper_households) {
-                *b = true;
-            }
-            builder.shuffle(rng);
-            builder
-        };
+        let dual_shopper_households = random_bool_vec(
+            map.households.len(),
+            params.fraction_dual_shopper_households,
+            rng,
+        );
+        let bulk_shopper_households = random_bool_vec(
+            map.households.len(),
+            params.fraction_bulk_shopper_households,
+            rng,
+        );
 
         let mut per_household_states = (0..map.households.len())
             .map(|idx| {

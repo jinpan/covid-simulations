@@ -6,4 +6,5 @@ mod disease_spread;
 pub mod geometry;
 pub mod maps;
 mod person_behavior;
+mod utils;
 pub mod wasm_view;

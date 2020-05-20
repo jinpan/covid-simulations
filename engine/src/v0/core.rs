@@ -9,7 +9,7 @@ use crate::v0::maps;
 use crate::v0::person_behavior::{BrownianMotionBehavior, PersonBehavior, ShopperBehavior};
 use anyhow::Result;
 use rand::prelude::SliceRandom;
-use rand::{Rng, RngCore};
+use rand::RngCore;
 
 #[derive(PartialEq, Debug)]
 pub(crate) enum DiseaseState {
@@ -86,13 +86,12 @@ impl World {
                 } else {
                     config.bounding_box
                 };
-                let x = rng.gen_range(bb.left as f32, bb.right as f32);
-                let y = rng.gen_range(bb.bottom as f32, bb.top as f32);
+                let position = bb.random_point(&mut rng);
 
                 Person {
                     id: i,
                     disease_state,
-                    position: Position { x, y },
+                    position,
                     household_idx: current_household_idx,
                     head_of_household: people_in_current_household == 1,
                 }
