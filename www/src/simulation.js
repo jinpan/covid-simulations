@@ -105,13 +105,9 @@ export class Simulation {
     // Draw households
     let household_material = new THREE.MeshBasicMaterial();
 
-    let nonbulk_household_outline_material = new THREE.LineBasicMaterial({
+    let household_outline_material = new THREE.LineBasicMaterial({
       "color": 0x333333,
       "linewidth": 1,
-    });
-    let bulk_household_outline_material = new THREE.LineBasicMaterial({
-      "color": 0x333333,
-      "linewidth": 2,
     });
 
     let household_supply_material = new THREE.MeshBasicMaterial({
@@ -146,8 +142,6 @@ export class Simulation {
 
       // Render the household outlines: bulk shoppers will have thicker outlines.
       let household_outline_geo = new THREE.EdgesGeometry(plane_geo);
-      let household_outline_material = (household.bulk_shopper) ?
-        bulk_household_outline_material : nonbulk_household_outline_material;
       let household_outline = new THREE.LineSegments(household_outline_geo, household_outline_material);
       household_outline.position.x = (box.left + box.right) / 2;
       household_outline.position.y = (box.bottom + box.top) / 2;
@@ -471,24 +465,6 @@ export class Simulation {
         const fraction_dual_shopper = parseInt(this.dataset.pct) / 100;
         let shopper_params = sim.config['engine_config']['behavior_parameters']['shopper'];
         shopper_params['fraction_dual_shopper_households'] = fraction_dual_shopper;
-
-        sim.reset();
-      });
-    };
-
-    for (let btn of document.getElementsByClassName(`${cfg_name}-pct-bulk-shopper`)) {
-      btn.addEventListener("click", function() {
-        // Update button appearances
-        for (let btn2 of document.getElementsByClassName(`${cfg_name}-pct-bulk-shopper`)) {
-          btn2.style["font-weight"] = "normal";
-          btn2.disabled = false;
-        }
-        this.style["font-weight"] = "bold";
-        this.disabled = true;
-
-        const fraction_bulk_shopper = parseInt(this.dataset.pct) / 100;
-        let shopper_params = sim.config['engine_config']['behavior_parameters']['shopper'];
-        shopper_params['fraction_bulk_shopper_households'] = fraction_bulk_shopper;
 
         sim.reset();
       });

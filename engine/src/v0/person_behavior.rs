@@ -99,7 +99,6 @@ struct HouseholdState {
     head_of_household_idx: usize,
 
     dual_shopper: bool,
-    bulk_shopper: bool,
 
     shopping_period_ticks: usize,
     supplies_bought_per_trip: f32,
@@ -126,34 +125,14 @@ impl ShopperBehavior {
             params.fraction_dual_shopper_households,
             rng,
         );
-        let bulk_shopper_households = random_bool_vec(
-            map.households.len(),
-            params.fraction_bulk_shopper_households,
-            rng,
-        );
 
         let mut per_household_states = (0..map.households.len())
             .map(|idx| {
-                let bulk_shopper = bulk_shopper_households[idx];
-
-                let shopping_period_ticks = if bulk_shopper {
-                    (params.shopping_period_ticks as f32 * params.bulk_shopper_time_multiplier)
-                        as usize
-                } else {
-                    params.shopping_period_ticks
-                };
-                let supplies_bought_per_trip = if bulk_shopper {
-                    params.supplies_bought_per_trip * params.bulk_shopper_supplies_multiplier
-                } else {
-                    params.supplies_bought_per_trip
-                };
-
                 HouseholdState {
                     head_of_household_idx: 0, // To be filled in.
                     dual_shopper: dual_shopper_households[idx],
-                    bulk_shopper,
-                    shopping_period_ticks,
-                    supplies_bought_per_trip,
+                    shopping_period_ticks: params.shopping_period_ticks,
+                    supplies_bought_per_trip: params.supplies_bought_per_trip,
                     supply_levels: rng
                         .gen_range(params.init_supply_low_range, params.init_supply_high_range),
                 }
@@ -528,7 +507,6 @@ impl PersonBehavior for ShopperBehavior {
         let hs = &self.per_household_states[idx];
 
         state.dual_shopper = hs.dual_shopper;
-        state.bulk_shopper = hs.bulk_shopper;
         state.supply_levels = hs.supply_levels;
     }
 }

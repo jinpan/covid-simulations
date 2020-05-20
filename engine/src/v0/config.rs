@@ -55,10 +55,6 @@ pub struct ShopperParams {
     pub supplies_bought_per_trip: f32,
 
     pub fraction_dual_shopper_households: f32,
-
-    pub fraction_bulk_shopper_households: f32,
-    pub bulk_shopper_time_multiplier: f32,
-    pub bulk_shopper_supplies_multiplier: f32,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

@@ -11,7 +11,6 @@ use std::io::Write;
 struct EndingPersonState {
     disease_state: DiseaseState,
     dual_shopper_household: bool,
-    bulk_shopper_household: bool,
 }
 
 #[derive(Serialize, Debug)]
@@ -48,7 +47,6 @@ impl EndingState {
                 EndingPersonState {
                     disease_state: p.disease_state,
                     dual_shopper_household: hs.dual_shopper,
-                    bulk_shopper_household: hs.bulk_shopper,
                 }
             })
             .collect();
@@ -134,10 +132,6 @@ fn main() {
         builder.insert(
             "shopping_solo",
             Box::new(generate_config::ViralParticleShoppingSolo::default()),
-        );
-        builder.insert(
-            "shopping_bulk",
-            Box::new(generate_config::ViralParticleShoppingBulk::default()),
         );
 
         builder

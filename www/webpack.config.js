@@ -7,7 +7,6 @@ module.exports = {
     index: "./bootstrap.js",
     intro: "./src/intro_bootstrap.js",
     shopping_solo: "./src/shopping_solo_bootstrap.js",
-    shopping_bulk: "./src/shopping_bulk_bootstrap.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -28,12 +27,6 @@ module.exports = {
       template: 'src/shopping_solo.html',
       chunks: ['shopping_solo'],
       filename: './shopping_solo/index.html',
-    }),
-    new HtmlWebpackPlugin({
-      hash: true,
-      template: 'src/shopping_bulk.html',
-      chunks: ['shopping_bulk'],
-      filename: './shopping_bulk/index.html',
     }),
   ],
   module: {

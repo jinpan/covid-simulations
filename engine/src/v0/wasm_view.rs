@@ -38,7 +38,6 @@ impl DiseaseState {
 pub struct HouseholdState {
     pub bounds: BoundingBox,
     pub dual_shopper: bool,
-    pub bulk_shopper: bool,
     pub supply_levels: f32,
 }
 
@@ -47,7 +46,6 @@ impl HouseholdState {
         HouseholdState {
             bounds,
             dual_shopper: false,
-            bulk_shopper: false,
             supply_levels: 0.0,
         }
     }
