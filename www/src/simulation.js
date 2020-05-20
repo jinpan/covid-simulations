@@ -475,5 +475,23 @@ export class Simulation {
         sim.reset();
       });
     };
+
+    for (let btn of document.getElementsByClassName(`${cfg_name}-pct-bulk-shopper`)) {
+      btn.addEventListener("click", function() {
+        // Update button appearances
+        for (let btn2 of document.getElementsByClassName(`${cfg_name}-pct-bulk-shopper`)) {
+          btn2.style["font-weight"] = "normal";
+          btn2.disabled = false;
+        }
+        this.style["font-weight"] = "bold";
+        this.disabled = true;
+
+        const fraction_bulk_shopper = parseInt(this.dataset.pct) / 100;
+        let shopper_params = sim.config['engine_config']['behavior_parameters']['shopper'];
+        shopper_params['fraction_bulk_shopper_households'] = fraction_bulk_shopper;
+
+        sim.reset();
+      });
+    };
   }
 }
