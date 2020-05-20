@@ -8,7 +8,7 @@ use anyhow::Result;
 use rand::RngCore;
 use serde::Serialize;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Copy, Clone)]
 pub enum DiseaseState {
     #[serde(rename = "susceptible")]
     Susceptible,
@@ -34,7 +34,7 @@ impl DiseaseState {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct HouseholdState {
     pub bounds: BoundingBox,
     pub dual_shopper: bool,
@@ -66,6 +66,7 @@ pub struct Person {
     #[serde(rename = "ds")]
     pub disease_state: DiseaseState,
 
+    #[serde(skip)]
     pub household: usize,
 }
 
