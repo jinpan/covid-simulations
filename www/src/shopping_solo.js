@@ -1,8 +1,3 @@
-/*
-import * as wasm from "wasm-engine";
-import * as THREE from 'three';
-import THREE_default_font_json from 'three/examples/fonts/helvetiker_bold.typeface.json';
-*/
 import 'uplot/dist/uPlot.min.css';
 import * as uplot from 'uplot';
 import {Simulation, width, height} from './simulation';
@@ -29,9 +24,6 @@ new Simulation({
         "init_supply_high_range": 450,
         "supplies_bought_per_trip": 30 * 60,
         "fraction_dual_shopper_households": 0.5,
-        "fraction_bulk_shopper_households": 0,
-        "bulk_shopper_time_multiplier": 0,
-        "bulk_shopper_supplies_multiplier": 0,
       },
     },
     "bounding_box": {
@@ -46,6 +38,10 @@ new Simulation({
       "name": "simple_groceries",
       "scale": 10,
       "num_people_per_household": 2,
+    },
+    "misc_parameters": {
+      "fraction_mask": 0.0,
+      "fraction_n95_mask": 0.0,
     },
   },
   "show_dual_shopper": false,

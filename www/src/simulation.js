@@ -37,7 +37,7 @@ let simulations = [];
 export class Simulation {
   constructor(config) {
     this.config = Object.assign({}, config);  // Deep copy of the config
-    this.world = wasm.create_world(config.engine_config, config.map_name, config.initial_seed);
+    this.world = wasm.create_world(config.engine_config, config.initial_seed);
 
     this._play = false;
     this.speed = 1;
@@ -140,7 +140,7 @@ export class Simulation {
       plane.position.x = (box.left + box.right) / 2;
       plane.position.y = (box.bottom + box.top) / 2;
 
-      // Render the household outlines: bulk shoppers will have thicker outlines.
+      // Render the household outlines.
       let household_outline_geo = new THREE.EdgesGeometry(plane_geo);
       let household_outline = new THREE.LineSegments(household_outline_geo, household_outline_material);
       household_outline.position.x = (box.left + box.right) / 2;
@@ -163,7 +163,6 @@ export class Simulation {
         household_supply.scale.y = pct_supplies;
         household_supply.position.x = box.left + 1;
         household_supply.position.y = box.bottom + supply_height / 2;
-
 
         this.household_supply_level_meters.push(household_supply);
         scene.add(household_supply);
@@ -218,6 +217,23 @@ export class Simulation {
   draw_people(world, scene) {
     let circle_geo = new THREE.CircleGeometry( 4, 32 );
 
+    const mask_geo_and_material = {
+      "regular": {
+        "geo": new THREE.RingGeometry( 4, 5, 32 ),
+        "mat": new THREE.LineBasicMaterial({
+          "color": 0x333333,
+          "linewidth": 1,
+        }),
+      },
+      "n95": {
+        "geo": new THREE.RingGeometry( 4, 6, 32 ),
+        "mat": new THREE.LineBasicMaterial({
+          "color": 0x333333,
+          "linewidth": 4,
+        }),
+      },
+    };
+
     this.people_by_id = new Map();
     for (const person_state of world.to_json()["people"]) {
       let color = color_map[person_state["ds"]];
@@ -228,8 +244,18 @@ export class Simulation {
       person.position.x = person_state["px"];
       person.position.y = person_state["py"];
 
-      this.people_by_id.set(person_state["id"], person);
+      this.people_by_id.set(person_state["id"], {"person": person});
       scene.add(person);
+
+      // Draw masks
+      let geo_and_mat = mask_geo_and_material[person_state.mask];
+      if (geo_and_mat !== undefined) {
+        let mask = new THREE.Mesh(geo_and_mat.geo, geo_and_mat.mat);
+        mask.position.x = person_state["px"];
+        mask.position.y = person_state["py"];
+        this.people_by_id.get(person_state["id"])["mask"] = mask;
+        scene.add(mask);
+      }
     }
   }
 
@@ -250,13 +276,20 @@ export class Simulation {
 
   animate_people(people) {
     for (const person_state of people) {
-      let person = this.people_by_id.get(person_state["id"]);
+      let person_and_mask = this.people_by_id.get(person_state["id"]);
+      let person = person_and_mask.person;
 
       person.position.x = person_state["px"];
       person.position.y = person_state["py"];
 
       let color = color_map[person_state["ds"]];
       person.material.color.setHex(color);
+
+      let mask = person_and_mask.mask;
+      if (mask !== undefined) {
+        mask.position.x = person_state["px"];
+        mask.position.y = person_state["py"];
+      }
     }
   }
 
@@ -465,6 +498,24 @@ export class Simulation {
         const fraction_dual_shopper = parseInt(this.dataset.pct) / 100;
         let shopper_params = sim.config['engine_config']['behavior_parameters']['shopper'];
         shopper_params['fraction_dual_shopper_households'] = fraction_dual_shopper;
+
+        sim.reset();
+      });
+    };
+
+    for (let btn of document.getElementsByClassName(`${cfg_name}-pct-mask`)) {
+      btn.addEventListener("click", function() {
+        // Update button appearances
+        for (let btn2 of document.getElementsByClassName(`${cfg_name}-pct-mask`)) {
+          btn2.style["font-weight"] = "normal";
+          btn2.disabled = false;
+        }
+        this.style["font-weight"] = "bold";
+        this.disabled = true;
+
+        const fraction_mask = parseInt(this.dataset.pct) / 100;
+        let misc_params = sim.config['engine_config']['misc_parameters']
+        misc_params['fraction_mask'] = fraction_mask;
 
         sim.reset();
       });

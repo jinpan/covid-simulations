@@ -26,8 +26,11 @@ const configs = (function() {
       },
       "num_people": 200,
       "num_initially_infected": 3,
+      "misc_parameters": {
+        "fraction_mask": 0.0,
+        "fraction_n95_mask": 0.0,
+      },
     },
-    "map_name": "",
     "initial_seed": 10914,
     "chart_update_period_ticks": 4,
   });
@@ -53,8 +56,11 @@ const configs = (function() {
       },
       "num_people": 200,
       "num_initially_infected": 3,
+      "misc_parameters": {
+        "fraction_mask": 0.0,
+        "fraction_n95_mask": 0.0,
+      },
     },
-    "map_name": "",
     "initial_seed": 10914,
     "chart_update_period_ticks": 6,
   });
