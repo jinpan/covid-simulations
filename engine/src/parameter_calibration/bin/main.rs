@@ -7,6 +7,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
+use std::thread;
 
 #[derive(Serialize, Debug)]
 struct EndingPersonState {
@@ -88,35 +89,53 @@ fn run_to_completion(world: &mut WorldView) -> usize {
     }
 }
 
-struct RunRecorder {
-    config_generator: Box<dyn generate_config::ConfigGenerator>,
-    output_file: File,
-}
+fn concurrent_run_to_completion(
+    mut generator: Box<dyn generate_config::ConfigGenerator>,
+    mut output_file: File,
+) {
+    let (tx_config, rx_config) = crossbeam_channel::bounded::<WorldConfig>(0);
+    let (tx_record, rx_record) = crossbeam_channel::bounded::<RunRecord>(0);
 
-impl RunRecorder {
-    fn add_record(&mut self) {
-        let config = self.config_generator.gen();
-        let rng = Box::new(rand::thread_rng());
-        let mut world_view = WorldView::new(config.clone(), rng).unwrap();
+    for _ in 0..8 {
+        let rx_config_clone = rx_config.clone();
+        let tx_record_clone = tx_record.clone();
 
-        run_to_completion(&mut world_view);
-        let ending_state = EndingState::from_state(&world_view.get_state());
+        thread::spawn(move || {
+            while let Ok(config) = rx_config_clone.recv() {
+                let rng = Box::new(rand::thread_rng());
+                let mut world_view = WorldView::new(config.clone(), rng).unwrap();
 
-        let record = RunRecord {
-            config,
-            ending_state,
-        };
-        let serialized_record = serde_json::to_string(&record)
-            .unwrap_or_else(|_| panic!("failed to serialize {:?}", record));
+                run_to_completion(&mut world_view);
+                let ending_state = EndingState::from_state(&world_view.get_state());
+                let record = RunRecord {
+                    config,
+                    ending_state,
+                };
 
-        self.output_file
-            .write_all(serialized_record.as_bytes())
-            .expect("failed to write to file");
-        self.output_file
-            .write_all(&['\n' as u8])
-            .expect("failed to write to file");
+                tx_record_clone.send(record).unwrap();
+            }
+        });
+    }
 
-        self.output_file.sync_data().expect("failed to sync file");
+    thread::spawn(move || {
+        while let Ok(record) = rx_record.recv() {
+            let serialized_record = serde_json::to_string(&record)
+                .unwrap_or_else(|_| panic!("failed to serialize {:?}", record));
+
+            output_file
+                .write_all(serialized_record.as_bytes())
+                .expect("failed to write to file");
+            output_file
+                .write_all(&['\n' as u8])
+                .expect("failed to write to file");
+
+            output_file.sync_data().expect("failed to sync file");
+        }
+    });
+
+    loop {
+        let config = generator.gen();
+        tx_config.send(config).unwrap();
     }
 }
 
@@ -139,6 +158,10 @@ fn main() {
         builder.insert(
             "shopping_mask_regular",
             Box::new(generate_config::ViralParticleShoppingMaskRegular::default()),
+        );
+        builder.insert(
+            "shopping_mask_n95",
+            Box::new(generate_config::ViralParticleShoppingMaskN95::default()),
         );
 
         builder
@@ -171,12 +194,6 @@ fn main() {
         .create(true)
         .open(&output_filename)
         .expect("failed to open file");
-    let mut run_recorder = RunRecorder {
-        config_generator,
-        output_file: file,
-    };
 
-    loop {
-        run_recorder.add_record();
-    }
+    concurrent_run_to_completion(config_generator, file);
 }
