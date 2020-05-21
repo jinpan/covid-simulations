@@ -4,7 +4,8 @@ use crate::v0::geometry::BoundingBox;
 use anyhow::{anyhow, Result};
 use pathfinding::directed::astar::astar;
 use rand::{Rng, RngCore};
-use std::collections::HashSet;
+use std::cell::RefCell;
+use std::collections::{HashMap, HashSet};
 
 pub mod loader;
 
@@ -34,6 +35,8 @@ pub struct Map {
 
     scale_factor: u8,
     elements: Vec<Vec<MapElement>>,
+
+    household_to_store_path_cache: RefCell<HashMap<(usize, usize), Vec<(u16, u16)>>>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -222,6 +225,7 @@ impl Map {
             world_bb,
             scale_factor,
             elements: parsed_ascii_map,
+            household_to_store_path_cache: RefCell::new(HashMap::new()),
         })
     }
 
@@ -284,7 +288,13 @@ impl Map {
         store_idx: usize,
         rng: &mut dyn RngCore,
     ) -> Result<Vec<(u16, u16)>> {
-        // TODO: cache this and try looking up from cache
+        if let Some(path) = self
+            .household_to_store_path_cache
+            .borrow()
+            .get(&(household_idx, store_idx))
+        {
+            return Ok(path.clone());
+        }
 
         let household_bb = &self.households[household_idx].bounds;
         // List of (from, road) points.
@@ -350,6 +360,10 @@ impl Map {
         let mut entire_path = vec![starting_intersection.0];
         entire_path.extend(road_path.into_iter());
         entire_path.push(ending_intersection.0);
+
+        self.household_to_store_path_cache
+            .borrow_mut()
+            .insert((household_idx, store_idx), entire_path.clone());
 
         Ok(entire_path)
     }
