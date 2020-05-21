@@ -124,7 +124,6 @@ impl World {
                 &mut rng,
             )),
             BehaviorParameters::Shopper(params) => Box::new(ShopperBehavior::new(
-                config.bounding_box,
                 params,
                 &people,
                 maybe_map

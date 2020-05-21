@@ -4,8 +4,7 @@ use crate::v0::geometry::{BoundingBox, Position};
 use crate::v0::maps::MapElement;
 use crate::v0::utils::random_bool_vec;
 use crate::v0::{maps, wasm_view};
-use anyhow::{anyhow, Result};
-use pathfinding::prelude::astar;
+use anyhow::Result;
 use rand::{Rng, RngCore};
 use std::f32::consts::PI;
 use std::iter::Iterator;
@@ -107,14 +106,12 @@ struct HouseholdState {
 }
 
 pub(crate) struct ShopperBehavior {
-    world_bounding_box: BoundingBox,
     per_person_states: Vec<ShopperState>,
     per_household_states: Vec<HouseholdState>,
 }
 
 impl ShopperBehavior {
     pub(crate) fn new(
-        world_bounding_box: BoundingBox,
         params: ShopperParams,
         people: &[Person],
         map: &maps::Map,
@@ -153,174 +150,79 @@ impl ShopperBehavior {
             .collect();
 
         ShopperBehavior {
-            world_bounding_box,
             per_person_states,
             per_household_states,
         }
     }
 
-    fn find_bb_road_intersection(
-        world_bb: &BoundingBox,
-        bb: &BoundingBox,
-        map: &maps::Map,
-    ) -> Vec<((u16, u16), (u16, u16))> {
-        // Returns a list of a pair of points, such that
-        //   the first point of the pair is inside the bounding box
-        //   the second point of the pair is on the road
-        //   the first and second points are adjacent
-        let mut intersections = vec![];
+    fn get_linear_path(source: &Position, dest: &Position) -> Vec<(u16, u16)> {
+        let mut result = vec![source.clone()];
 
-        // Iterate over the bottom boundary of the bounding box.
-        if bb.bottom > world_bb.bottom {
-            let row = bb.bottom - 1;
-            for col in bb.cols() {
-                if map.get_element(row, col) == maps::MapElement::Road {
-                    intersections.push(((bb.bottom as u16, col as u16), (row as u16, col as u16)));
-                }
-            }
-        }
-        // Iterate over the left boundary of the bounding box.
-        if bb.left > world_bb.left {
-            let col = bb.left - 1;
-            for row in bb.rows() {
-                if map.get_element(row, col) == maps::MapElement::Road {
-                    intersections.push(((row as u16, bb.left as u16), (row as u16, col as u16)));
-                }
-            }
-        }
-
-        // Iterate over the top boundary of the bounding box
-        if bb.top < world_bb.top {
-            let row = bb.top;
-            for col in bb.cols() {
-                if map.get_element(row, col) == maps::MapElement::Road {
-                    intersections
-                        .push((((bb.top - 1) as u16, col as u16), (row as u16, col as u16)));
-                }
-            }
-        }
-        // Iterate over the right boundary of the bounding box.
-        if bb.right < world_bb.right {
-            let col = bb.right;
-            for row in bb.rows() {
-                if map.get_element(row, col) == maps::MapElement::Road {
-                    intersections.push((
-                        (row as u16, (bb.right - 1) as u16),
-                        (row as u16, col as u16),
-                    ));
-                }
-            }
-        }
-
-        intersections
-    }
-
-    fn find_path(
-        starting: &Position,
-        from_bb: &BoundingBox,
-        to_bb: &BoundingBox,
-        world_bb: &BoundingBox,
-        map: &maps::Map,
-        rng: &mut dyn RngCore,
-    ) -> Result<Vec<(u16, u16)>> {
-        // List of (from, road) points.
-        let starting_intersections = Self::find_bb_road_intersection(world_bb, from_bb, map);
-        if starting_intersections.is_empty() {
-            return Err(anyhow!("empty starting intersections"));
-        }
-
-        // List of (to, road) points
-        let ending_intersections = Self::find_bb_road_intersection(world_bb, to_bb, map);
-        if ending_intersections.is_empty() {
-            return Err(anyhow!("empty ending intersections"));
-        }
-
-        // Pick an arbitrary starting intersection and ending intersection.
-        let starting_intersection_idx = rng.gen_range(0, starting_intersections.len());
-        let starting_intersection = &starting_intersections[starting_intersection_idx];
-        let starting_road_point = starting_intersection.1;
-
-        let ending_intersection_idx = rng.gen_range(0, ending_intersections.len());
-        let ending_intersection = &ending_intersections[ending_intersection_idx];
-        let ending_road_point = ending_intersection.1;
-
-        // Generate a path within the road from the starting_road_point to the ending_road_point
-
-        let (road_path, _) = astar(
-            &starting_road_point,
-            |pos| {
-                let mut successors = vec![];
-                for (d_row, d_col) in &[(-1, 0), (0, -1), (0, 1), (1, 0)] {
-                    if *d_row == -1 && pos.0 == 0 {
-                        continue;
-                    }
-                    if *d_row == 1 && pos.0 + 1 == world_bb.top as u16 {
-                        continue;
-                    }
-                    if *d_col == -1 && pos.1 == 0 {
-                        continue;
-                    }
-                    if *d_col == 1 && pos.1 + 1 == world_bb.right as u16 {
-                        continue;
-                    }
-
-                    let candidate = ((pos.0 as i32 + d_row) as u16, (pos.1 as i32 + d_col) as u16);
-                    if map.get_element(candidate.0 as usize, candidate.1 as usize)
-                        == maps::MapElement::Road
-                    {
-                        successors.push((candidate, 1));
-                    }
-                }
-                successors
-            },
-            |pos| {
-                let d_row = (pos.0 as f32) - (ending_road_point.0 as f32);
-                let d_col = (pos.1 as f32) - (ending_road_point.1 as f32);
-
-                (d_row * d_row + d_col * d_col).sqrt() as u16
-            },
-            |pos| *pos == ending_road_point,
-        )
-        .ok_or_else(|| anyhow!("failed to find road path"))?;
-
-        // Add intermediate nodes from the starting position to the starting intersection.
-        // Search again.
-
-        let mut starting_path = vec![Position {
-            x: starting.x,
-            y: starting.y,
-        }];
-        let starting_path_goal = Position {
-            x: (starting_intersection.0).1 as f32,
-            y: (starting_intersection.0).0 as f32,
-        };
-
-        let mut dx = starting_path_goal.x - starting.x;
-        let mut dy = starting_path_goal.y - starting.y;
+        let mut dx = dest.x - source.x;
+        let mut dy = dest.y - source.y;
         let norm = (dx * dx + dy * dy).sqrt();
 
         dx /= norm;
         dy /= norm;
 
         loop {
-            let head = &starting_path[starting_path.len() - 1];
-            if head.distance(&starting_path_goal) < 1.0 {
+            let head = &result[result.len() - 1];
+            if head.distance(&dest) <= 1.0 {
                 break;
             }
             let pos = Position {
                 x: head.x + dx,
                 y: head.y + dy,
             };
-            starting_path.push(pos);
+            if pos.x as i32 == dest.x as i32 && pos.y as i32 == dest.y as i32 {
+                break;
+            }
+            result.push(pos);
         }
 
-        let mut entire_path = starting_path
+        result
             .into_iter()
             .map(|pos| (pos.y as u16, pos.x as u16))
-            .collect::<Vec<_>>();
+            .collect::<Vec<_>>()
+    }
 
+    fn find_path_to_store(
+        starting: &Position,
+        household_idx: usize,
+        map: &maps::Map,
+        rng: &mut dyn RngCore,
+    ) -> Result<Vec<(u16, u16)>> {
+        let road_path = map.get_household_to_store_path(household_idx, 0, rng)?;
+
+        // Add intermediate nodes from the starting position to the starting intersection.
+        let mut entire_path = Self::get_linear_path(
+            starting,
+            &Position {
+                x: road_path[0].1 as f32,
+                y: road_path[0].0 as f32,
+            },
+        );
         entire_path.extend(road_path.into_iter());
-        entire_path.push(ending_intersection.0);
+        Ok(entire_path)
+    }
+
+    fn find_path_to_home(
+        starting: &Position,
+        household_idx: usize,
+        map: &maps::Map,
+        rng: &mut dyn RngCore,
+    ) -> Result<Vec<(u16, u16)>> {
+        let road_path = map.get_store_to_household_path(0, household_idx, rng)?;
+
+        // Add intermediate nodes from the starting position to the starting intersection.
+        let mut entire_path = Self::get_linear_path(
+            starting,
+            &Position {
+                x: road_path[0].1 as f32,
+                y: road_path[0].0 as f32,
+            },
+        );
+        entire_path.extend(road_path.into_iter());
         Ok(entire_path)
     }
 }
@@ -378,11 +280,9 @@ impl PersonBehavior for ShopperBehavior {
                     }
 
                     if person.head_of_household {
-                        let path = Self::find_path(
+                        let path = Self::find_path_to_store(
                             &person.position,
-                            &household.bounds,
-                            &map.stores[0].bounds,
-                            &self.world_bounding_box,
+                            person.household_idx,
                             map,
                             rng,
                         )
@@ -429,12 +329,9 @@ impl PersonBehavior for ShopperBehavior {
                             .position
                             .advance(direction_rad, &map.stores[0].bounds);
                     } else {
-                        let household = &map.households[person.household_idx];
-                        let path = Self::find_path(
+                        let path = Self::find_path_to_home(
                             &person.position,
-                            &map.stores[0].bounds,
-                            &household.bounds,
-                            &self.world_bounding_box,
+                            person.household_idx,
                             map,
                             rng,
                         )
@@ -519,74 +416,24 @@ mod tests {
     use rand_chacha::ChaCha8Rng;
 
     #[test]
-    fn test_find_bb_road_intersection() -> Result<()> {
-        let world_bb = BoundingBox {
-            bottom: 0,
-            left: 0,
-            top: 400,
-            right: 600,
-        };
-
-        let sg_map = maps::Map::load_from_ascii_str(simple_groceries::MAP_ASCII_STR, 10, 1)?;
-        let store = &sg_map.stores[0];
-
-        let intersections =
-            ShopperBehavior::find_bb_road_intersection(&world_bb, &store.bounds, &sg_map);
-        assert_eq!(
-            intersections,
-            (290..310)
-                .map(|col| ((100, col), (99, col),))
-                .collect::<Vec<_>>()
-        );
-
-        let box_with_left_intersection = BoundingBox {
-            bottom: 110,
-            left: 60,
-            top: 140,
-            right: 90,
-        };
-        let intersections = ShopperBehavior::find_bb_road_intersection(
-            &world_bb,
-            &box_with_left_intersection,
-            &sg_map,
-        );
-        assert_eq!(
-            intersections,
-            (120..130)
-                .map(|row| ((row, 60), (row, 59)))
-                .collect::<Vec<_>>()
-        );
-
-        // TODO: tests for box with top/right/bottom intersection.
-
-        Ok(())
-    }
-
-    #[test]
     fn test_find_path() -> Result<()> {
         let mut rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
-        let world_bb = BoundingBox {
-            bottom: 0,
-            left: 0,
-            top: 400,
-            right: 600,
-        };
-
         let sg_map = maps::Map::load_from_ascii_str(simple_groceries::MAP_ASCII_STR, 10, 1)?;
-        let store_bb = &sg_map.stores[0].bounds;
 
-        let household_bb = BoundingBox {
-            bottom: 110,
-            left: 60,
-            top: 140,
-            right: 90,
-        };
+        let household_idx = 19;
+        assert_eq!(
+            sg_map.households[household_idx].bounds,
+            BoundingBox {
+                bottom: 110,
+                left: 60,
+                top: 140,
+                right: 90,
+            }
+        );
 
-        let path = ShopperBehavior::find_path(
+        let path = ShopperBehavior::find_path_to_store(
             &Position { x: 65.0, y: 125.0 },
-            &household_bb,
-            store_bb,
-            &world_bb,
+            household_idx,
             &sg_map,
             &mut rng,
         )?;
@@ -607,7 +454,10 @@ mod tests {
                     match (d_row, d_col) {
                         (-1, -1) | (-1, 1) | (1, -1) | (1, 1) => (),
                         (-1, 0) | (0, -1) | (0, 1) | (1, 0) => (),
-                        _ => panic!("invalid change in position: {} {}", d_row, d_col),
+                        _ => panic!(
+                            "invalid change in position in household: {} {}",
+                            d_row, d_col
+                        ),
                     }
                 }
                 _ => match (d_row, d_col) {

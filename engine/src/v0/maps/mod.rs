@@ -2,7 +2,10 @@ pub mod simple_groceries;
 
 use crate::v0::geometry::BoundingBox;
 use anyhow::{anyhow, Result};
+use pathfinding::directed::astar::astar;
+use rand::{Rng, RngCore};
 use std::collections::HashSet;
+
 pub mod loader;
 
 pub(crate) struct Household {
@@ -26,6 +29,8 @@ pub struct Map {
     pub(crate) roads: Vec<Road>,
 
     pub(crate) stores: Vec<Store>,
+
+    world_bb: BoundingBox,
 
     scale_factor: u8,
     elements: Vec<Vec<MapElement>>,
@@ -203,13 +208,160 @@ impl Map {
             })
             .collect();
 
+        let world_bb = BoundingBox {
+            bottom: 0,
+            left: 0,
+            top: parsed_ascii_map.len() * scale_factor as usize,
+            right: parsed_ascii_map[0].len() * scale_factor as usize,
+        };
+
         Ok(Map {
             households,
             roads,
             stores,
+            world_bb,
             scale_factor,
             elements: parsed_ascii_map,
         })
+    }
+
+    fn find_bb_road_intersection(&self, bb: &BoundingBox) -> Vec<((u16, u16), (u16, u16))> {
+        // Returns a list of pairs of points, such that
+        //   the first point of the pair is inside the bounding box
+        //   the second point of the pair is on the road
+        //   the first and second points are adjacent
+
+        let mut intersections = vec![];
+
+        // Iterate over the bottom boundary of the bounding box.
+        if bb.bottom > self.world_bb.bottom {
+            let row = bb.bottom - 1;
+            for col in bb.cols() {
+                if self.get_element(row, col) == MapElement::Road {
+                    intersections.push(((bb.bottom as u16, col as u16), (row as u16, col as u16)));
+                }
+            }
+        }
+        // Iterate over the left boundary of the bounding box.
+        if bb.left > self.world_bb.left {
+            let col = bb.left - 1;
+            for row in bb.rows() {
+                if self.get_element(row, col) == MapElement::Road {
+                    intersections.push(((row as u16, bb.left as u16), (row as u16, col as u16)));
+                }
+            }
+        }
+
+        // Iterate over the top boundary of the bounding box
+        if bb.top < self.world_bb.top {
+            let row = bb.top;
+            for col in bb.cols() {
+                if self.get_element(row, col) == MapElement::Road {
+                    intersections
+                        .push((((bb.top - 1) as u16, col as u16), (row as u16, col as u16)));
+                }
+            }
+        }
+        // Iterate over the right boundary of the bounding box.
+        if bb.right < self.world_bb.right {
+            let col = bb.right;
+            for row in bb.rows() {
+                if self.get_element(row, col) == MapElement::Road {
+                    intersections.push((
+                        (row as u16, (bb.right - 1) as u16),
+                        (row as u16, col as u16),
+                    ));
+                }
+            }
+        }
+
+        intersections
+    }
+
+    pub(crate) fn get_household_to_store_path(
+        &self,
+        household_idx: usize,
+        store_idx: usize,
+        rng: &mut dyn RngCore,
+    ) -> Result<Vec<(u16, u16)>> {
+        // TODO: cache this and try looking up from cache
+
+        let household_bb = &self.households[household_idx].bounds;
+        // List of (from, road) points.
+        let starting_intersections = self.find_bb_road_intersection(household_bb);
+        if starting_intersections.is_empty() {
+            return Err(anyhow!("empty starting intersections"));
+        }
+
+        // List of (to, road) points
+        let store_bb = &self.stores[store_idx].bounds;
+        let ending_intersections = self.find_bb_road_intersection(store_bb);
+        if ending_intersections.is_empty() {
+            return Err(anyhow!("empty ending intersections"));
+        }
+
+        // Pick an arbitrary starting intersection and ending intersection.
+        let starting_intersection_idx = rng.gen_range(0, starting_intersections.len());
+        let starting_intersection = &starting_intersections[starting_intersection_idx];
+        let starting_road_point = starting_intersection.1;
+
+        let ending_intersection_idx = rng.gen_range(0, ending_intersections.len());
+        let ending_intersection = &ending_intersections[ending_intersection_idx];
+        let ending_road_point = ending_intersection.1;
+
+        // Generate a path within the road from the starting_road_point to the ending_road_point
+        let (road_path, _) = astar(
+            &starting_road_point,
+            |pos| {
+                let mut successors = vec![];
+                for (d_row, d_col) in &[(-1, 0), (0, -1), (0, 1), (1, 0)] {
+                    if *d_row == -1 && pos.0 == 0 {
+                        continue;
+                    }
+                    if *d_row == 1 && pos.0 + 1 == self.world_bb.top as u16 {
+                        continue;
+                    }
+                    if *d_col == -1 && pos.1 == 0 {
+                        continue;
+                    }
+                    if *d_col == 1 && pos.1 + 1 == self.world_bb.right as u16 {
+                        continue;
+                    }
+
+                    let candidate = ((pos.0 as i32 + d_row) as u16, (pos.1 as i32 + d_col) as u16);
+                    if self.get_element(candidate.0 as usize, candidate.1 as usize)
+                        == MapElement::Road
+                    {
+                        successors.push((candidate, 1));
+                    }
+                }
+                successors
+            },
+            |pos| {
+                let d_row = (pos.0 as f32) - (ending_road_point.0 as f32);
+                let d_col = (pos.1 as f32) - (ending_road_point.1 as f32);
+
+                (d_row * d_row + d_col * d_col).sqrt() as u16
+            },
+            |pos| *pos == ending_road_point,
+        )
+        .ok_or_else(|| anyhow!("failed to find road path"))?;
+
+        let mut entire_path = vec![starting_intersection.0];
+        entire_path.extend(road_path.into_iter());
+        entire_path.push(ending_intersection.0);
+
+        Ok(entire_path)
+    }
+
+    pub(crate) fn get_store_to_household_path(
+        &self,
+        store_idx: usize,
+        household_idx: usize,
+        rng: &mut dyn RngCore,
+    ) -> Result<Vec<(u16, u16)>> {
+        let path = self.get_household_to_store_path(household_idx, store_idx, rng)?;
+        Ok(path.into_iter().rev().collect())
     }
 
     pub(crate) fn get_element(&self, row: usize, col: usize) -> MapElement {
@@ -258,6 +410,38 @@ mod tests {
                 right: 50,
             }]
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_find_bb_road_intersection() -> Result<()> {
+        let sg_map = Map::load_from_ascii_str(simple_groceries::MAP_ASCII_STR, 10, 1)?;
+        let store = &sg_map.stores[0];
+
+        let intersections = sg_map.find_bb_road_intersection(&store.bounds);
+        assert_eq!(
+            intersections,
+            (290..310)
+                .map(|col| ((100, col), (99, col),))
+                .collect::<Vec<_>>()
+        );
+
+        let box_with_left_intersection = BoundingBox {
+            bottom: 110,
+            left: 60,
+            top: 140,
+            right: 90,
+        };
+        let intersections = sg_map.find_bb_road_intersection(&box_with_left_intersection);
+        assert_eq!(
+            intersections,
+            (120..130)
+                .map(|row| ((row, 60), (row, 59)))
+                .collect::<Vec<_>>()
+        );
+
+        // TODO: tests for box with top/right/bottom intersection.
 
         Ok(())
     }

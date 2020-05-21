@@ -10,7 +10,7 @@ use rand::{Rng, RngCore};
 use serde::{Deserialize, Serialize};
 use std::f32::consts::PI;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Position {
     pub(crate) x: f32,
     pub(crate) y: f32,
