@@ -48,5 +48,82 @@
       </canvas>
     </div>
 
+    <div
+            style="border: solid; border-width: thin; display: inline-block"
+    >
+      <div id="infection_rate_vs_pct_mask"></div>
+
+      <div style="padding: 1em">
+        The shaded gray area contains the average 50% of outcomes across all the simulations.
+        The solid line is the median outcome, and the dotted line is the best fit.
+      </div>
+    </div>
+
+    <div>
+      <button id="particle_shopper1-start" style="width: 4em">Start</button>
+      <button id="particle_shopper1-reset">Reset</button>
+      <span>Speed:
+    <button class="particle_shopper1-speed" data-speed="1" style="font-weight: bold" disabled>1x</button>
+    <button class="particle_shopper1-speed" data-speed="2">2x</button>
+    <button class="particle_shopper1-speed" data-speed="4">4x</button>
+    <button class="particle_shopper1-speed" data-speed="8">8x</button>
+    <button class="particle_shopper1-speed" data-speed="16">16x</button>
+    <button class="particle_shopper1-speed" data-speed="32">32x</button>
+  </span>
+      <!--TODO: dynamically show this controller-->
+      <br><span>Percent of people with Regular Masks:
+    <button class="particle_shopper1-pct-mask" data-pct="0" style="font-weight: bold" disabled>0%</button>
+    <button class="particle_shopper1-pct-mask" data-pct="25">25%</button>
+    <button class="particle_shopper1-pct-mask" data-pct="50">50%</button>
+    <button class="particle_shopper1-pct-mask" data-pct="75">75%</button>
+    <button class="particle_shopper1-pct-mask" data-pct="100">100%</button>
+  </span>
+      <br><span>Percent of people with N95 Masks:
+    <button class="particle_shopper1-pct-n95-mask" data-pct="0">0%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="25">25%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="50" style="font-weight: bold" disabled>50%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="75">75%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="100">100%</button>
+  </span>
+
+      <br>
+      <div
+              id="particle_shopper1-uplot"
+              style="border: solid; border-width: thin; display: inline-block; width: 100%"
+      ></div>
+
+      <canvas
+              id="particle_shopper1-canvas"
+              width="600" height="400"
+              style="border:1px solid #000000; width: 100%">
+      </canvas>
+    </div>
+
+    <hr>
+
+    <div
+            style="border: solid; border-width: thin; display: inline-block"
+    >
+      <div id="infection_rate_vs_pct_n95_mask"></div>
+
+      <div style="padding: 1em">
+        The shaded gray area contains the average 50% of outcomes across all the simulations.
+        The solid line is the median outcome, and the dotted line is the best fit.
+      </div>
+    </div>
+
+    <hr>
+
+    <div
+            style="border: solid; border-width: thin; display: inline-block"
+    >
+      <div id="infection_rate_by_mask_type"></div>
+
+      <div style="padding: 1em">
+        The shaded gray area contains the average 50% of outcomes across all the simulations.
+        The solid line is the median outcome, and the dotted line is the best fit.
+      </div>
+    </div>
+
   </body>
 </html>

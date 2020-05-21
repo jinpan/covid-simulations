@@ -517,7 +517,37 @@ export class Simulation {
         let misc_params = sim.config['engine_config']['misc_parameters']
         misc_params['fraction_mask'] = fraction_mask;
 
-        sim.reset();
+        if (misc_params['fraction_mask'] + misc_params['fraction_n95_mask'] > 1) {
+          const target_n95_pct = 100 - 100 * misc_params['fraction_mask'];
+          const btn = document.querySelector(`.${cfg_name}-pct-n95-mask[data-pct="${target_n95_pct}"]`)
+          btn.click(); // Triggers a reset
+        } else {
+          sim.reset();
+        }
+      });
+    };
+
+    for (let btn of document.getElementsByClassName(`${cfg_name}-pct-n95-mask`)) {
+      btn.addEventListener("click", function() {
+        // Update button appearances
+        for (let btn2 of document.getElementsByClassName(`${cfg_name}-pct-n95-mask`)) {
+          btn2.style["font-weight"] = "normal";
+          btn2.disabled = false;
+        }
+        this.style["font-weight"] = "bold";
+        this.disabled = true;
+
+        const fraction_mask = parseInt(this.dataset.pct) / 100;
+        let misc_params = sim.config['engine_config']['misc_parameters']
+        misc_params['fraction_n95_mask'] = fraction_mask;
+
+        if (misc_params['fraction_mask'] + misc_params['fraction_n95_mask'] > 1) {
+          const target_mask_pct = 100 - 100 * misc_params['fraction_n95_mask'];
+          const btn = document.querySelector(`.${cfg_name}-pct-mask[data-pct="${target_mask_pct}"]`)
+          btn.click(); // Triggers a reset
+        } else {
+          sim.reset();
+        }
       });
     };
   }
