@@ -4,6 +4,7 @@ use wasm_bindgen::prelude::*;
 use crate::v0::config::{DiseaseSpreadParameters, WorldConfig};
 use crate::v0::core;
 use crate::v0::geometry::BoundingBox;
+use crate::v0::types::Mask;
 use anyhow::Result;
 use rand::RngCore;
 use serde::Serialize;
@@ -66,6 +67,8 @@ pub struct Person {
 
     #[serde(skip)]
     pub household: usize,
+
+    pub mask: Mask,
 }
 
 #[derive(Serialize)]
@@ -78,20 +81,13 @@ pub struct State {
 #[wasm_bindgen]
 pub struct WorldView {
     world: core::World,
-
-    background_viral_particles: Vec<f32>,
 }
 
 impl WorldView {
     pub fn new(config: WorldConfig, rng: Box<dyn RngCore>) -> Result<Self> {
         let world = core::World::new(rng, config)?;
 
-        let background_viral_particles = Vec::with_capacity(world.config.bounding_box.size());
-
-        Ok(WorldView {
-            world,
-            background_viral_particles,
-        })
+        Ok(WorldView { world })
     }
 
     pub fn get_state(&self) -> State {
@@ -105,6 +101,7 @@ impl WorldView {
                 position_y: p.position.y,
                 disease_state: DiseaseState::from_core(&p.disease_state),
                 household: p.household_idx,
+                mask: p.mask,
             })
             .collect::<Vec<_>>();
 
@@ -142,17 +139,19 @@ impl WorldView {
     }
 
     pub fn get_background_viral_particles(&mut self) -> js_sys::Float32Array {
-        self.background_viral_particles.clear();
         match self.world.config.disease_parameters.spread_parameters {
-            DiseaseSpreadParameters::InfectionRadius(_) => {}
+            DiseaseSpreadParameters::InfectionRadius(_) => unimplemented!(),
             DiseaseSpreadParameters::BackgroundViralParticle(_) => {
-                for row in self.world.disease_spreader.get_background_viral_levels() {
-                    self.background_viral_particles.extend(row);
+                return unsafe {
+                    js_sys::Float32Array::view(
+                        self.world
+                            .disease_spreader
+                            .get_background_viral_levels()
+                            .as_slice(),
+                    )
                 }
             }
         };
-
-        unsafe { js_sys::Float32Array::view(self.background_viral_particles.as_slice()) }
     }
 
     pub fn get_households(&self) -> JsValue {

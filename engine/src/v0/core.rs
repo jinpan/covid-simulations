@@ -7,8 +7,9 @@ use crate::v0::disease_spread::{
 use crate::v0::geometry::Position;
 use crate::v0::maps;
 use crate::v0::person_behavior::{BrownianMotionBehavior, PersonBehavior, ShopperBehavior};
+use crate::v0::types::Mask;
+use crate::v0::utils::{random_bool_vec, random_vec};
 use anyhow::Result;
-use rand::prelude::SliceRandom;
 use rand::RngCore;
 
 #[derive(PartialEq, Debug)]
@@ -28,6 +29,7 @@ pub(crate) struct Person {
     // Otherwise, 0.
     pub(crate) household_idx: usize,
     pub(crate) head_of_household: bool,
+    pub(crate) mask: Mask,
 }
 
 pub(crate) struct World {
@@ -55,14 +57,19 @@ impl World {
 
         assert!(config.num_people >= config.num_initially_infected);
 
-        let mut infected_people = vec![false; config.num_people];
-        for p in infected_people
-            .iter_mut()
-            .take(config.num_initially_infected)
-        {
-            *p = true;
-        }
-        infected_people.shuffle(&mut rng);
+        let pct_initially_infected =
+            config.num_initially_infected as f32 / config.num_people as f32;
+        let infected_people = random_bool_vec(config.num_people, pct_initially_infected, &mut rng);
+
+        let masks = random_vec(
+            config.num_people,
+            Mask::Regular,
+            config.misc_parameters.fraction_mask,
+            Mask::N95,
+            config.misc_parameters.fraction_n95_mask,
+            Mask::None,
+            &mut rng,
+        );
 
         let mut current_household_idx = 0;
         let mut people_in_current_household = 0;
@@ -94,6 +101,7 @@ impl World {
                     position,
                     household_idx: current_household_idx,
                     head_of_household: people_in_current_household == 1,
+                    mask: masks[i],
                 }
             })
             .collect::<Vec<_>>();
@@ -166,170 +174,5 @@ impl World {
             }
             DiseaseState::Susceptible | DiseaseState::Recovered => {}
         });
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::v0::geometry::BoundingBox;
-    use itertools::Itertools;
-    use rand::SeedableRng;
-    use rand_chacha::ChaCha8Rng;
-
-    fn check_disease_states(people: &[Person], expected: &[DiseaseState]) {
-        for (idx, (person, state)) in people.iter().zip_eq(expected.iter()).enumerate() {
-            assert_eq!(person.disease_state, *state, "diff at index {}", idx);
-        }
-    }
-
-    #[test]
-    fn test_infection_radius_world() -> Result<()> {
-        let rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
-        let config = WorldConfig {
-            disease_parameters: DiseaseParameters {
-                exposed_period_ticks: 0,
-                infectious_period_ticks: 5,
-                spread_parameters: DiseaseSpreadParameters::InfectionRadius(5.0),
-            },
-            behavior_parameters: BehaviorParameters::BrownianMotion,
-            bounding_box: BoundingBox {
-                bottom: 0,
-                left: 0,
-                top: 10,
-                right: 10,
-            },
-            num_people: 5,
-            num_initially_infected: 2,
-            map_params: None,
-        };
-
-        let mut world = World::new(rng, config)?;
-        let mut expected_disease_states = vec![
-            DiseaseState::Susceptible,
-            DiseaseState::Susceptible,
-            DiseaseState::Susceptible,
-            DiseaseState::Infectious(0),
-            DiseaseState::Infectious(0),
-        ];
-
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[2] = DiseaseState::Infectious(1);
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[1] = DiseaseState::Infectious(2);
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[0] = DiseaseState::Infectious(3);
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[3] = DiseaseState::Recovered;
-        expected_disease_states[4] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[2] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[1] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[0] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_viral_particle_spread_world() -> Result<()> {
-        let rng = Box::new(ChaCha8Rng::seed_from_u64(10914));
-        let config = WorldConfig {
-            disease_parameters: DiseaseParameters {
-                exposed_period_ticks: 1,
-                infectious_period_ticks: 5,
-                spread_parameters: DiseaseSpreadParameters::BackgroundViralParticle(
-                    BackgroundViralParticleParams {
-                        exhale_radius: 4.0,
-                        decay_rate: 0.5,
-                        infection_risk_per_particle: 0.8,
-                    },
-                ),
-            },
-            behavior_parameters: BehaviorParameters::BrownianMotion,
-            bounding_box: BoundingBox {
-                bottom: 0,
-                left: 0,
-                top: 10,
-                right: 10,
-            },
-            num_people: 5,
-            num_initially_infected: 2,
-            map_params: None,
-        };
-
-        let mut world = World::new(rng, config)?;
-        let mut expected_disease_states = vec![
-            DiseaseState::Susceptible,
-            DiseaseState::Susceptible,
-            DiseaseState::Susceptible,
-            DiseaseState::Infectious(0),
-            DiseaseState::Infectious(0),
-        ];
-
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[1] = DiseaseState::Exposed(3);
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[1] = DiseaseState::Infectious(4);
-        expected_disease_states[2] = DiseaseState::Exposed(4);
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[0] = DiseaseState::Exposed(5);
-        expected_disease_states[2] = DiseaseState::Infectious(5);
-        expected_disease_states[3] = DiseaseState::Recovered;
-        expected_disease_states[4] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[0] = DiseaseState::Infectious(6);
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-        world.step();
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[1] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[2] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        world.step();
-        expected_disease_states[0] = DiseaseState::Recovered;
-        check_disease_states(&world.people, &expected_disease_states);
-
-        Ok(())
     }
 }

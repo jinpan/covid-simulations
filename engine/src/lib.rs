@@ -1,11 +1,10 @@
 extern crate approx;
 #[cfg(test)]
 extern crate quickcheck;
+#[cfg(test)]
+extern crate quickcheck_macros;
 extern crate rand;
 extern crate wasm_bindgen;
-#[cfg(test)]
-#[macro_use(quickcheck)]
-extern crate quickcheck_macros;
 
 pub mod v0;
 

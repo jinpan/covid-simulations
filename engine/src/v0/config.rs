@@ -66,6 +66,16 @@ pub enum BehaviorParameters {
     Shopper(ShopperParams),
 }
 
+// As the simulation grows, these parameters should be grouped together and moved out.
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct MiscParams {
+    // Fraction of people who have a mask
+    pub fraction_mask: f32,
+
+    // Fraction of people who have a n95 mask
+    pub fraction_n95_mask: f32,
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct WorldConfig {
     pub disease_parameters: DiseaseParameters,
@@ -73,5 +83,6 @@ pub struct WorldConfig {
     pub bounding_box: BoundingBox,
     pub num_people: usize,
     pub num_initially_infected: usize,
+    pub misc_parameters: MiscParams,
     pub map_params: Option<MapParams>,
 }

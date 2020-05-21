@@ -30,6 +30,7 @@ cpuprofiler = "0.0.4"
 counter = "0.4"
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
+flame = "0.2"
 
 [dependencies]
 anyhow = "1.0"

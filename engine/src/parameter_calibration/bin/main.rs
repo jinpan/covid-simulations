@@ -1,6 +1,7 @@
 extern crate clap;
 use clap::{App, Arg};
 use engine::v0::config::WorldConfig;
+use engine::v0::types::Mask;
 use engine::v0::wasm_view::{DiseaseState, State, WorldView};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -11,6 +12,7 @@ use std::io::Write;
 struct EndingPersonState {
     disease_state: DiseaseState,
     dual_shopper_household: bool,
+    mask: Mask,
 }
 
 #[derive(Serialize, Debug)]
@@ -47,6 +49,7 @@ impl EndingState {
                 EndingPersonState {
                     disease_state: p.disease_state,
                     dual_shopper_household: hs.dual_shopper,
+                    mask: p.mask,
                 }
             })
             .collect();
@@ -133,6 +136,10 @@ fn main() {
             "shopping_solo",
             Box::new(generate_config::ViralParticleShoppingSolo::default()),
         );
+        builder.insert(
+            "shopping_mask_regular",
+            Box::new(generate_config::ViralParticleShoppingMaskRegular::default()),
+        );
 
         builder
     };
@@ -144,24 +151,25 @@ fn main() {
                 .takes_value(true)
                 .possible_values(&config_generator_by_name.keys().cloned().collect::<Vec<_>>()),
         )
-        .arg(
-            Arg::with_name("output_file")
-                .takes_value(true)
-                .default_value("sim_data/out.txt"),
-        )
+        .arg(Arg::with_name("output_file").takes_value(true))
         .get_matches();
 
+    let config_generator_name = matches.value_of("config_generator").unwrap();
     let config_generator = config_generator_by_name
-        .remove_entry(matches.value_of("config_generator").unwrap())
+        .remove_entry(config_generator_name)
         .unwrap()
         .1;
 
-    let output_filename = matches.value_of("output_file").unwrap();
+    let output_filename = if let Some(filename) = matches.value_of("output_file") {
+        filename.to_string()
+    } else {
+        format!("sim_data/{}_out.txt", config_generator_name)
+    };
 
     let file = OpenOptions::new()
         .append(true)
         .create(true)
-        .open(output_filename)
+        .open(&output_filename)
         .expect("failed to open file");
     let mut run_recorder = RunRecorder {
         config_generator,
