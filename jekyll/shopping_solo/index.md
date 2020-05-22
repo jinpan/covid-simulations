@@ -14,7 +14,9 @@ og_image: /shopping_solo/og_image.png
 
 > How does the number of shoppers a household sends out affect the spread of Covid-19?
 
-To answer this question, let's simulate a tiny community of 108 people split among 54 households
+To answer this question, let's run some
+<span style="background-color:#B8F7BF">S</span><span style="background-color:#C7BA29">E</span><span style="background-color:#EB6383">I</span><span style="background-color:#C8C8C8">R</span>
+simulations of a tiny community of 108 people split among 54 households
 (2 people per household).  Everyone is social distancing, but households must
 periodically make trips to the store as they run out of supplies.
 
