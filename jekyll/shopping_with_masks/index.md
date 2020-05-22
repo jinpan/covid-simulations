@@ -1,19 +1,23 @@
 ---
 layout: page
-sidebar_title: SIM&#58; Shopping with PPE
-title: Shopping with PPE
-permalink: /shopping_with_ppe/
+sidebar_title: SIM&#58; Shopping with Masks
+title: Shopping with Masks
+permalink: /shopping_with_masks/
 ---
 
-<script src="./shopping_ppe.bundle.js"></script>
+<script src="./shopping_with_masks.bundle.js"></script>
 
 ### 2020-05-21 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 *Before we dive in, you may want to check out the [Intro to SIR/SEIR simulations post](/intro)*.
 
-> How does our usage of Personal Protected Equipment (PPE) affect the spread of Covid-19?
+The [CDC recommends we all wear masks outdoors](https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/diy-cloth-face-coverings.html).
+You may wonder, how effective are masks?  Is there any benefit to wearing a N95 mask over a regular one?  Below, we
+will explore answers to these questions and more.
 
-To answer this question, let's run some
+> How does our usage of masks affect the spread of Covid-19?
+
+Let's run some
 <span style="background-color:#B8F7BF">S</span><span style="background-color:#C7BA29">E</span><span style="background-color:#EB6383">I</span><span style="background-color:#C8C8C8">R</span>
  simulations with 54 people going to the store, similar to our [Shopping Solo](/shopping_solo) simulations.
 People marked with a black border are wearing a mask at all times: those who wear masks emit fewer viral particles
@@ -67,7 +71,7 @@ spread.
   </span>
   <!--TODO: dynamically show this controller-->
   <br>
-  <span>Percent of people with PPE:
+  <span>% of people with Masks:
     <button class="particle_shopper0-pct-mask" data-pct="0">0%</button>
     <button class="particle_shopper0-pct-mask" data-pct="25">25%</button>
     <button class="particle_shopper0-pct-mask" data-pct="50" style="font-weight: bold" disabled>50%</button>
@@ -96,7 +100,7 @@ Running this simulation tens of thousands of times, there is a clear relationshi
 infection rates: **mask wearing reduces infection rates**.
 
 <div
-    style="border: solid; border-width: thin; display: inline-block"
+    style="border: solid; border-width: thin; display: inline-block; width: 100%"
 >
     <div id="infection_rate_vs_pct_mask"></div>
 
@@ -170,14 +174,14 @@ footnote[^shopping_n95_parameters].
     <button class="particle_shopper1-speed" data-speed="32">32x</button>
   </span>
   <!--TODO: dynamically show this controller-->
-  <br><span>Percent of people with Regular Masks:
+  <br><span>% Regular Masks:
     <button class="particle_shopper1-pct-mask" data-pct="0" style="font-weight: bold" disabled>0%</button>
     <button class="particle_shopper1-pct-mask" data-pct="25">25%</button>
     <button class="particle_shopper1-pct-mask" data-pct="50">50%</button>
     <button class="particle_shopper1-pct-mask" data-pct="75">75%</button>
     <button class="particle_shopper1-pct-mask" data-pct="100">100%</button>
   </span>
-  <br><span>Percent of people with N95 Masks:
+  <br><span>% N95 Masks:
     <button class="particle_shopper1-pct-n95-mask" data-pct="0">0%</button>
     <button class="particle_shopper1-pct-n95-mask" data-pct="25">25%</button>
     <button class="particle_shopper1-pct-n95-mask" data-pct="50" style="font-weight: bold" disabled>50%</button>
@@ -224,11 +228,11 @@ than that for regular masks, but not as large as you might imagine. To keep the 
 masks vs N95 masks to stay under that limit.**
 
 Given the significant difficulties of acquiring, fitting, and breathing through N95 masks, aiming for a modestly higher
-rate of regular mask wearing is more practical policy.
+rate of regular mask usage is more practical policy.
 
 <hr>
 
-You may also ask
+You may also wonder
 
 > How does wearing a mask affect _my_ risk of getting infected?
 
@@ -245,9 +249,8 @@ a N95 mask, it depends.
   <div id="infection_rate_by_mask_type"></div>
 
   <div style="padding: 1em">
-    The blue area represents the average 50% infection rates for people who don't wear any mask at all.  The green area
-    represents the infection risk for those who wear regular masks, and the red area represents the infection risk for
-    those who wear N95 masks.
+    The blue area represents the average 50% infection rates for people who don't wear any mask at all; red area
+    N95 masks.
   </div>
 </div>
 
