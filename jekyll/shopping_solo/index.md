@@ -4,6 +4,7 @@ sidebar_title: SIM&#58; Shopping Solo
 title: Shopping Solo
 permalink: /shopping_solo/
 og_image: /shopping_solo/og_image.png
+og_description: How does the number of shoppers a household sends out affect the spread of Covid-19?
 ---
 
 <script src="./shopping_solo.bundle.js"></script>

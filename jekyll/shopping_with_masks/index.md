@@ -4,6 +4,7 @@ sidebar_title: SIM&#58; Shopping with Masks
 title: Shopping with Masks
 permalink: /shopping_with_masks/
 og_image: /shopping_with_masks/og_image.png
+og_description: How does wearing a cloth mask affect the spread of Covid-19?  What about a N95 mask?
 ---
 
 <script src="./shopping_with_masks.bundle.js"></script>
