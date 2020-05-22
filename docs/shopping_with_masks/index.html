@@ -118,13 +118,13 @@
   <h1 class="page-title">Shopping with Masks</h1>
   <script src="./shopping_with_masks.bundle.js"></script>
 
-<h3 id="2020-05-21--jin-pan--follow-jinpan20">2020-05-21 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></h3>
+<h3 id="2020-05-22--jin-pan--follow-jinpan20">2020-05-22 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></h3>
 
 <p><em>Before we dive in, you may want to check out the <a href="/intro">Intro to SIR/SEIR simulations post</a></em>.</p>
 
-<p>The <a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/diy-cloth-face-coverings.html">CDC recommends we all wear masks outdoors</a>.
-You may wonder, how effective are masks?  Is there any benefit to wearing a N95 mask over a regular one?  Below, we
-will explore answers to these questions and more.</p>
+<p>The <a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/diy-cloth-face-coverings.html">CDC recommends wearing masks outdoors</a>.
+You may wonder, how effective are masks?  What’s the difference between wearing a N95 mask vs a cloth one?  We will
+explore answers to these questions and more.</p>
 
 <blockquote>
   <p>How does our usage of masks affect the spread of Covid-19?</p>
@@ -132,10 +132,10 @@ will explore answers to these questions and more.</p>
 
 <p>Let’s run some
 <span style="background-color:#B8F7BF">S</span><span style="background-color:#C7BA29">E</span><span style="background-color:#EB6383">I</span><span style="background-color:#C8C8C8">R</span>
- simulations with 54 people going to the store, similar to our <a href="/shopping_solo">Shopping Solo</a> simulations.
-People marked with a black border are wearing a mask at all times: those who wear masks emit fewer viral particles
-compared those who don’t, but masks don’t affect how many viral particles people inhale.  This mask behavior mirrors
-<a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/cloth-face-cover-faq.html">CDC guidance</a>,
+ simulations built off of our <a href="/shopping_solo">Shopping Solo</a> simulations.
+People marked with a black border are wearing a cloth mask at all times: those wearing masks emit 80% fewer viral
+particles vs those who don’t, but inhale the same amount.  This mask behavior
+is based on <a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/cloth-face-cover-faq.html">CDC guidance</a>,
 and all parameters are at this footnote<sup id="fnref:shopping_parameters"><a href="#fn:shopping_parameters" class="footnote">1</a></sup>.</p>
 
 <p>You can configure the percentage of people who wear masks and see the impact on disease
@@ -152,12 +152,11 @@ spread.</p>
     <button class="particle_shopper0-speed" data-speed="16">16x</button>
     <button class="particle_shopper0-speed" data-speed="32">32x</button>
   </span>
-  <!--TODO: dynamically show this controller-->
   <br />
-  <span>% of people with Masks:
+  <span>% of people with Cloth Masks:
     <button class="particle_shopper0-pct-mask" data-pct="0">0%</button>
-    <button class="particle_shopper0-pct-mask" data-pct="25">25%</button>
-    <button class="particle_shopper0-pct-mask" data-pct="50" style="font-weight: bold" disabled="">50%</button>
+    <button class="particle_shopper0-pct-mask" data-pct="25" style="font-weight: bold" disabled="">25%</button>
+    <button class="particle_shopper0-pct-mask" data-pct="50">50%</button>
     <button class="particle_shopper0-pct-mask" data-pct="75">75%</button>
     <button class="particle_shopper0-pct-mask" data-pct="100">100%</button>
   </span>
@@ -169,11 +168,13 @@ spread.</p>
   </canvas>
 </div>
 
+<p>Note how infected people with a mask have a smaller cloud of particles around them, vs those without a mask.</p>
+
 <hr />
 
-<h2 id="data-analysis">Data Analysis</h2>
+<h2 id="cloth-mask-data-analysis">Cloth Mask Data Analysis</h2>
 
-<p>Running this simulation tens of thousands of times, there is a clear relationship between mask wearing and
+<p>Running this simulation 10,000x, there is a clear relationship between mask wearing and
 infection rates: <strong>mask wearing reduces infection rates</strong>.</p>
 
 <div style="border: solid; border-width: thin; display: inline-block; width: 100%">
@@ -181,42 +182,40 @@ infection rates: <strong>mask wearing reduces infection rates</strong>.</p>
 
     <div style="padding: 1em">
 The shaded green area contains the average 50% of outcomes across all the simulations.
-The solid line is the median outcome, and the thin dotted line is the best fit over
-the entire graph.  The thick dotted line from 40-60% is the best fit over that
-narrower range.
+The solid green line is the median outcome, and the thin dotted line is the best fit over
+the entire graph.  The thick gray line from 40-60% is the best fit over that narrower range.
     </div>
 </div>
 
-<p>Looking more closely at the data, there is an interesting second-order effect: there is a backwards “S-curve” in the
-data.  At the middle of the curve, the impact of each additional mask wearer is very strong.</p>
+<p>Looking more closely at the data, there is an interesting second-order effect: a backwards “S-curve”.</p>
 
-<p><strong>When ~50% of people are wearing masks, each additional mask wearer can prevent 1.7 infections.</strong></p>
+<p><strong>When about half of people are wearing masks, each additional mask wearer can prevent the most number of infections.</strong></p>
 
 <p>Intuitively, this makes sense:</p>
 <ul>
-  <li>When few people wear masks, the infection will spread rapidly.  Those who do wear masks will still have a high
-chance of getting it since regular masks do not directly provide infection protection.</li>
-  <li>When many people wear masks, the infection rates are under control and one person not wearing
-a mask won’t be able to set off a chain reaction of infections: an infected masked shopper is unlikely to infect someone
-else<sup id="fnref:but_still_wear_your_mask"><a href="#fn:but_still_wear_your_mask" class="footnote">2</a></sup>.</li>
-  <li>In the middle is a sweet spot of when our actions are most effective, and each additional mask wearer can reduce
-the number of total infections by 1.7 (slope of the best fit line over 40-60%).</li>
+  <li>When few people wear masks, the infection spreads rapidly.  Those who wear masks still have a high
+chance of getting infected since regular masks do not directly protect the wearer.</li>
+  <li>When many people wear masks, the infection rates are much lower and unmasked people benefit from “herd immunity”.
+Additionally, if an unmasked person does get infected and transmits the infection, those who are serially infected
+are wearing masks and won’t further transmit the infection<sup id="fnref:but_still_wear_your_mask"><a href="#fn:but_still_wear_your_mask" class="footnote">2</a></sup>.</li>
+  <li>In the middle is where our actions are most effective; each additional mask wearer can reduce
+the number of total infections by 1.7 (slope of the best fit line from 40 to 60%).</li>
 </ul>
 
 <hr />
 
 <h2 id="what-about-n95-masks">What about N95 Masks?</h2>
 
-<p>Unlike ordinary masks, N95 masks do offer protection against inhaling particles, theoretically reducing the wearer’s
-infection risk.  They are currently in short supply, and the <a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/cloth-face-cover-faq.html">CDC recommends saving them for healthcare
-workers</a>.  Also, they are very
-uncomfortable<sup id="fnref:n95_anecdote"><a href="#fn:n95_anecdote" class="footnote">3</a></sup>.  But in simulation they are neither in short supply nor uncomfortable, so we can ask</p>
+<p>Unlike ordinary masks, N95 masks reduce inhaled particles by 95%<sup id="fnref:n95_effectiveness"><a href="#fn:n95_effectiveness" class="footnote">3</a></sup>, theoretically reducing the
+wearer’s infection risk.  They are uncomfortable to wear, currently in short supply, and the
+<a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/cloth-face-cover-faq.html">CDC recommends saving them for healthcare workers</a>.
+But in simulation they are neither in short supply nor uncomfortable, so we can ask</p>
 
 <blockquote>
   <p>How do N95 masks compare against regular masks?</p>
 </blockquote>
 
-<p>People marked with a thick black border are wearing a N95 mask; thin black border, regular mask; no border, no mask.
+<p>People marked with a thick black border are wearing a N95 mask; no border, no mask.
 People with N95 masks inhale fewer viral particles than those who don’t, and all parameters are at this
 footnote<sup id="fnref:shopping_n95_parameters"><a href="#fn:shopping_n95_parameters" class="footnote">4</a></sup>.</p>
 
@@ -231,18 +230,10 @@ footnote<sup id="fnref:shopping_n95_parameters"><a href="#fn:shopping_n95_parame
     <button class="particle_shopper1-speed" data-speed="16">16x</button>
     <button class="particle_shopper1-speed" data-speed="32">32x</button>
   </span>
-  <!--TODO: dynamically show this controller-->
-  <br /><span>% Regular Masks:
-    <button class="particle_shopper1-pct-mask" data-pct="0" style="font-weight: bold" disabled="">0%</button>
-    <button class="particle_shopper1-pct-mask" data-pct="25">25%</button>
-    <button class="particle_shopper1-pct-mask" data-pct="50">50%</button>
-    <button class="particle_shopper1-pct-mask" data-pct="75">75%</button>
-    <button class="particle_shopper1-pct-mask" data-pct="100">100%</button>
-  </span>
   <br /><span>% N95 Masks:
     <button class="particle_shopper1-pct-n95-mask" data-pct="0">0%</button>
-    <button class="particle_shopper1-pct-n95-mask" data-pct="25">25%</button>
-    <button class="particle_shopper1-pct-n95-mask" data-pct="50" style="font-weight: bold" disabled="">50%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="25" style="font-weight: bold" disabled="">25%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="50">50%</button>
     <button class="particle_shopper1-pct-n95-mask" data-pct="75">75%</button>
     <button class="particle_shopper1-pct-n95-mask" data-pct="100">100%</button>
   </span>
@@ -255,50 +246,66 @@ footnote<sup id="fnref:shopping_n95_parameters"><a href="#fn:shopping_n95_parame
 </div>
 <hr />
 
-<h2 id="data-analysis-part-2">Data Analysis (part 2)</h2>
+<h2 id="n95-mask-data-analysis">N95 Mask Data Analysis</h2>
 
-<p>It is no surprise that N95 masks are more effective than regular masks, but just how much more effective are they?</p>
+<p>It is no surprise that N95 masks are more effective than cloth masks, but just how much more effective are they?</p>
 
 <div style="border: solid; border-width: thin; display: inline-block">
     <div id="infection_rate_vs_pct_n95_mask"></div>
 
     <div style="padding: 1em">
-The red area represents the average 50% of outcomes as we vary the rate of N95 usage (with 0% usage of regular masks).
-The green area is the above graph of regular mask usage overlaid for comparison.
+The blue area represents the average 50% of outcomes as we vary the rate of N95 mask usage.
+The green area is the above graph of cloth mask usage overlaid for comparison.
     </div>
 </div>
 
-<p>Both types of masks can control the spread with a critical mass of wearers.  The critical mass for N95 masks is less
-than that for regular masks, but not as large as you might imagine. To keep the infection rate under:</p>
-<ul>
-  <li><code class="highlighter-rouge">50%</code>: <code class="highlighter-rouge">30%</code> of people need to wear N95 masks vs <code class="highlighter-rouge">40%</code> regular</li>
-  <li><code class="highlighter-rouge">33%</code>: <code class="highlighter-rouge">35%</code> vs <code class="highlighter-rouge">50%</code></li>
-  <li><code class="highlighter-rouge">20%</code>: <code class="highlighter-rouge">45%</code> vs <code class="highlighter-rouge">55%</code></li>
-</ul>
+<p>Both types of masks can control the spread with a critical mass of wearers.  The critical mass for N95 masks is lower
+than that for regular masks, but not as large as you might imagine. For a max tolerable infection rate, we only need
+10-15% more adoption of regular masks vs N95 masks to stay under that limit.</p>
 
-<p><strong>For a max tolerable infection rate, we only need 10-15% more adoption of regular
-masks vs N95 masks to stay under that limit.</strong></p>
+<table>
+  <tbody>
+    <tr>
+      <td>To keep infection rate under:</td>
+      <td>% of cloth mask wearers required</td>
+      <td>% of N95 mask wearers required</td>
+    </tr>
+    <tr>
+      <td>50%</td>
+      <td>30%</td>
+      <td>40%</td>
+    </tr>
+    <tr>
+      <td>33%</td>
+      <td>35%</td>
+      <td>50%</td>
+    </tr>
+    <tr>
+      <td>20%</td>
+      <td>45%</td>
+      <td>55%</td>
+    </tr>
+  </tbody>
+</table>
 
-<p>Given the significant difficulties of acquiring, fitting, and breathing through N95 masks, aiming for a modestly higher
-rate of regular mask usage is more practical policy.</p>
+<p><strong>For each max tolerable infection rate, we only need modestly more adoption of cloth masks vs N95 masks to stay under
+that rate.</strong></p>
+
+<p>Given the shortage of N95 masks, aiming for a modestly higher rate of regular mask usage is more practical policy.</p>
 
 <hr />
 
-<p>You may also wonder</p>
+<h2 id="how-does-wearing-a-mask-affect-my-risk-of-getting-infected">How does wearing a mask affect <em>my</em> risk of getting infected?</h2>
 
-<blockquote>
-  <p>How does wearing a mask affect <em>my</em> risk of getting infected?</p>
-</blockquote>
-
-<p>For a regular mask, not so much<sup id="fnref:but_maybe_they_help"><a href="#fn:but_maybe_they_help" class="footnote">5</a></sup> since they do not offer direct protection against the virus.  For
+<p>A cloth mask does not offer direct protection against inhaling viral particles<sup id="fnref:but_maybe_they_help"><a href="#fn:but_maybe_they_help" class="footnote">5</a></sup>;  for
 a N95 mask, it depends.</p>
 
 <div style="border: solid; border-width: thin; display: inline-block">
   <div id="infection_rate_by_mask_type"></div>
 
   <div style="padding: 1em">
-    The blue area represents the average 50% infection rates for people who don't wear any mask at all; red area
-    N95 masks.
+    The red area represents the average 50% infection rates for people who don't wear any mask at all; blue area
+    represents the risk for those wearing N95 masks.
   </div>
 </div>
 
@@ -306,7 +313,7 @@ a N95 mask, it depends.</p>
 risk<sup id="fnref:about_that_shortage"><a href="#fn:about_that_shortage" class="footnote">6</a></sup>.  This advantage fades as more people wear masks and the riskiness of the environment falls, which underscores
 a key takeaway from our <a href="/shopping_solo">Shopping Solo</a> simulations.</p>
 
-<p><strong>Safer decisions matter more when our community is more at risk.</strong></p>
+<p><strong>Our decisions matter more when our community is more at risk.</strong></p>
 
 <hr />
 
@@ -337,7 +344,7 @@ need to work together to control the spread of the virus</strong>.</p>
 <div class="footnotes">
   <ol>
     <li id="fn:shopping_parameters">
-      <p>Simulation parameters:</p>
+      <p>Cloth Mask Simulation parameters:</p>
       <ul>
         <li>At 1x speed, each second is divided into 60 ticks.  At 2x speed, each second into 120 ticks, and so on.</li>
         <li>The map is a 600 x 400 grid.</li>
@@ -375,14 +382,12 @@ us to compare the relative impact of the actions.</li>
       <p>If your community has a high rate of mask wearers, you should still wear masks!  The more people we see wearing
 masks, the more normal we will consider masks to be, and the more we will wear them. <a href="#fnref:but_still_wear_your_mask" class="reversefootnote">&#8617;</a></p>
     </li>
-    <li id="fn:n95_anecdote">
-
-      <p>I last wore a N95 mask for the
-<a href="https://en.wikipedia.org/wiki/2018_California_wildfires">2018 California wildfires</a>, and they were really hard to
-breath through once fitted properly. And they hurt my nose. <a href="#fnref:n95_anecdote" class="reversefootnote">&#8617;</a></p>
+    <li id="fn:n95_effectiveness">
+      <p>Although for some smaller virons, they may filter out less than 95%: 
+<a href="https://pubmed.ncbi.nlm.nih.gov/16490606/">https://pubmed.ncbi.nlm.nih.gov/16490606/</a>. <a href="#fnref:n95_effectiveness" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:shopping_n95_parameters">
-      <p>N95 Simulation Parameters:</p>
+      <p>N95 Mask Simulation Parameters:</p>
       <ul>
         <li>These parameters are basically the same as the above parameters, but have some minor differences in how masks work</li>
         <li>People without a mask:
@@ -400,7 +405,8 @@ breath through once fitted properly. And they hurt my nose. <a href="#fnref:n95
         <li>People with a N95 mask:
           <ul>
             <li>If infectious, they will emit 0.2 particles per tick in a radius of 1 around them.</li>
-            <li>They will inhale 20% of the particles they are directly standing on.</li>
+            <li>They will inhale 20% of the particles they are directly standing on.  This was deliberately chosen as &gt;5%,
+  to allow for errors in fit and fomite transmission.</li>
           </ul>
         </li>
       </ul>
