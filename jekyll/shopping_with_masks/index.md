@@ -258,12 +258,6 @@ a key takeaway from our [Shopping Solo](/shopping_solo) simulations.
 
 <hr>
 
-<iframe
-    src="https://docs.google.com/forms/d/e/1FAIpQLSfHi7RGMyJwAixM_LdcokCgbgpcx6a7EG6LH4bBPh1rUYv-Cg/viewform?embedded=true"
-    width="640" height="510" frameborder="0" marginheight="0" marginwidth="0">
-    Feedback form
-</iframe>
-
 ## Future work
 
 The best way to combat this virus is to make data-driven policies and decisions.
@@ -280,6 +274,16 @@ You can reach out to me privately at `covid-contact@simrnd.com` or on Twitter.
 
 Please share these simulations if you found them informative - as the above data shows, **we all
 need to work together to control the spread of the virus**.
+
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I built some <a href="https://twitter.com/hashtag/Coronavirus?src=hash&amp;ref_src=twsrc%5Etfw">#Coronavirus</a> simulations, exploring the impact of wearing cloth vs N95 masks. We should all wear masks outdoors, but there is an inflection point where mask wearing is super effective.<a href="https://t.co/AgfV48ghVV">https://t.co/AgfV48ghVV</a> <a href="https://t.co/cpbYBUikHJ">pic.twitter.com/cpbYBUikHJ</a></p>&mdash; Jin Pan (@JinPan20) <a href="https://twitter.com/JinPan20/status/1263906007547174912?ref_src=twsrc%5Etfw">May 22, 2020</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<hr>
+<iframe
+    src="https://docs.google.com/forms/d/e/1FAIpQLSfHi7RGMyJwAixM_LdcokCgbgpcx6a7EG6LH4bBPh1rUYv-Cg/viewform?embedded=true"
+    width="640" height="510" frameborder="0" marginheight="0" marginwidth="0">
+    Feedback form
+</iframe>
 
 <hr>
 ### Footnotes:
