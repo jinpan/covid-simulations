@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
-<loc>/about/</loc>
+<loc>https://coronavirus.simrnd.com/about/</loc>
 </url>
 <url>
-<loc>/intro/</loc>
+<loc>https://coronavirus.simrnd.com/intro/</loc>
 </url>
 <url>
-<loc>/shopping_solo/</loc>
+<loc>https://coronavirus.simrnd.com/shopping_solo/</loc>
 </url>
 <url>
-<loc>/shopping_with_masks/</loc>
+<loc>https://coronavirus.simrnd.com/shopping_with_masks/</loc>
 </url>
 <url>
-<loc>/</loc>
+<loc>https://coronavirus.simrnd.com/</loc>
 </url>
 </urlset>
