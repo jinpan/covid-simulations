@@ -269,6 +269,12 @@ a key takeaway from our [Shopping Solo](/shopping_solo) simulations.
 
 <hr>
 
+<iframe
+    src="https://docs.google.com/forms/d/e/1FAIpQLSfHi7RGMyJwAixM_LdcokCgbgpcx6a7EG6LH4bBPh1rUYv-Cg/viewform?embedded=true"
+    width="640" height="510" frameborder="0" marginheight="0" marginwidth="0">
+    Feedback form
+</iframe>
+
 ## Future work
 
 The best way to combat this virus is to make data-driven policies and decisions.
