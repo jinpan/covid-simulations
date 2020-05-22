@@ -3,6 +3,7 @@ layout: page
 sidebar_title: SIM&#58; Shopping Solo
 title: Shopping Solo
 permalink: /shopping_solo/
+og_image: /shopping_solo/og_image.png
 ---
 
 <script src="./shopping_solo.bundle.js"></script>

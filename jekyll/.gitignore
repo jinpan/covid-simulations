@@ -2,6 +2,6 @@ _site
 .sass-cache
 .jekyll-metadata
 .jekyll-cache
-*/*.og_image.png
+*/og_image.png
 */*.bundle.js
 */*.module.wasm
