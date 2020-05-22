@@ -139,7 +139,11 @@ impl BackgroundViralParticleDiseaseSpreader {
     fn decay_existing_particles(&mut self) {
         let viral_particle_survival_rate = 1.0 - self.params.decay_rate;
         for val in self.background_viral_particles.iter_mut() {
-            *val *= viral_particle_survival_rate;
+            // This branch makes the loop function run significantly faster under WASM, but slower
+            // on native builds.
+            if *val >= f32::MIN_POSITIVE {
+                *val *= viral_particle_survival_rate;
+            }
         }
     }
 

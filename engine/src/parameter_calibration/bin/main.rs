@@ -163,6 +163,10 @@ fn main() {
             "shopping_mask_n95",
             Box::new(generate_config::ViralParticleShoppingMaskN95::default()),
         );
+        builder.insert(
+            "shopping_mask_single_n95",
+            Box::new(generate_config::ViralParticleShoppingMaskSingleN95::default()),
+        );
 
         builder
     };
