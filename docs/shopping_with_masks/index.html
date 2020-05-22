@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Shopping with Masks &middot; Coronavirus Simulations
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href=/assets/css/styles.css>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href=/assets/apple-touch-icon-precomposed.png>
+  <link rel="shortcut icon" href=/assets/favicon.ico>
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="Coronavirus Simulations" href="/feed.xml">
+</head>
+
+
+  <body>
+
+    <!-- Target for toggling the sidebar `.sidebar-checkbox` is for regular
+     styles, `#sidebar-checkbox` for behavior. -->
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+<!-- Toggleable sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p>Simulating the spread of Coronavirus.</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item" href=/>Home</a>
+
+    
+
+    
+    
+      
+    
+      
+    
+      
+        
+          
+            <a class="sidebar-nav-item" href="/about/">About</a>
+          
+        
+      
+    
+      
+    
+      
+    
+      
+        
+        <a class="sidebar-nav-item" href="/intro/">SIM&#58; Intro to Simulations</a>
+        
+      
+    
+      
+    
+      
+        
+        <a class="sidebar-nav-item" href="/shopping_solo/">SIM&#58; Shopping Solo</a>
+        
+      
+    
+      
+        
+        <a class="sidebar-nav-item active" href="/shopping_with_masks/">SIM&#58; Shopping with Masks</a>
+        
+      
+    
+      
+    
+
+    <a class="sidebar-nav-item" href="https://github.com/jinpan/covid-simulations">GitHub project</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      &copy; 2020. All rights reserved.
+    </p>
+  </div>
+</div>
+
+
+    <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href=/ title="Home">Coronavirus Simulations</a>
+            <small></small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Shopping with Masks</h1>
+  <script src="./shopping_with_masks.bundle.js"></script>
+
+<h3 id="2020-05-21--jin-pan--follow-jinpan20">2020-05-21 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></h3>
+
+<p><em>Before we dive in, you may want to check out the <a href="/intro">Intro to SIR/SEIR simulations post</a></em>.</p>
+
+<p>The <a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/diy-cloth-face-coverings.html">CDC recommends we all wear masks outdoors</a>.
+You may wonder, how effective are masks?  Is there any benefit to wearing a N95 mask over a regular one?  Below, we
+will explore answers to these questions and more.</p>
+
+<blockquote>
+  <p>How does our usage of masks affect the spread of Covid-19?</p>
+</blockquote>
+
+<p>Let’s run some
+<span style="background-color:#B8F7BF">S</span><span style="background-color:#C7BA29">E</span><span style="background-color:#EB6383">I</span><span style="background-color:#C8C8C8">R</span>
+ simulations with 54 people going to the store, similar to our <a href="/shopping_solo">Shopping Solo</a> simulations.
+People marked with a black border are wearing a mask at all times: those who wear masks emit fewer viral particles
+compared those who don’t, but masks don’t affect how many viral particles people inhale.  This mask behavior mirrors
+<a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/cloth-face-cover-faq.html">CDC guidance</a>,
+and all parameters are at this footnote<sup id="fnref:shopping_parameters"><a href="#fn:shopping_parameters" class="footnote">1</a></sup>.</p>
+
+<p>You can configure the percentage of people who wear masks and see the impact on disease
+spread.</p>
+
+<div>
+  <button id="particle_shopper0-start" style="width: 4em">Start</button>
+  <button id="particle_shopper0-reset">Reset</button>
+  <span>Speed:
+    <button class="particle_shopper0-speed" data-speed="1" style="font-weight: bold" disabled="">1x</button>
+    <button class="particle_shopper0-speed" data-speed="2">2x</button>
+    <button class="particle_shopper0-speed" data-speed="4">4x</button>
+    <button class="particle_shopper0-speed" data-speed="8">8x</button>
+    <button class="particle_shopper0-speed" data-speed="16">16x</button>
+    <button class="particle_shopper0-speed" data-speed="32">32x</button>
+  </span>
+  <!--TODO: dynamically show this controller-->
+  <br />
+  <span>% of people with Masks:
+    <button class="particle_shopper0-pct-mask" data-pct="0">0%</button>
+    <button class="particle_shopper0-pct-mask" data-pct="25">25%</button>
+    <button class="particle_shopper0-pct-mask" data-pct="50" style="font-weight: bold" disabled="">50%</button>
+    <button class="particle_shopper0-pct-mask" data-pct="75">75%</button>
+    <button class="particle_shopper0-pct-mask" data-pct="100">100%</button>
+  </span>
+
+  <br />
+  <div id="particle_shopper0-uplot" style="border: solid; border-width: thin; display: inline-block; width: 100%"></div>
+
+  <canvas id="particle_shopper0-canvas" width="600" height="400" style="border:1px solid #000000; width: 100%">
+  </canvas>
+</div>
+
+<hr />
+
+<h2 id="data-analysis">Data Analysis</h2>
+
+<p>Running this simulation tens of thousands of times, there is a clear relationship between mask wearing and
+infection rates: <strong>mask wearing reduces infection rates</strong>.</p>
+
+<div style="border: solid; border-width: thin; display: inline-block; width: 100%">
+    <div id="infection_rate_vs_pct_mask"></div>
+
+    <div style="padding: 1em">
+The shaded green area contains the average 50% of outcomes across all the simulations.
+The solid line is the median outcome, and the thin dotted line is the best fit over
+the entire graph.  The thick dotted line from 40-60% is the best fit over that
+narrower range.
+    </div>
+</div>
+
+<p>Looking more closely at the data, there is an interesting second-order effect: there is a backwards “S-curve” in the
+data.  At the middle of the curve, the impact of one more mask wearer is very strong.</p>
+
+<p><strong>When ~50% of people are wearing masks, each additional mask wearer can prevent 1.7 infections.</strong></p>
+
+<p>Intuitively, this makes sense:</p>
+<ul>
+  <li>When few people wear masks, the infection will spread rapidly.  Those who do wear masks will still have a high
+chance of getting it since regular masks do not directly provide infection protection.</li>
+  <li>When many people wear masks, the infection rates are under control and one person not wearing
+a mask won’t be able to set off a chain reaction of infections: an infected masked shopper is unlikely to infect someone
+else<sup id="fnref:but_still_wear_your_mask"><a href="#fn:but_still_wear_your_mask" class="footnote">2</a></sup>.</li>
+  <li>In the middle is a sweet spot of when our actions are most effective, and each additional mask wearer can reduce
+the number of total infections by 1.7 (slope of the best fit line over 40-60%).</li>
+</ul>
+
+<hr />
+
+<h2 id="what-about-n95-masks">What about N95 Masks?</h2>
+
+<p>Unlike ordinary masks, N95 masks do offer protection against inhaling particles, theoretically reducing the wearer’s
+infection risk.  They are currently in short supply, and the <a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/cloth-face-cover-faq.html">CDC recommends saving them for healthcare
+workers</a>.  Also, they are very
+uncomfortable<sup id="fnref:n95_anecdote"><a href="#fn:n95_anecdote" class="footnote">3</a></sup>.  But in simulation they are neither in short supply nor uncomfortable, so we can ask</p>
+
+<blockquote>
+  <p>How do N95 masks compare against regular masks?</p>
+</blockquote>
+
+<p>People marked with a thick black border are wearing a N95 mask; thin black border, regular mask; no border, no mask.
+People with N95 masks inhale fewer viral particles than those who don’t, and all parameters are at this
+footnote<sup id="fnref:shopping_n95_parameters"><a href="#fn:shopping_n95_parameters" class="footnote">4</a></sup>.</p>
+
+<div>
+  <button id="particle_shopper1-start" style="width: 4em">Start</button>
+  <button id="particle_shopper1-reset">Reset</button>
+  <span>Speed:
+    <button class="particle_shopper1-speed" data-speed="1" style="font-weight: bold" disabled="">1x</button>
+    <button class="particle_shopper1-speed" data-speed="2">2x</button>
+    <button class="particle_shopper1-speed" data-speed="4">4x</button>
+    <button class="particle_shopper1-speed" data-speed="8">8x</button>
+    <button class="particle_shopper1-speed" data-speed="16">16x</button>
+    <button class="particle_shopper1-speed" data-speed="32">32x</button>
+  </span>
+  <!--TODO: dynamically show this controller-->
+  <br /><span>% Regular Masks:
+    <button class="particle_shopper1-pct-mask" data-pct="0" style="font-weight: bold" disabled="">0%</button>
+    <button class="particle_shopper1-pct-mask" data-pct="25">25%</button>
+    <button class="particle_shopper1-pct-mask" data-pct="50">50%</button>
+    <button class="particle_shopper1-pct-mask" data-pct="75">75%</button>
+    <button class="particle_shopper1-pct-mask" data-pct="100">100%</button>
+  </span>
+  <br /><span>% N95 Masks:
+    <button class="particle_shopper1-pct-n95-mask" data-pct="0">0%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="25">25%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="50" style="font-weight: bold" disabled="">50%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="75">75%</button>
+    <button class="particle_shopper1-pct-n95-mask" data-pct="100">100%</button>
+  </span>
+
+  <br />
+  <div id="particle_shopper1-uplot" style="border: solid; border-width: thin; display: inline-block; width: 100%"></div>
+
+  <canvas id="particle_shopper1-canvas" width="600" height="400" style="border:1px solid #000000; width: 100%">
+  </canvas>
+</div>
+<hr />
+
+<h2 id="data-analysis-part-2">Data Analysis (part 2)</h2>
+
+<p>It is no surprise that N95 masks are more effective than regular masks, but just how much more effective are they?</p>
+
+<div style="border: solid; border-width: thin; display: inline-block">
+    <div id="infection_rate_vs_pct_n95_mask"></div>
+
+    <div style="padding: 1em">
+The red area represents the average 50% of outcomes as we vary the rate of N95 usage (with 0% usage of regular masks).
+The green area is the above graph of regular mask usage overlaid for comparison.
+    </div>
+</div>
+
+<p>Both types of masks can control the spread with a critical mass of wearers.  The critical mass for N95 masks is less
+than that for regular masks, but not as large as you might imagine. To keep the infection rate under:</p>
+<ul>
+  <li><code class="highlighter-rouge">50%</code>: <code class="highlighter-rouge">30%</code> of people need to wear N95 masks vs <code class="highlighter-rouge">40%</code> regular</li>
+  <li><code class="highlighter-rouge">33%</code>: <code class="highlighter-rouge">35%</code> vs <code class="highlighter-rouge">50%</code></li>
+  <li><code class="highlighter-rouge">20%</code>: <code class="highlighter-rouge">45%</code> vs <code class="highlighter-rouge">55%</code></li>
+</ul>
+
+<p><strong>For a max tolerable infection rate, we only need 10-15% more adoption of regular
+masks vs N95 masks to stay under that limit.</strong></p>
+
+<p>Given the significant difficulties of acquiring, fitting, and breathing through N95 masks, aiming for a modestly higher
+rate of regular mask usage is more practical policy.</p>
+
+<hr />
+
+<p>You may also wonder</p>
+
+<blockquote>
+  <p>How does wearing a mask affect <em>my</em> risk of getting infected?</p>
+</blockquote>
+
+<p>For a regular mask, not so much<sup id="fnref:but_maybe_they_help"><a href="#fn:but_maybe_they_help" class="footnote">5</a></sup> since they do not offer direct protection against the virus.  For
+a N95 mask, it depends.</p>
+
+<div style="border: solid; border-width: thin; display: inline-block">
+  <div id="infection_rate_by_mask_type"></div>
+
+  <div style="padding: 1em">
+    The blue area represents the average 50% infection rates for people who don't wear any mask at all; red area
+    N95 masks.
+  </div>
+</div>
+
+<p>When there is a low percentage of people wearing masks, wearing a N95 mask can significantly decrease your infection
+risk<sup id="fnref:about_that_shortage"><a href="#fn:about_that_shortage" class="footnote">6</a></sup>.  This advantage fades as more people wear masks and the riskiness of the environment falls, which underscores
+a key takeaway from our <a href="/shopping_solo">Shopping Solo</a> simulations.</p>
+
+<p><strong>Safer decisions matter more when our community is more at risk.</strong></p>
+
+<hr />
+
+<h2 id="future-work">Future work</h2>
+
+<p>The best way to combat this virus is to make data-driven policies and decisions.
+High quality simulations offer a fast and safe way to estimate the risk of our actions.</p>
+
+<p>That being said, the virus modeled above is not Covid-19 the dots are not shopping the same way
+we shop: we touch shopping carts, swipe credit cards, maintain distance in stores, and so on.
+Researchers are discovering more about Covid-19 every day, about how it spreads, symptoms it produces,
+how to treat it, and so on.</p>
+
+<p>Future work will focus on incorporating the latest research and simulating more realistic human
+behavior. These simulations are all <a href="https://www.github.com/jinpan/covid-simulations/">open source</a>.
+You can reach out to me privately at <code class="highlighter-rouge">covid-contact@simrnd.com</code> or on Twitter.</p>
+
+<p>Please share these simulations if you found them informative - as the above data shows, <strong>we all
+need to work together to control the spread of the virus</strong>.</p>
+
+<hr />
+
+<h3 id="footnotes">Footnotes:</h3>
+<div class="footnotes">
+  <ol>
+    <li id="fn:shopping_parameters">
+      <p>Simulation parameters:</p>
+      <ul>
+        <li>At 1x speed, each second is divided into 60 ticks.  At 2x speed, each second into 120 ticks, and so on.</li>
+        <li>The map is a 600 x 400 grid.</li>
+        <li>There are 54 people and 54 households, one person per household.</li>
+        <li>Within households and stores, people will move at 1 unit per tick, and bounce off of walls.</li>
+        <li>On roads, people will move at 3 units per tick and take the shortest path from their household to the store
+and vice versa.</li>
+        <li>Households randomly start with 150-450 supplies, and consume 1 supply per tick.  This is independent of how many
+people are in the household at that time.</li>
+        <li>Households go shopping when the supply level hits 0.  However, the supply level will continue
+dropping by 1 per tick and go negative.</li>
+        <li>People will spend 600 ticks at the store, not including time to travel to/from
+the store.  Travel time depends on household distance to the store.</li>
+        <li>People will buy 1800 supplies each time they go to the store.</li>
+        <li>Initially, two randomly chosen people are infected.</li>
+        <li>Infectious people without a mask will exhale 1 particle in a circle of radius 9 around them on the grid, once per
+tick</li>
+        <li>Infectious people with a mask will exhale 0.2 particles in a circle of radius 9 around them on the grid, once per
+tick</li>
+        <li>People only inhale particles for the grid point that they are on.</li>
+        <li>When a susceptible person inhales N particles, they have a N * 0.04% chance of becoming exposed during on that
+tick.  They do not accumulate inhaled particles - each tick is independent of the previous.  This is independent
+of whether they have a mask.</li>
+        <li>When initially exposed, people stay exposed for 900 ticks and become infectious for 2700 ticks before recovering.</li>
+        <li>Each tick, the number of particles at each location on the grid decays by 5.5%</li>
+        <li>The astute reader will notice that the simulation parameters are not identical to the shopping solo parameters.  These
+parameters were calibrated to illustrate the difference that mask wearing could have in a scenario where mask wearing
+affects the trajectory of the infection.  A future post will combine all the shopping simulations together, allowing
+us to compare the relative impact of the actions.</li>
+      </ul>
+      <p><a href="#fnref:shopping_parameters" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:but_still_wear_your_mask">
+
+      <p>If your community has a high rate of mask wearers, you should still wear masks!  The more people we see wearing
+masks, the more normal we will consider masks to be, and the more we will wear them. <a href="#fnref:but_still_wear_your_mask" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:n95_anecdote">
+
+      <p>I last wore a N95 mask for the
+<a href="https://en.wikipedia.org/wiki/2018_California_wildfires">2018 California wildfires</a>, and they were really hard to
+breath through once fitted properly. And they hurt my nose. <a href="#fnref:n95_anecdote" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:shopping_n95_parameters">
+      <p>N95 Simulation Parameters:</p>
+      <ul>
+        <li>These parameters are basically the same as the above parameters, but have some minor differences in how masks work</li>
+        <li>People without a mask:
+          <ul>
+            <li>If infectious, they will emit 1 particle per tick in a radius of 1 around them.</li>
+            <li>They will inhale all the particles they are directly standing on.</li>
+          </ul>
+        </li>
+        <li>People with a regular mask:
+          <ul>
+            <li>If infectious, they will emit 0.2 particles per tick in a radius of 1 around them.</li>
+            <li>They will inhale all the particles they are directly standing on.</li>
+          </ul>
+        </li>
+        <li>People with a N95 mask:
+          <ul>
+            <li>If infectious, they will emit 0.2 particles per tick in a radius of 1 around them.</li>
+            <li>They will inhale 20% of the particles they are directly standing on.</li>
+          </ul>
+        </li>
+      </ul>
+      <p><a href="#fnref:shopping_n95_parameters" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:but_maybe_they_help">
+      <p>One of the primary transmission vectors of the virus is from touching some viral particles, and
+then touching your face.  Mask wearing can reduce the amount of face touching, which provides some protection
+against the virus, but that is not captured in this simulation. <a href="#fnref:but_maybe_they_help" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:about_that_shortage">
+      <p>I debated internally about whether it is ethical to publish this, since there is a real shortage
+of N95 masks.  In the end, I’m publishing these findings because the advantage of N95 masks is strongest when only
+few people are wearing masks at all.  If acted on, this published finding would only impact a few masks.  Plus, I
+see people at my local Costco (which has 80+% mask usage) with N95 masks, so this may convince them that they’re
+not that necessary.  And orthogonally, not publishing this would be lying by omission. <a href="#fnref:about_that_shortage" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+    <script>
+      (function(document) {
+        var toggle = document.querySelector('.sidebar-toggle');
+        var sidebar = document.querySelector('#sidebar');
+        var checkbox = document.querySelector('#sidebar-checkbox');
+
+        document.addEventListener('click', function(e) {
+          var target = e.target;
+
+          if(!checkbox.checked ||
+             sidebar.contains(target) ||
+             (target === checkbox || target === toggle)) return;
+
+          checkbox.checked = false;
+        }, false);
+      })(document);
+    </script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-165966353-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-165966353-1');
+</script>
+
+
+  </body>
+</html>
