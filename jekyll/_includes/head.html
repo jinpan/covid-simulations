@@ -14,12 +14,12 @@
     {% endif %}
   </title>
 
-  {% if page.og_image %}
-  <meta property="og:image" content="{{site.url}}{{page.og_image}}" />
+  {% if page.description %}
+  <meta property="description" content="{{page.og_description}}" />
   {% endif %}
 
-  {% if page.og_description %}
-  <meta property="og:description" content="{{page.og_description}}" />
+  {% if page.og_image %}
+  <meta property="og:image" content="{{site.url}}{{page.og_image}}" />
   {% endif %}
 
   <!-- CSS -->
