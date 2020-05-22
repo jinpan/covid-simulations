@@ -11,8 +11,8 @@ jekyll-assets :
 	rm -f jekyll/shopping_solo/*.wasm
 	cp www/dist/*.js www/dist/*.wasm jekyll/shopping_solo/
 
-	rm -f jekyll/shopping_with_ppe/*.js
-	rm -f jekyll/shopping_with_ppe/*.wasm
-	cp www/dist/*.js www/dist/*.wasm jekyll/shopping_with_ppe/
+	rm -f jekyll/shopping_with_masks/*.js
+	rm -f jekyll/shopping_with_masks/*.wasm
+	cp www/dist/*.js www/dist/*.wasm jekyll/shopping_with_masks/
 
 	cd jekyll; bundle exec jekyll build

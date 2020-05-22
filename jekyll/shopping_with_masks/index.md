@@ -3,6 +3,7 @@ layout: page
 sidebar_title: SIM&#58; Shopping with Masks
 title: Shopping with Masks
 permalink: /shopping_with_masks/
+og_image: /shopping_with_masks/og_image.png
 ---
 
 <script src="./shopping_with_masks.bundle.js"></script>
@@ -113,7 +114,7 @@ narrower range.
 </div>
 
 Looking more closely at the data, there is an interesting second-order effect: there is a backwards "S-curve" in the
-data.  At the middle of the curve, the impact of one more mask wearer is very strong.
+data.  At the middle of the curve, the impact of each additional mask wearer is very strong.
 
 **When ~50% of people are wearing masks, each additional mask wearer can prevent 1.7 infections.**
 
