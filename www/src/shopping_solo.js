@@ -44,7 +44,7 @@ new Simulation({
       "fraction_n95_mask": 0.0,
     },
   },
-  "show_dual_shopper": false,
+  "show_dual_shopper": true,
   "show_household_supplies": {
     "max_supplies": 900,
   },
