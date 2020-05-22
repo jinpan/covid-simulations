@@ -11,9 +11,9 @@ description: How does the number of shoppers a household sends out affect the sp
 
 ### 2020-05-15 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-*Before we dive in, you may want to check out the [Intro to SIR/SEIR simulations post](/intro)*.
+<hr>
 
-> How does the number of shoppers a household sends out affect the spread of Covid-19?
+## How does the number of shoppers a household sends out affect the spread of Covid-19?
 
 To answer this question, let's run some
 <span style="background-color:#B8F7BF">S</span><span style="background-color:#C7BA29">E</span><span style="background-color:#EB6383">I</span><span style="background-color:#C8C8C8">R</span>

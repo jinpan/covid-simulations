@@ -11,13 +11,13 @@ description: How does wearing a cloth mask affect the spread of Covid-19?  What 
 
 ### 2020-05-22 | Jin Pan | <a href="https://twitter.com/jinpan20?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jinpan20</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-*Before we dive in, you may want to check out the [Intro to SIR/SEIR simulations post](/intro)*.
+<hr>
 
 The [CDC recommends wearing masks outdoors](https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/diy-cloth-face-coverings.html).
 You may wonder, how effective are masks?  What's the difference between wearing a N95 mask vs a cloth one?  We will
 explore answers to these questions and more.
 
-> How does our usage of masks affect the spread of Covid-19?
+## How does our usage of masks affect the spread of Covid-19?
 
 Let's run some
 <span style="background-color:#B8F7BF">S</span><span style="background-color:#C7BA29">E</span><span style="background-color:#EB6383">I</span><span style="background-color:#C8C8C8">R</span>
