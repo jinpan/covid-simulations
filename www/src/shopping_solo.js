@@ -89,10 +89,12 @@ new Simulation({
     best_fit,
   ];
 
+  const uplot_el = document.getElementById("infection_rate_vs_pct_dual_shopper");
+
   const opts = {
-    width: 700,
+    width: uplot_el.clientWidth,
     height: 400,
-    title: "Infection Rate vs Percentage of 2x-Shopper Households",
+    title: "Infection Rate vs % of 2x-Shopper Households",
     scales: { x: { time: false }, y: { range: [0, 100] }, },
     series: [
       { label: "%", show: false },
@@ -138,9 +140,7 @@ new Simulation({
     ]
   };
 
-  uplot.default(
-    opts, data,
-    document.getElementById("infection_rate_vs_pct_dual_shopper"));
+  uplot.default(opts, data, uplot_el);
 })();
 
 // Draw the infection rate by household type vs pct dual shopper plot
@@ -199,10 +199,12 @@ new Simulation({
     dual_q1, dual_q3, dual_q2,
   ];
 
+  const uplot_el = document.getElementById("infection_rate_by_household_type_vs_pct_dual_shopper");
+
   const opts = {
-    width: 700,
+    width: uplot_el.clientWidth,
     height: 400,
-    title: "Infection by Household Type vs % 2x-Shopper Households",
+    title: "Infection by Type vs % 2x Households",
     scales: { x: { time: false }, y: { range: [0, 100] }, },
     series: [
       { label: "%" },
@@ -265,8 +267,6 @@ new Simulation({
     ]
   };
 
-  uplot.default(
-    opts, data,
-    document.getElementById("infection_rate_by_household_type_vs_pct_dual_shopper"));
+  uplot.default(opts, data, uplot_el);
 })();
 

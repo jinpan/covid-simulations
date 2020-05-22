@@ -9,7 +9,7 @@ module.exports = {
     index: "./bootstrap.js",
     intro: "./src/intro_bootstrap.js",
     shopping_solo: "./src/shopping_solo_bootstrap.js",
-    shopping_ppe: "./src/shopping_ppe_bootstrap.js",
+    shopping_with_masks: "./src/shopping_with_masks_bootstrap.js",
   },
   plugins: [
     new CopyWebpackPlugin(['index.html']),
@@ -27,9 +27,9 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       hash: true,
-      template: 'src/shopping_ppe.html',
-      chunks: ['shopping_ppe'],
-      filename: './shopping_ppe/index.html',
+      template: 'src/shopping_with_masks.html',
+      chunks: ['shopping_with_masks'],
+      filename: './shopping_with_masks/index.html',
     }),
   ],
   output: {
