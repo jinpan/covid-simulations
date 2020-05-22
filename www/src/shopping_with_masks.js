@@ -14,8 +14,6 @@ new Simulation({
           "exhale_radius": 9,
           "decay_rate": 0.055,
           "infection_risk_per_particle": 0.0004,
-          "fraction_mask": 0.5,
-          "fraction_n95_mask": 0.0,
         },
       },
     },
@@ -45,7 +43,7 @@ new Simulation({
       "num_people_per_household": 1,
     },
     "misc_parameters": {
-      "fraction_mask": 0.5,
+      "fraction_mask": 0.25,
       "fraction_n95_mask": 0.0,
     },
   },
@@ -68,8 +66,6 @@ new Simulation({
           "exhale_radius": 9,
           "decay_rate": 0.055,
           "infection_risk_per_particle": 0.0004,
-          "fraction_mask": 0.5,
-          "fraction_n95_mask": 0.0,
         },
       },
     },
@@ -100,7 +96,7 @@ new Simulation({
     },
     "misc_parameters": {
       "fraction_mask": 0.0,
-      "fraction_n95_mask": 0.5,
+      "fraction_n95_mask": 0.25,
     },
   },
   "show_dual_shopper": false,
@@ -264,7 +260,7 @@ new Simulation({
       },
       {
         label: "25th pct",
-        fill: "rgba(255, 0, 0, .07)",
+        fill: "rgba(0, 0, 255, .07)",
         value: (_, v) => v + "%",
         band: true,
         width: 0,
@@ -272,7 +268,7 @@ new Simulation({
       },
       {
         label: "75th pct",
-        fill: "rgba(255, 0, 0, .07)",
+        fill: "rgba(0, 0, 255, .07)",
         value: (_, v) => v + "%",
         band: true,
         width: 0,
@@ -280,7 +276,7 @@ new Simulation({
       },
       {
         label: "Median",
-        stroke: "rgba(255, 0, 0, 0.8)",
+        stroke: "rgba(0, 0, 255, 0.8)",
         points: {show: false},
         value: (_, v) => v + "%",
       },
@@ -327,32 +323,10 @@ new Simulation({
   const opts = {
     width: uplot_el.clientWidth,
     height: 400,
-    title: "Infection Rate vs % of N95-Masked Shoppers",
+    title: "Infection Rate by Mask Wearer",
     scales: { x: { time: false }, y: { range: [0, 100] }, },
     series: [
       { label: "%", show: false },
-      {
-        label: "25th pct",
-        fill: "rgba(0, 0, 255, .07)",
-        value: (_, v) => v + "%",
-        band: true,
-        width: 0,
-        points: {show: false},
-      },
-      {
-        label: "75th pct",
-        fill: "rgba(0, 0, 255, .07)",
-        value: (_, v) => v + "%",
-        band: true,
-        width: 0,
-        points: {show: false},
-      },
-      {
-        label: "Median",
-        stroke: "rgba(0, 0, 255, 0.8)",
-        points: {show: false},
-        value: (_, v) => v + "%",
-      },
       {
         label: "25th pct",
         fill: "rgba(255, 0, 0, .07)",
@@ -375,12 +349,34 @@ new Simulation({
         points: {show: false},
         value: (_, v) => v + "%",
       },
+      {
+        label: "25th pct",
+        fill: "rgba(0, 0, 255, .07)",
+        value: (_, v) => v + "%",
+        band: true,
+        width: 0,
+        points: {show: false},
+      },
+      {
+        label: "75th pct",
+        fill: "rgba(0, 0, 255, .07)",
+        value: (_, v) => v + "%",
+        band: true,
+        width: 0,
+        points: {show: false},
+      },
+      {
+        label: "Median",
+        stroke: "rgba(0, 0, 255, 0.8)",
+        points: {show: false},
+        value: (_, v) => v + "%",
+      },
     ],
     cursor: { show: false },
     legend: { show: false },
     axes: [
       {
-        label: "Percentage of Masked Shoppers",
+        label: "Percentage of N95 mask wearers",
         values: (_, vals) => vals.map(v => v + "%")
       },
       {

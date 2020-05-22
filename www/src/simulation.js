@@ -517,13 +517,7 @@ export class Simulation {
         let misc_params = sim.config['engine_config']['misc_parameters']
         misc_params['fraction_mask'] = fraction_mask;
 
-        if (misc_params['fraction_mask'] + misc_params['fraction_n95_mask'] > 1) {
-          const target_n95_pct = 100 - 100 * misc_params['fraction_mask'];
-          const btn = document.querySelector(`.${cfg_name}-pct-n95-mask[data-pct="${target_n95_pct}"]`)
-          btn.click(); // Triggers a reset
-        } else {
-          sim.reset();
-        }
+        sim.reset();
       });
     };
 
@@ -541,13 +535,7 @@ export class Simulation {
         let misc_params = sim.config['engine_config']['misc_parameters']
         misc_params['fraction_n95_mask'] = fraction_mask;
 
-        if (misc_params['fraction_mask'] + misc_params['fraction_n95_mask'] > 1) {
-          const target_mask_pct = 100 - 100 * misc_params['fraction_n95_mask'];
-          const btn = document.querySelector(`.${cfg_name}-pct-mask[data-pct="${target_mask_pct}"]`)
-          btn.click(); // Triggers a reset
-        } else {
-          sim.reset();
-        }
+        sim.reset();
       });
     };
   }
