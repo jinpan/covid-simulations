@@ -21,6 +21,10 @@ harness = false
 name = "parameter_calibration"
 path = "src/parameter_calibration/bin/main.rs"
 
+[[bin]]
+name = "cities"
+path = "src/city/bin/main.rs"
+
 [profile.release]
 lto = true
 
@@ -37,12 +41,14 @@ anyhow = "1.0"
 approx = "0.3"
 clap = "2"
 crossbeam-channel = "0.4"
+derivative = "2.1"
 itertools = "0.9"
 js-sys = "0.3"
 pathfinding = "2.0.4"
 rand = { version = "0.7", features = ["wasm-bindgen"] }
 rand_chacha = "0.2"
 rand_core = "0.5"
+rand_distr = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 wasm-bindgen = {version = "0.2", features = ["serde-serialize"] }

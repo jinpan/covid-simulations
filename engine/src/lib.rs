@@ -4,8 +4,10 @@ extern crate quickcheck;
 #[cfg(test)]
 extern crate quickcheck_macros;
 extern crate rand;
+extern crate rand_distr;
 extern crate wasm_bindgen;
 
+pub mod city;
 pub mod v0;
 
 use crate::v0::config::WorldConfig;
